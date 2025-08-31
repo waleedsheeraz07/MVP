@@ -1,4 +1,4 @@
-import NextAuth, { AuthOptions } from "next-auth"
+import NextAuth, { AuthOptions, Session, User } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaClient, User as PrismaUser } from "@prisma/client"
 import bcrypt from "bcryptjs"
@@ -6,17 +6,18 @@ import { JWT } from "next-auth/jwt"
 
 const prisma = new PrismaClient()
 
-interface MySession {
+// Custom types
+interface MyToken extends JWT {
+  id: string
+  role: string
+}
+
+interface MySession extends Session {
   user: {
     id: string
     email: string
     role: string
   }
-}
-
-interface MyToken extends JWT {
-  role?: string
-  id?: string
 }
 
 export const authOptions: AuthOptions = {
@@ -27,7 +28,7 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing email or password")
         }
@@ -41,7 +42,11 @@ export const authOptions: AuthOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password)
         if (!isValid) throw new Error("Invalid password")
 
-        return { id: user.id, email: user.email, role: user.role }
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        } as User
       },
     }),
   ],
@@ -49,24 +54,24 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       const t = token as MyToken
       if (user) {
-        t.role = (user as any).role
-        t.id = (user as any).id
+        t.id = user.id
+        t.role = user.role
       }
       return t
     },
     async session({ session, token }) {
-      const s = session as unknown as MySession
+      const s = session as MySession
       const t = token as MyToken
       s.user = {
-        id: t.id || "",
-        email: s.user.email || "",
-        role: t.role || "buyer",
+        id: t.id,
+        email: session.user?.email || "",
+        role: t.role,
       }
-      return s as any
+      return s
     },
   },
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET || "supersecret",
+  secret: process.env.NEXTAUTH_SECRET,
 }
 
 export default NextAuth(authOptions)
