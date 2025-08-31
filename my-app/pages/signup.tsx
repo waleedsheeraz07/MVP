@@ -2,14 +2,11 @@ import { GetServerSideProps } from "next"
 
 type Role = "buyer" | "seller"
 
-interface SignupFormData {
-  email?: string
-  password?: string
-  role?: Role
+interface SignupProps {
   error?: string
 }
 
-export default function SignupPage({ error }: SignupFormData) {
+export default function SignupPage({ error }: SignupProps) {
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Sign Up</h1>
@@ -18,7 +15,7 @@ export default function SignupPage({ error }: SignupFormData) {
         <input
           type="email"
           name="email"
-          placeholder="Emal"
+          placeholder="Email"
           required
           style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
@@ -41,30 +38,32 @@ export default function SignupPage({ error }: SignupFormData) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   if (context.req.method === "POST") {
-    const body = await new Promise<{ email: string; password: string; role: Role }>((resolve, reject) => {
-      let data = ''
-      context.req.on('data', chunk => data += chunk)
-      context.req.on('end', () => {
-        const params = new URLSearchParams(data)
-        resolve({
-          email: params.get('email') || '',
-          password: params.get('password') || '',
-          role: (params.get('role') as Role) || "buyer",
-        })
-      })
-      context.req.on('error', reject)
-    })
-
-    if (!body.email || !body.password) {
-      return { props: { error: "Email and password are required" } }
-    }
-
     try {
+      // Parse form data
+      const body = await new Promise<{ email: string; password: string; role: Role }>((resolve, reject) => {
+        let data = ''
+        context.req.on('data', chunk => data += chunk)
+        context.req.on('end', () => {
+          const params = new URLSearchParams(data)
+          resolve({
+            email: params.get('email') || '',
+            password: params.get('password') || '',
+            role: (params.get('role') as Role) || "buyer",
+          })
+        })
+        context.req.on('error', reject)
+      })
+
+      if (!body.email || !body.password) {
+        return { props: { error: "Email and password are required" } }
+      }
+
       const { PrismaClient } = await import("@prisma/client")
       const bcrypt = (await import("bcryptjs")).default
       const prisma = new PrismaClient()
 
       const hashedPassword = await bcrypt.hash(body.password, 10)
+
       await prisma.user.create({
         data: {
           email: body.email,
@@ -72,14 +71,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           role: body.role,
         },
       })
+
+      // Redirect to login on success
       return {
         redirect: {
           destination: "/login",
           permanent: false,
         },
       }
-    } catch (err) {
-      return { props: { error: "Signup failed, maybe email already exists" } }
+    } catch (err: any) {
+      // Check for Prisma unique constraint error
+      if (err.code === "P2002") {
+        return { props: { error: "Email already exists" } }
+      }
+      console.error("Signup error:", err)
+      return { props: { error: "Signup failed, please try again" } }
     }
   }
 
