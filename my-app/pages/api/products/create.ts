@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 import { prisma } from "../../../lib/prisma";
 import cloudinary from "../../../lib/cloudinary";
-import formidable, { File } from "formidable";
+import formidable, { File } from "formidable-serverless";
 import fs from "fs";
 
 // Disable default body parsing
