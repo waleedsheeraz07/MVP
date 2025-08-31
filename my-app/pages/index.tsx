@@ -1,5 +1,4 @@
 import { signOut } from "next-auth/react"
-// pages/index.tsx
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -14,16 +13,17 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Captain's Jewelry Store</title>
+        <title>Captain&apos;s Jewelry Store</title>
         <meta name="description" content="Premium jewelry for every occasion" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className="min-h-screen bg-gray-50">
-<button onClick={() => signOut({ callbackUrl: "/" })}>Logout</button>
+        <button onClick={() => signOut({ callbackUrl: "/" })}>Logout</button>
+
         {/* Hero Section */}
         <section className="relative bg-yellow-100 py-20 text-center">
-          <h1 className="text-5xl font-bold text-yellow-900 mb-4">Welcome to Captain's Jewelry</h1>
+          <h1 className="text-5xl font-bold text-yellow-900 mb-4">Welcome to Captain&apos;s Jewelry</h1>
           <p className="text-xl text-yellow-800 mb-8">
             Discover the finest quality jewelry crafted just for you.
           </p>
@@ -63,7 +63,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="bg-gray-900 text-white py-10 text-center">
-          <p>&copy; {new Date().getFullYear()} Captain's Jewelry. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Captain&apos;s Jewelry. All rights reserved.</p>
         </footer>
       </main>
     </>
