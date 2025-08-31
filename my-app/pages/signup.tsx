@@ -1,27 +1,23 @@
 import { useState, FormEvent } from "react"
 import { useRouter } from "next/router"
 
-interface ApiResponse {
-  id?: string
-  email?: string
-  role?: "buyer" | "seller"
-  error?: string
-}
-
 const SignupPage = () => {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [role, setRole] = useState<"buyer" | "seller">("buyer")
-  const [error, setError] = useState("")
   const [logs, setLogs] = useState<string[]>([])
 
-  const log = (msg: string) => setLogs(prev => [...prev, msg])
+  const addLog = (msg: string) => {
+    console.log(msg)
+    setLogs(prev => [...prev, msg])
+  }
 
   const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError("")
-    log("Submitting signup request...")
+    setLogs([]) // clear previous logs
+
+    addLog("Submitting signup request...")
 
     try {
       const res = await fetch("/api/auth/signup", {
@@ -30,32 +26,29 @@ const SignupPage = () => {
         body: JSON.stringify({ email, password, role }),
       })
 
-      log(`Response status: ${res.status}`)
+      let data: any = {}
+      try {
+        data = await res.json()
+      } catch {
+        addLog("No JSON returned from server")
+      }
 
-      const data: ApiResponse = await res.json().catch(() => {
-        log("Failed to parse JSON response")
-        return {}
-      })
-
-      log("Response data: " + JSON.stringify(data))
+      addLog(`Response status: ${res.status}`)
+      addLog(`Response data: ${JSON.stringify(data)}`)
 
       if (res.ok) {
-        log("Signup successful! Redirecting to login...")
+        addLog("Signup successful!")
         router.push("/login")
       } else {
-        const errMsg = data.error || "Signup failed"
-        setError(errMsg)
-        log("Signup error: " + errMsg)
+        addLog(`Signup error: ${data?.error || "Unknown error"}`)
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      log("Network error: " + msg)
-      setError("Signup failed due to network error")
+    } catch (err: any) {
+      addLog(`Signup fetch error: ${err.message}`)
     }
   }
 
   return (
-    <div className="auth-container">
+    <div style={{ maxWidth: 400, margin: "2rem auto", fontFamily: "sans-serif" }}>
       <h1>Sign Up</h1>
       <form onSubmit={handleSignup}>
         <input
@@ -64,6 +57,7 @@ const SignupPage = () => {
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
+          style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
         />
         <input
           type="password"
@@ -71,33 +65,23 @@ const SignupPage = () => {
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
+          style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
         />
         <select
           value={role}
           onChange={e => setRole(e.target.value as "buyer" | "seller")}
+          style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
         >
           <option value="buyer">Buyer</option>
           <option value="seller">Seller</option>
         </select>
-        <button type="submit">Sign Up</button>
-        {error && <p className="error">{error}</p>}
+        <button type="submit" style={{ padding: "0.5rem 1rem" }}>Sign Up</button>
       </form>
 
-      <div
-        style={{
-          marginTop: "20px",
-          padding: "10px",
-          background: "#f5f5f5",
-          border: "1px solid #ccc",
-          maxHeight: "200px",
-          overflowY: "auto",
-          fontFamily: "monospace",
-          fontSize: "14px",
-        }}
-      >
-        <strong>Logs:</strong>
-        {logs.map((l, i) => (
-          <div key={i}>{l}</div>
+      <div style={{ marginTop: "1rem", background: "#f5f5f5", padding: "0.5rem" }}>
+        <h3>Logs:</h3>
+        {logs.map((log, i) => (
+          <div key={i} style={{ fontSize: "0.9rem", color: "#333" }}>{log}</div>
         ))}
       </div>
     </div>
