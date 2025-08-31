@@ -1,6 +1,3 @@
-Ok now it is working great when i login it takes me to the dashboard page and says welcome, my email
-Role: my role
-But when i press signout it redirects me to localhost:3000 and ahows blank page but when i come back to dashboard it redirects me to login page:
 
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
