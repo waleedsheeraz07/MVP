@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, User } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-type Data =
+type ApiResponse =
   | { id: string; email: string; role: "buyer" | "seller" }
   | { error: string }
 
@@ -14,23 +14,20 @@ interface PrismaError extends Error {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<ApiResponse>
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" })
   }
 
-  const { email, password, role } = req.body as {
-    email: string
-    password: string
-    role: string
-  }
+  const body = req.body as { email?: string; password?: string; role?: string }
 
-  if (!email || !password || !role) {
+  if (!body.email || !body.password || !body.role) {
     return res.status(400).json({ error: "Missing required fields" })
   }
 
-  // Type check role
+  const { email, password, role } = body
+
   if (role !== "buyer" && role !== "seller") {
     return res.status(400).json({ error: "Invalid role" })
   }
@@ -38,7 +35,7 @@ export default async function handler(
   try {
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await prisma.user.create({
+    const user: User = await prisma.user.create({
       data: { email, password: hashedPassword, role },
     })
 
