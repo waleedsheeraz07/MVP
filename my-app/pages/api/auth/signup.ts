@@ -3,7 +3,6 @@ import { PrismaClient, User } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
-
 type Role = "buyer" | "seller"
 
 interface SignupResponse {
@@ -13,14 +12,7 @@ interface SignupResponse {
   error?: string
 }
 
-interface PrismaError extends Error {
-  code?: string | number
-}
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<SignupResponse>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<SignupResponse>) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" })
   }
@@ -31,7 +23,6 @@ export default async function handler(
     return res.status(400).json({ error: "Missing required fields" })
   }
 
-  // Ensure role is one of the allowed values
   if (role !== "buyer" && role !== "seller") {
     return res.status(400).json({ error: "Invalid role" })
   }
@@ -40,29 +31,18 @@ export default async function handler(
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user: User = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role: role as Role, // explicit cast
-      },
+      data: { email, password: hashedPassword, role: role as Role }
     })
 
     console.log("User created:", user)
 
-    return res.status(201).json({
-      id: user.id,
-      email: user.email,
-      role: user.role as Role,
-    })
-  } catch (error) {
-    const err = error as PrismaError
+    // Redirect back to signup page with success log
+    return res.status(201).json({ id: user.id, email: user.email, role: user.role })
+  } catch (err: any) {
     console.error("Signup error:", err)
-
-    // MongoDB duplicate key or Prisma unique constraint
     if (err.code === 11000 || err.code === "P2002") {
       return res.status(400).json({ error: "Email already exists" })
     }
-
     return res.status(500).json({ error: "Internal server error" })
   }
 }
