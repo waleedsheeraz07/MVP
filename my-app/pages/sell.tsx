@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 
 export default function SellProductPage() {
@@ -10,58 +10,63 @@ export default function SellProductPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Generate previews when images change
-  useEffect(() => {
-    setPreviews(images);
-  }, [images]);
+  // Update previews whenever images change
+  const updatePreviews = (files: File[]) => {
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setPreviews(urls);
+  };
 
-const handleImageChange = (file: File) => {
-  setImages(prev => [...prev, file]);
-  const url = URL.createObjectURL(file);
-  setPreviews(prev => [...prev, url]);
-};
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
-
-  try {
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("quantity", quantity);
-
-    colors.forEach(c => formData.append("colors[]", c));
-    sizes.forEach(s => formData.append("sizes[]", s));
-    images.forEach(file => formData.append("images", file)); // keep as File
-
-    const res = await fetch("/api/products/create", {
-      method: "POST",
-      body: formData, // send as FormData
+  const handleImageChange = (files: FileList | null) => {
+    if (!files) return;
+    const fileArray = Array.from(files);
+    setImages((prev) => {
+      const updated = [...prev, ...fileArray];
+      updatePreviews(updated);
+      return updated;
     });
+  };
 
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error || "Something went wrong");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("quantity", quantity);
+
+      colors.forEach((c) => formData.append("colors[]", c));
+      sizes.forEach((s) => formData.append("sizes[]", s));
+      images.forEach((file) => formData.append("images", file));
+
+      const res = await fetch("/api/products/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/dashboard");
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Something went wrong";
-    setError(message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
@@ -108,17 +113,20 @@ const handleSubmit = async (e: React.FormEvent) => {
           type="file"
           accept="image/*"
           multiple
-          onChange={(e) => e.target.files && Array.from(e.target.files).forEach(handleImageChange)}
+          onChange={(e) => handleImageChange(e.target.files)}
           style={{ display: "block", marginBottom: "1rem", width: "100%" }}
         />
-        {previews.map((url, idx) => (
-          <img
-            key={idx}
-            src={url}
-            alt={`Preview ${idx}`}
-            style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover", border: "1px solid #ccc", marginRight: "0.5rem", marginBottom: "0.5rem" }}
-          />
-        ))}
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {previews.map((url, idx) => (
+            <img
+              key={idx}
+              src={url}
+              alt={`Preview ${idx}`}
+              style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover", border: "1px solid #ccc" }}
+            />
+          ))}
+        </div>
 
         <input
           type="text"
@@ -136,7 +144,11 @@ const handleSubmit = async (e: React.FormEvent) => {
           style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
-        <button type="submit" disabled={loading} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+        >
           {loading ? "Saving..." : "Create Product"}
         </button>
       </form>
