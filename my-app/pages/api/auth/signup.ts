@@ -1,57 +1,55 @@
-import { NextApiRequest, NextApiResponse } from "next"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient, User } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
-type Role = "buyer" | "seller"
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const logs: string[] = []
+interface SignupResponse {
+  id?: string
+  email?: string
+  role?: "buyer" | "seller"
+  error?: string
+}
 
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<SignupResponse>
+) {
   if (req.method !== "POST") {
-    logs.push("Invalid method: " + req.method)
-    return res.redirect(
-      `/signup?error=Method not allowed&logs=${encodeURIComponent(logs.join("|"))}`
-    )
+    return res.status(405).json({ error: "Method not allowed" })
   }
 
-  const { email, password, role } = req.body as { email?: string; password?: string; role?: string }
+  const body = req.body as {
+    email?: string
+    password?: string
+    role?: string
+  }
 
-  logs.push("Received signup request")
+  const { email, password, role } = body
 
   if (!email || !password || !role) {
-    logs.push("Missing required fields")
-    return res.redirect(
-      `/signup?error=Missing required fields&logs=${encodeURIComponent(logs.join("|"))}&email=${email || ""}&role=${role || ""}`
-    )
+    return res.status(400).json({ error: "Missing required fields" })
   }
 
   if (role !== "buyer" && role !== "seller") {
-    logs.push("Invalid role")
-    return res.redirect(
-      `/signup?error=Invalid role&logs=${encodeURIComponent(logs.join("|"))}&email=${email}&role=${role}`
-    )
+    return res.status(400).json({ error: "Invalid role" })
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10)
-    logs.push("Password hashed")
 
     const user: User = await prisma.user.create({
       data: { email, password: hashedPassword, role },
     })
-    logs.push("User created: " + user.id)
 
-    // redirect to login on success
-    return res.redirect("/login")
-  } catch (err: any) {
-    logs.push("Signup error: " + err.message)
-    if (err.code === "P2002") logs.push("Email already exists")
+    return res.status(201).json({ id: user.id, email: user.email, role: user.role })
+  } catch (error) {
+    const err = error as { code?: string | number; message?: string }
 
-    return res.redirect(
-      `/signup?error=${encodeURIComponent(err.code === "P2002" ? "Email already exists" : "Internal server error")}&logs=${encodeURIComponent(
-        logs.join("|")
-      )}&email=${email}&role=${role}`
-    )
+    if (err.code === "P2002") {
+      return res.status(400).json({ error: "Email already exists" })
+    }
+
+    return res.status(500).json({ error: "Internal server error" })
   }
 }
