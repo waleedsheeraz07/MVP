@@ -10,18 +10,19 @@ export default function SellProductPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleImageAdd = () => setImages([...images, ""]);
-  const handleImageChange = (index: number, value: string) => {
+  const handleImageChange = (index: number, file: File) => {
     const newImages = [...images];
-    newImages[index] = value;
+    newImages[index] = file;
     setImages(newImages);
   };
+
+  const handleAddImage = () => setImages([...images, new File([], "")]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,18 +30,18 @@ export default function SellProductPage() {
     setError("");
 
     try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("quantity", quantity);
+      colors.forEach((c) => formData.append("colors[]", c));
+      sizes.forEach((s) => formData.append("sizes[]", s));
+      images.forEach((img) => formData.append("images", img));
+
       const res = await fetch("/api/products/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          price,
-          quantity,
-          images: images.filter((img) => img),
-          colors,
-          sizes,
-        }),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -48,12 +49,12 @@ export default function SellProductPage() {
         throw new Error(data.error || "Something went wrong");
       }
 
-      router.push("/dashboard"); // redirect to dashboard after success
+      router.push("/dashboard");
     } catch (err: unknown) {
-  const message = err instanceof Error ? err.message : "Something went wrong";
-  setError(message);
-  setLoading(false);
-}
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      setLoading(false);
+    }
   };
 
   return (
@@ -100,14 +101,13 @@ export default function SellProductPage() {
         {images.map((img, idx) => (
           <input
             key={idx}
-            type="text"
-            placeholder="Image URL"
-            value={img}
-            onChange={(e) => handleImageChange(idx, e.target.value)}
-            style={{ display: "block", margin: "0.5rem 0", padding: "0.5rem", width: "100%" }}
+            type="file"
+            accept="image/*"
+            onChange={(e) => e.target.files?.[0] && handleImageChange(idx, e.target.files[0])}
+            style={{ display: "block", margin: "0.5rem 0", width: "100%" }}
           />
         ))}
-        <button type="button" onClick={handleImageAdd} style={{ marginBottom: "1rem" }}>
+        <button type="button" onClick={handleAddImage} style={{ marginBottom: "1rem" }}>
           Add Image
         </button>
 
