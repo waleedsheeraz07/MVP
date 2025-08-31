@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 
 export default function SellProductPage() {
@@ -10,28 +10,37 @@ export default function SellProductPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [images, setImages] = useState<File[]>([]);
+  const [images, setImages] = useState<string[]>([]); // Base64 strings
   const [previews, setPreviews] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Generate previews when images change
-  useEffect(() => {
-    const newPreviews = images.map((file) => URL.createObjectURL(file));
-    setPreviews(newPreviews);
+  // Convert File to Base64
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+    });
 
-    // Cleanup memory
-    return () => newPreviews.forEach((url) => URL.revokeObjectURL(url));
-  }, [images]);
+  const handleAddImage = () => setImages([...images, ""]);
 
-  const handleAddImage = () => setImages([...images, new File([], "")]);
+  const handleImageChange = async (index: number, file: File) => {
+    try {
+      const base64 = await fileToBase64(file);
+      const newImages = [...images];
+      newImages[index] = base64;
+      setImages(newImages);
 
-  const handleImageChange = (index: number, file: File) => {
-    const newImages = [...images];
-    newImages[index] = file;
-    setImages(newImages);
+      const newPreviews = [...previews];
+      newPreviews[index] = base64;
+      setPreviews(newPreviews);
+    } catch (err) {
+      console.error("Error reading file:", err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,19 +49,20 @@ export default function SellProductPage() {
     setError("");
 
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("quantity", quantity);
-
-      colors.forEach((c) => formData.append("colors[]", c));
-      sizes.forEach((s) => formData.append("sizes[]", s));
-      images.forEach((img) => formData.append("images", img));
+      const body = {
+        title,
+        description,
+        price,
+        quantity,
+        colors,
+        sizes,
+        images: images.filter(Boolean),
+      };
 
       const res = await fetch("/api/products/create", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
@@ -62,8 +72,7 @@ export default function SellProductPage() {
 
       router.push("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -147,11 +156,7 @@ export default function SellProductPage() {
           style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
-        >
+        <button type="submit" disabled={loading} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
           {loading ? "Saving..." : "Create Product"}
         </button>
       </form>
