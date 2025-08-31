@@ -41,7 +41,11 @@ export default async function handler(
 
     console.log("User created:", user)
 
-    return res.status(201).json({ id: user.id, email: user.email, role: user.role })
+    // Cast role safely after checking
+    const safeRole: "buyer" | "seller" =
+      user.role === "buyer" ? "buyer" : "seller"
+
+    return res.status(201).json({ id: user.id, email: user.email, role: safeRole })
   } catch (error) {
     const err = error as PrismaError
     console.error("Signup error:", err)
