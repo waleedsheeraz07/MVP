@@ -1,6 +1,13 @@
 import { useState, FormEvent } from "react"
 import { useRouter } from "next/router"
 
+interface ApiResponse {
+  id?: string
+  email?: string
+  role?: "buyer" | "seller"
+  error?: string
+}
+
 const SignupPage = () => {
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -9,7 +16,6 @@ const SignupPage = () => {
   const [error, setError] = useState("")
   const [logs, setLogs] = useState<string[]>([])
 
-  // helper to append log messages
   const log = (msg: string) => setLogs(prev => [...prev, msg])
 
   const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
@@ -26,7 +32,7 @@ const SignupPage = () => {
 
       log(`Response status: ${res.status}`)
 
-      const data = await res.json().catch(() => {
+      const data: ApiResponse = await res.json().catch(() => {
         log("Failed to parse JSON response")
         return {}
       })
@@ -37,12 +43,13 @@ const SignupPage = () => {
         log("Signup successful! Redirecting to login...")
         router.push("/login")
       } else {
-        const errMsg = (data as any).error || "Signup failed"
+        const errMsg = data.error || "Signup failed"
         setError(errMsg)
         log("Signup error: " + errMsg)
       }
-    } catch (err: unknown) {
-      log("Network error: " + (err instanceof Error ? err.message : String(err)))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      log("Network error: " + msg)
       setError("Signup failed due to network error")
     }
   }
