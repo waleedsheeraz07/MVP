@@ -22,52 +22,46 @@ export default function SellProductPage() {
     setPreviews(images);
   }, [images]);
 
- const handleImageChange = (file: File) => {
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const result = reader.result;
-    if (typeof result === "string") {
-      setImages((prev: string[]) => [...prev, result]);
-    }
-  };
-  reader.readAsDataURL(file); // converts to Base64
+const handleImageChange = (file: File) => {
+  setImages(prev => [...prev, file]);
+  const url = URL.createObjectURL(file);
+  setPreviews(prev => [...prev, url]);
 };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      const body = {
-        title,
-        description,
-        price,
-        quantity,
-        colors,
-        sizes,
-        images, // array of Base64 strings
-      };
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("quantity", quantity);
 
-      const res = await fetch("/api/products/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+    colors.forEach(c => formData.append("colors[]", c));
+    sizes.forEach(s => formData.append("sizes[]", s));
+    images.forEach(file => formData.append("images", file)); // keep as File
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Something went wrong");
-      }
+    const res = await fetch("/api/products/create", {
+      method: "POST",
+      body: formData, // send as FormData
+    });
 
-      router.push("/dashboard");
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Something went wrong");
     }
-  };
+
+    router.push("/dashboard");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Something went wrong";
+    setError(message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
