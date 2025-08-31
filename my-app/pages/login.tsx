@@ -1,29 +1,33 @@
-"use client"
-import { useState } from "react"
+import { FormEvent } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/router"
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+const LoginPage = () => {
   const router = useRouter()
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    const form = e.currentTarget
+    const email = (form.email as HTMLInputElement).value
+    const password = (form.password as HTMLInputElement).value
+
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
     })
-    if (res?.ok) router.push("/dashboard") // or redirect based on role
-    else alert(res?.error)
+
+    if (res?.ok) router.push("/dashboard")
   }
 
   return (
     <form onSubmit={handleLogin}>
-      <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-      <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+      <input name="email" type="email" />
+      <input name="password" type="password" />
       <button type="submit">Login</button>
     </form>
   )
 }
+
+export default LoginPage
