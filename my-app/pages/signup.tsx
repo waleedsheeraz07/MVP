@@ -4,12 +4,20 @@ import { useState, FormEvent } from "react"
 import { useRouter } from "next/router"
 
 type Log = { type: "info" | "error"; message: string }
+type Role = "buyer" | "seller"
+
+interface SignupResponse {
+  id?: string
+  email?: string
+  role?: Role
+  error?: string
+}
 
 const SignupPage = () => {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState<"buyer" | "seller">("buyer")
+  const [role, setRole] = useState<Role>("buyer")
   const [error, setError] = useState("")
   const [logs, setLogs] = useState<Log[]>([])
 
@@ -29,26 +37,28 @@ const SignupPage = () => {
         body: JSON.stringify({ email, password, role }),
       })
 
-      let data: any = {}
+      let data: SignupResponse = {}
+
       try {
-        data = await res.json()
+        data = (await res.json()) as SignupResponse
         addLog("Response data: " + JSON.stringify(data))
-      } catch (jsonErr) {
+      } catch {
         addLog("Failed to parse JSON response", "error")
       }
 
       addLog(`Response status: ${res.status}`)
 
-      if (res.ok) {
+      if (res.ok && data.id) {
         addLog("Signup successful! Redirecting to login...")
         router.push("/login")
       } else {
-        setError(data.error || "Signup failed")
-        addLog(`Signup error: ${data.error || "Unknown error"}`, "error")
+        const msg = data.error || "Signup failed"
+        setError(msg)
+        addLog(`Signup error: ${msg}`, "error")
       }
-    } catch (err: any) {
+    } catch (err) {
       setError("Signup failed due to network error")
-      addLog("Network error: " + err.message, "error")
+      addLog("Network error: " + (err instanceof Error ? err.message : String(err)), "error")
     }
   }
 
@@ -74,7 +84,7 @@ const SignupPage = () => {
         />
         <select
           value={role}
-          onChange={e => setRole(e.target.value as "buyer" | "seller")}
+          onChange={e => setRole(e.target.value as Role)}
           style={{ padding: "0.5rem", fontSize: "1rem" }}
         >
           <option value="buyer">Buyer</option>
