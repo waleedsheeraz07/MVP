@@ -1,5 +1,5 @@
 import { GetServerSideProps } from "next"
-import { PrismaClient, User } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 type Role = "buyer" | "seller"
@@ -12,6 +12,10 @@ interface FormBody {
   email: string
   password: string
   role: Role
+}
+
+interface PrismaKnownError extends Error {
+  code?: string
 }
 
 export default function SignupPage({ error }: SignupProps) {
@@ -89,8 +93,8 @@ export const getServerSideProps: GetServerSideProps<SignupProps> = async ({ req 
       },
     }
   } catch (err) {
-    // Properly typed error handling
-    if (err instanceof Error && "code" in err && (err as any).code === "P2002") {
+    const error = err as PrismaKnownError
+    if (error.code === "P2002") {
       return { props: { error: "Email already exists" } }
     }
     return { props: { error: "Signup failed, please try again" } }
