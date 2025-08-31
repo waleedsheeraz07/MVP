@@ -26,8 +26,8 @@ interface DashboardProps {
 
 export default function Dashboard({ session }: DashboardProps) {
   const handleLogout = async () => {
-    await signOut({ redirect: true, callbackUrl: "/login" });
-  };
+  await signOut({ redirect: true, callbackUrl: `${process.env.NEXTAUTH_URL}/login` });
+};
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
