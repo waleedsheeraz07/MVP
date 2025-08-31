@@ -12,24 +12,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  email    String @unique
+ model User {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  email    String    @unique
   password String
-  role     String // "buyer" or "seller"
+  role     String
+  name     String?
+  products Product[] // <-- back-relation for owner
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   price       Float
   images      String[]       // required, can be empty
-  colors      String[]       @default([]) // required, default empty
-  sizes       String[]       @default([]) // required, default empty
+  colors      String[]       @default([])
+  sizes       String[]       @default([])
   quantity    Int
-  ownerId     String
-  owner       User           @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  ownerId     String          @db.ObjectId
+  owner       User            @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
