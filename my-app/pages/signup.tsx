@@ -18,7 +18,7 @@ export default function SignupPage({ error }: SignupFormData) {
         <input
           type="email"
           name="email"
-          placeholder="Email"
+          placeholder="Emal"
           required
           style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
