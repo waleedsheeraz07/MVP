@@ -26,10 +26,9 @@ export const authOptions: AuthOptions = {
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) return null;
 
-        // Make sure "name" exists for session.user.name
         return {
           id: user.id,
-          name: user.name || user.email.split("@")[0],
+          name: user.name ?? user.email.split("@")[0],
           email: user.email,
           role: user.role,
         };
