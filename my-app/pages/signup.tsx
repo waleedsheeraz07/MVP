@@ -1,5 +1,5 @@
 import { GetServerSideProps } from "next"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, Prisma } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 type Role = "buyer" | "seller"
@@ -8,15 +8,7 @@ interface SignupProps {
   error?: string
 }
 
-interface FormBody {
-  email: string
-  password: string
-  role: Role
-}
-
-interface PrismaKnownError extends Error {
-  code?: string
-}
+const prisma = new PrismaClient()
 
 export default function SignupPage({ error }: SignupProps) {
   return (
@@ -52,49 +44,28 @@ export const getServerSideProps: GetServerSideProps<SignupProps> = async ({ req 
   if (req.method !== "POST") return { props: {} }
 
   try {
-    // Parse POST body
-    const body: FormBody = await new Promise((resolve, reject) => {
-      let data = ""
+    // Parse body
+    let data = ""
+    await new Promise<void>((resolve, reject) => {
       req.on("data", chunk => data += chunk)
-      req.on("end", () => {
-        try {
-          const params = new URLSearchParams(data)
-          const email = params.get("email") || ""
-          const password = params.get("password") || ""
-          const roleParam = params.get("role") as Role
-          const role: Role = roleParam === "seller" ? "seller" : "buyer"
-          resolve({ email, password, role })
-        } catch (err) {
-          reject(err)
-        }
-      })
+      req.on("end", () => resolve())
       req.on("error", reject)
     })
 
-    if (!body.email || !body.password) {
-      return { props: { error: "Email and password are required" } }
-    }
+    const params = new URLSearchParams(data)
+    const email = params.get("email") || ""
+    const password = params.get("password") || ""
+    const role: Role = params.get("role") === "seller" ? "seller" : "buyer"
 
-    const prisma = new PrismaClient()
-    const hashedPassword = await bcrypt.hash(body.password, 10)
+    if (!email || !password) return { props: { error: "Email and password are required" } }
 
-    await prisma.user.create({
-      data: {
-        email: body.email,
-        password: hashedPassword,
-        role: body.role,
-      },
-    })
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    }
+    await prisma.user.create({ data: { email, password: hashedPassword, role } })
+
+    return { redirect: { destination: "/login", permanent: false } }
   } catch (err) {
-    const error = err as PrismaKnownError
-    if (error.code === "P2002") {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       return { props: { error: "Email already exists" } }
     }
     return { props: { error: "Signup failed, please try again" } }
