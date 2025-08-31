@@ -1,48 +1,20 @@
 import { GetServerSideProps } from "next"
-import { ParsedUrlQuery } from "querystring"
-
-type Role = "buyer" | "seller"
 
 interface Props {
-  logs?: string[]
   error?: string
-  email?: string
-  role?: Role
-}
-
-interface QueryParams extends ParsedUrlQuery {
-  error?: string
-  logs?: string
   email?: string
   role?: string
+  logs?: string[]
 }
 
-const SignupPage = ({ logs = [], error, email = "", role = "buyer" }: Props) => {
+const SignupPage = ({ error, email = "", role = "buyer", logs = [] }: Props) => {
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Sign Up</h1>
-
       <form method="POST" action="/api/auth/signup" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          defaultValue={email}
-          required
-          style={{ padding: "0.5rem", fontSize: "1rem" }}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-          style={{ padding: "0.5rem", fontSize: "1rem" }}
-        />
-        <select
-          name="role"
-          defaultValue={role}
-          style={{ padding: "0.5rem", fontSize: "1rem" }}
-        >
+        <input type="email" name="email" placeholder="Email" defaultValue={email} required style={{ padding: "0.5rem", fontSize: "1rem" }} />
+        <input type="password" name="password" placeholder="Password" required style={{ padding: "0.5rem", fontSize: "1rem" }} />
+        <select name="role" defaultValue={role} style={{ padding: "0.5rem", fontSize: "1rem" }}>
           <option value="buyer">Buyer</option>
           <option value="seller">Seller</option>
         </select>
@@ -67,11 +39,12 @@ const SignupPage = ({ logs = [], error, email = "", role = "buyer" }: Props) => 
   )
 }
 
-// Pass logs and error back to the page after redirect
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { error, logs, email, role } = query as QueryParams
+  const { error, email, role, logs } = query
   const logsArray = logs ? (Array.isArray(logs) ? logs : [logs]) : []
-  return { props: { error, logs: logsArray, email, role } }
+  return {
+    props: { error: error as string | undefined, email: email as string | undefined, role: role as string | undefined, logs: logsArray },
+  }
 }
 
 export default SignupPage
