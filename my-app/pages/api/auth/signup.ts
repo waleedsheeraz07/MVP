@@ -19,13 +19,7 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" })
   }
 
-  const body = req.body as {
-    email?: string
-    password?: string
-    role?: string
-  }
-
-  const { email, password, role } = body
+  const { email, password, role } = req.body as { email?: string; password?: string; role?: string }
 
   if (!email || !password || !role) {
     return res.status(400).json({ error: "Missing required fields" })
@@ -39,10 +33,18 @@ export default async function handler(
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user: User = await prisma.user.create({
-      data: { email, password: hashedPassword, role },
+      data: {
+        email,
+        password: hashedPassword,
+        role: role as "buyer" | "seller", // explicit cast fixes TypeScript
+      },
     })
 
-    return res.status(201).json({ id: user.id, email: user.email, role: user.role })
+    return res.status(201).json({
+      id: user.id,
+      email: user.email,
+      role: user.role as "buyer" | "seller", // ✅ cast here too
+    })
   } catch (error) {
     const err = error as { code?: string | number; message?: string }
 
