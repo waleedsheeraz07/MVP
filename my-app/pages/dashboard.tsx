@@ -25,18 +25,13 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ session }: DashboardProps) {
-  const handleLogout = async () => {
-  await signOut({callbackUrl:`/login` });
-};
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Welcome, {session.user.name}</h1> {/* ✅ show name */}
       <p>Email: {session.user.email}</p>
       <p>Role: {session.user.role}</p>
-      <button onClick={handleLogout} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
-        Logout
-      </button>
+       <button onClick={() => signOut({ callbackUrl: "/login" })}>Logout</button>
     </div>
   );
 }
