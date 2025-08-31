@@ -17,18 +17,14 @@ export default function SellProductPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Update previews whenever images change
-  const updatePreviews = (files: File[]) => {
-    const urls = files.map((file) => URL.createObjectURL(file));
-    setPreviews(urls);
-  };
-
+  // Add files and generate previews
   const handleImageChange = (files: FileList | null) => {
     if (!files) return;
     const fileArray = Array.from(files);
     setImages((prev) => {
       const updated = [...prev, ...fileArray];
-      updatePreviews(updated);
+      const urls = updated.map((f) => URL.createObjectURL(f));
+      setPreviews(urls);
       return updated;
     });
   };
@@ -51,7 +47,7 @@ export default function SellProductPage() {
 
       const res = await fetch("/api/products/create", {
         method: "POST",
-        body: formData,
+        body: formData, // send as FormData
       });
 
       if (!res.ok) {
