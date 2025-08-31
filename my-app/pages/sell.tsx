@@ -49,10 +49,11 @@ export default function SellProductPage() {
       }
 
       router.push("/dashboard"); // redirect to dashboard after success
-    } catch (err: any) {
-      setError(err.message);
-      setLoading(false);
-    }
+    } catch (err: unknown) {
+  const message = err instanceof Error ? err.message : "Something went wrong";
+  setError(message);
+  setLoading(false);
+}
   };
 
   return (
