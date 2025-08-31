@@ -1,16 +1,18 @@
+// src/pages/api/products/create.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
-import { MongoClient, GridFSBucket, ObjectId } from "mongodb";
+import { MongoClient } from "mongodb";
+import cloudinary from "../../../lib/cloudinary";
 import multer from "multer";
 
-// Set up multer memory storage
+// use multer to parse multipart/form-data
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage }).array("images");
+const upload = multer({ storage }).array("images");
 
 export const config = {
   api: {
-    bodyParser: false, // Disable default body parsing for multer
+    bodyParser: false, // let multer handle it
   },
 };
 
@@ -24,33 +26,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return res.status(401).json({ error: "Unauthorized" });
 
   upload(req as any, res as any, async (err: any) => {
-    if (err) return res.status(400).json({ error: "Error uploading files" });
-
-    const { title, description, price, quantity } = req.body;
-    const colors = req.body["colors[]"] || [];
-    const sizes = req.body["sizes[]"] || [];
-
-    if (!title || !price || !quantity) return res.status(400).json({ error: "Missing fields" });
+    if (err) return res.status(400).json({ error: "File upload error" });
 
     try {
+      const { title, description, price, quantity } = req.body;
+      const colors = req.body["colors[]"] || [];
+      const sizes = req.body["sizes[]"] || [];
+
+      if (!title || !price || !quantity) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // 1️⃣ Upload all images to Cloudinary
+      const files = (req as any).files as Express.Multer.File[];
+      const uploadPromises = files.map(file =>
+        cloudinary.uploader.upload_stream(
+          { folder: "products" },
+          (error, result) => {
+            if (error) throw error;
+            return result?.secure_url;
+          }
+        )
+      );
+
+      // ⚠️ Need to wrap cloudinary.uploader.upload_stream in a promise
+      const uploadImage = (file: Express.Multer.File) => {
+        return new Promise<string>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "products" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result?.secure_url || "");
+            }
+          );
+          stream.end(file.buffer);
+        });
+      };
+
+      const imageUrls = await Promise.all(files.map(uploadImage));
+
+      // 2️⃣ Save product in Mongo
       const client = await MongoClient.connect(MONGO_URL);
       const db = client.db(DB_NAME);
 
-      const bucket = new GridFSBucket(db, { bucketName: "productImages" });
-
-      // Save all uploaded images
-      const imageIds: ObjectId[] = [];
-      const files = (req as any).files as Express.Multer.File[];
-
-      for (const file of files) {
-        const uploadStream = bucket.openUploadStream(file.originalname, {
-          contentType: file.mimetype,
-        });
-        uploadStream.end(file.buffer);
-        imageIds.push(uploadStream.id);
-      }
-
-      // Save product document
       const product = await db.collection("products").insertOne({
         title,
         description: description || "",
@@ -59,14 +77,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         colors: Array.isArray(colors) ? colors : [colors],
         sizes: Array.isArray(sizes) ? sizes : [sizes],
         ownerEmail: session.user.email,
-        images: imageIds, // store GridFS IDs
+        images: imageUrls, // ✅ store Cloudinary URLs
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
       client.close();
       res.status(200).json({ success: true, productId: product.insertedId });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal server error" });
     }
