@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
-import { prisma } from "../../../lib/prisma";
-import cloudinary from "../../../lib/cloudinary";
+import { prisma } from "../../lib/prisma";
+import cloudinary from "../../lib/cloudinary";
 
-// Expect the frontend to send:
-// { title, description, price, quantity, colors: string[], sizes: string[], images: string[] }
-// Where `images` are either Base64 strings or already uploaded Cloudinary URLs
+interface Base64Image {
+  base64: string;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -21,16 +21,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Upload Base64 images to Cloudinary if needed
-    const uploadImage = async (img: string): Promise<string> => {
-      // if the img is already a Cloudinary URL, just return it
-      if (img.startsWith("http")) return img;
+    // Upload Base64 images to Cloudinary
+    const uploadBase64Image = async (base64: string) => {
+      const matches = base64.match(/^data:(.+);base64,(.+)$/);
+      if (!matches) throw new Error("Invalid image format");
 
-      const uploadResult = await cloudinary.uploader.upload(img, { folder: "products" });
-      return uploadResult.secure_url;
+      const buffer = Buffer.from(matches[2], "base64");
+
+      return new Promise<string>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "products" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result?.secure_url || "");
+          }
+        );
+        stream.end(buffer);
+      });
     };
 
-    const imageUrls = await Promise.all(images.map(uploadImage));
+    const imageUrls = await Promise.all(images.map(uploadBase64Image));
 
     // Save product in Prisma
     const product = await prisma.product.create({
@@ -47,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     res.status(201).json({ success: true, productId: product.id });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
