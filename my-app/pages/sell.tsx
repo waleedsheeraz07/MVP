@@ -22,15 +22,16 @@ export default function SellProductPage() {
     setPreviews(images);
   }, [images]);
 
-  const handleImageChange = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (reader.result && typeof reader.result === "string") {
-        setImages((prev) => [...prev, reader.result!]);
-      }
-    };
-    reader.readAsDataURL(file); // converts to Base64
+ const handleImageChange = (file: File) => {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const result = reader.result;
+    if (typeof result === "string") {
+      setImages((prev: string[]) => [...prev, result]);
+    }
   };
+  reader.readAsDataURL(file); // converts to Base64
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
