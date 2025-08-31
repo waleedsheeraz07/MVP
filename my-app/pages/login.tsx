@@ -1,53 +1,40 @@
-import { FormEvent, useState } from "react"
-import { useRouter } from "next/router"
-import { signIn } from "next-auth/react"
+import { getCsrfToken, signIn } from "next-auth/react"
 
-const LoginPage = () => {
-  const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+interface LoginPageProps {
+  csrfToken: string
+  error?: string
+}
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError("")
-
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    })
-
-    if (res?.ok) {
-      router.push("/dashboard") // Change to buyer/seller dashboard later
-    } else {
-      setError("Invalid credentials")
-    }
-  }
-
+export default function LoginPage({ csrfToken, error }: LoginPageProps) {
   return (
-    <div className="auth-container">
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-        {error && <p className="error">{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <form method="POST" onSubmit={async e => {
+        e.preventDefault()
+        const email = (e.currentTarget.email as HTMLInputElement).value
+        const password = (e.currentTarget.password as HTMLInputElement).value
+
+        const res = await signIn("credentials", {
+          redirect: true,
+          email,
+          password,
+          callbackUrl: "/dashboard"
+        })
+      }}>
+        <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+        <input type="email" name="email" placeholder="Email" required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="password" name="password" placeholder="Password" required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <button type="submit" style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>Login</button>
       </form>
     </div>
   )
 }
 
-export default LoginPage
+export async function getServerSideProps(context: any) {
+  return {
+    props: {
+      csrfToken: await getCsrfToken(context)
+    }
+  }
+}
