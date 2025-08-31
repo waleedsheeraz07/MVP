@@ -8,6 +8,11 @@ type Data =
   | { id: string; email: string; role: string }
   | { error: string }
 
+// Define a type-safe error for Prisma duplicate key
+interface PrismaError extends Error {
+  code?: string | number
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -29,19 +34,15 @@ export default async function handler(
       data: { email, password: hashedPassword, role },
     })
 
-    console.log("User created:", user) // ✅ Debugging log
+    console.log("User created:", user)
 
     return res.status(201).json({ id: user.id, email: user.email, role: user.role })
-  } catch (error: unknown) {
-    console.error("Signup error:", error)
+  } catch (error) {
+    const err = error as PrismaError
+    console.error("Signup error:", err)
 
-    // MongoDB duplicate key error code: 11000
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as any).code === 11000
-    ) {
+    // Duplicate email error code from MongoDB
+    if (err.code === 11000 || err.code === "P2002") {
       return res.status(400).json({ error: "Email already exists" })
     }
 
