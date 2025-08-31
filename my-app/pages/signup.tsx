@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, ChangeEvent } from "react"
 import { useRouter } from "next/router"
 
 const SignupPage = () => {
@@ -15,7 +15,7 @@ const SignupPage = () => {
 
   const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLogs([]) // clear previous logs
+    setLogs([])
 
     addLog("Submitting signup request...")
 
@@ -26,25 +26,34 @@ const SignupPage = () => {
         body: JSON.stringify({ email, password, role }),
       })
 
-      let data: any = {}
+      let data: { id?: string; email?: string; role?: string; error?: string } = {}
+
       try {
         data = await res.json()
       } catch {
-        addLog("No JSON returned from server")
+        addLog("Failed to parse JSON response")
       }
 
       addLog(`Response status: ${res.status}`)
       addLog(`Response data: ${JSON.stringify(data)}`)
 
-      if (res.ok) {
+      if (res.ok && data.id && data.role) {
         addLog("Signup successful!")
         router.push("/login")
       } else {
-        addLog(`Signup error: ${data?.error || "Unknown error"}`)
+        addLog(`Signup error: ${data.error || "Unknown error"}`)
       }
-    } catch (err: any) {
-      addLog(`Signup fetch error: ${err.message}`)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        addLog(`Signup fetch error: ${err.message}`)
+      } else {
+        addLog("Signup fetch error: Unknown error")
+      }
     }
+  }
+
+  const handleChange = (setter: (val: string) => void) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setter(e.target.value)
   }
 
   return (
@@ -55,7 +64,7 @@ const SignupPage = () => {
           type="email"
           placeholder="Email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={handleChange(setEmail)}
           required
           style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
         />
@@ -63,13 +72,13 @@ const SignupPage = () => {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={handleChange(setPassword)}
           required
           style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
         />
         <select
           value={role}
-          onChange={e => setRole(e.target.value as "buyer" | "seller")}
+          onChange={handleChange(setRole) as (e: ChangeEvent<HTMLSelectElement>) => void}
           style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
         >
           <option value="buyer">Buyer</option>
