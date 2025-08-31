@@ -1,56 +1,38 @@
-import NextAuth, { AuthOptions } from "next-auth"
+import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaClient } from "@prisma/client"
-import bcrypt from "bcryptjs"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { compare } from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-export const authOptions: AuthOptions = {
+export default NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing email or password")
-        }
+        if (!credentials?.email || !credentials?.password) return null
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        })
+        const user = await prisma.user.findUnique({ where: { email: credentials.email } })
+        if (!user) return null
 
-        if (!user) throw new Error("No user found")
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) return null
 
-        const isValid = await bcrypt.compare(credentials.password, user.password)
-        if (!isValid) throw new Error("Invalid password")
-
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        }
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = user.role
+        return { id: user.id, email: user.email, role: user.role }
       }
-      return token
-    },
-    async session({ session, token }) {
-      session.user.id = token.id
-      session.user.role = token.role
-      return session
-    },
+    })
+  ],
+  session: {
+    strategy: "jwt"
   },
-  session: { strategy: "jwt" },
+  pages: {
+    signIn: "/login", // redirect to custom login page
+  },
   secret: process.env.NEXTAUTH_SECRET,
-}
-
-export default NextAuth(authOptions)
+})
