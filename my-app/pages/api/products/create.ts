@@ -26,10 +26,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       return res.status(201).json(product);
-    } catch (error: any) {
-      console.error(error);
-      return res.status(500).json({ error: "Failed to create product" });
-    }
+    } catch (error: unknown) {
+  console.error(error);
+  const message = error instanceof Error ? error.message : "Failed to create product";
+  return res.status(500).json({ error: message });
+}
   } else {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
