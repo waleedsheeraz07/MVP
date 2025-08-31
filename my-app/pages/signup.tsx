@@ -1,5 +1,5 @@
 import { GetServerSideProps } from "next"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, Prisma } from "@prisma/client"
 import bcrypt from "bcryptjs"
 import { ParsedUrlQuery } from "querystring"
 
@@ -95,14 +95,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         data: { email, password: hashedPassword, role },
       })
       logs.push(`User created successfully with ID: ${user.id}`)
-      logs.push("Redirecting to login page...")
+      logs.push("Signup complete! Redirect manually to login page.")
 
       return {
         props: { logs },
       }
-    } catch (err: any) {
-      logs.push(`Signup failed: ${err.code || err.message}`)
-      const errorMessage = err.code === "P2002" ? "Email already exists" : "Internal server error"
+    } catch (err: unknown) {
+      let errorMessage = "Internal server error"
+      if ((err as Prisma.PrismaClientKnownRequestError).code === "P2002") {
+        errorMessage = "Email already exists"
+      }
+      logs.push(`Signup failed: ${errorMessage}`)
       return { props: { logs, error: errorMessage, email, role } }
     }
   }
