@@ -1,40 +1,42 @@
-import { getCsrfToken, signIn, getProviders } from "next-auth/react";
-import { GetServerSideProps } from "next";
-import { useState } from "react";
+import { getCsrfToken, signIn } from "next-auth/react"
+import { GetServerSideProps } from "next"
+import { useState } from "react"
+import { useRouter } from "next/router"
 
 interface LoginPageProps {
-  csrfToken: string;
-  error?: string;
+  csrfToken: string
 }
 
-export default function LoginPage({ csrfToken, error }: LoginPageProps) {
-  const [loginError, setLoginError] = useState<string | null>(error || null);
+export default function LoginPage({ csrfToken }: LoginPageProps) {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
     const target = e.currentTarget as typeof e.currentTarget & {
-      email: { value: string };
-      password: { value: string };
-    };
+      email: { value: string }
+      password: { value: string }
+    }
 
-    // signIn with redirect: false to catch errors
-    const result = await signIn("credentials", {
-      redirect: false,
+    const res = await signIn("credentials", {
+      redirect: false, // ❌ Prevent automatic redirect
       email: target.email.value,
       password: target.password.value,
-    });
+    })
 
-    if (result?.error) {
-      setLoginError(result.error);
-    } else if (result?.ok) {
-      window.location.href = "/dashboard"; // manually redirect on success
+    if (res?.error) {
+      // Show error message returned by NextAuth
+      setErrorMessage(res.error)
+    } else {
+      // Login successful, redirect manually
+      router.push("/dashboard")
     }
-  };
+  }
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Login</h1>
-      {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
       <form method="POST" onSubmit={handleSubmit}>
         <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
         <input
@@ -56,14 +58,12 @@ export default function LoginPage({ csrfToken, error }: LoginPageProps) {
         </button>
       </form>
     </div>
-  );
+  )
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const csrfToken = await getCsrfToken(context);
-  const error = context.query.error as string | undefined;
-
+  const csrfToken = await getCsrfToken(context)
   return {
-    props: { csrfToken, error: error || null },
-  };
-};
+    props: { csrfToken },
+  }
+}
