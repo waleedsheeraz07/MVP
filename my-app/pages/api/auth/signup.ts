@@ -1,57 +1,47 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient, User } from "@prisma/client"
+import { PrismaClient, User, Prisma } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-interface SignupResponse {
-  id?: string
-  email?: string
-  role?: "buyer" | "seller"
-  error?: string
-}
+type Role = "buyer" | "seller"
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<SignupResponse>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const logs: string[] = []
+
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" })
+    logs.push("Invalid method: " + req.method)
+    return res.status(405).redirect(`/signup?error=Method+not+allowed`)
   }
 
   const { email, password, role } = req.body as { email?: string; password?: string; role?: string }
 
   if (!email || !password || !role) {
-    return res.status(400).json({ error: "Missing required fields" })
+    logs.push("Missing required fields")
+    return res.redirect(`/signup?error=Missing+fields&email=${encodeURIComponent(email || "")}&role=${encodeURIComponent(role || "buyer")}`)
   }
 
   if (role !== "buyer" && role !== "seller") {
-    return res.status(400).json({ error: "Invalid role" })
+    logs.push("Invalid role")
+    return res.redirect(`/signup?error=Invalid+role&email=${encodeURIComponent(email)}&role=buyer`)
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10)
-
     const user: User = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role: role as "buyer" | "seller", // explicit cast fixes TypeScript
-      },
+      data: { email, password: hashedPassword, role: role as Role },
     })
 
-    return res.status(201).json({
-      id: user.id,
-      email: user.email,
-      role: user.role as "buyer" | "seller", // ✅ cast here too
-    })
-  } catch (error) {
-    const err = error as { code?: string | number; message?: string }
+    logs.push(`User created with ID: ${user.id}`)
+    logs.push("Signup successful! Please log in.")
 
-    if (err.code === "P2002") {
-      return res.status(400).json({ error: "Email already exists" })
+    return res.redirect(`/signup?logs=${encodeURIComponent(logs.join("|"))}`)
+  } catch (err: unknown) {
+    let errorMessage = "Internal server error"
+    if ((err as Prisma.PrismaClientKnownRequestError).code === "P2002") {
+      errorMessage = "Email already exists"
     }
-
-    return res.status(500).json({ error: "Internal server error" })
+    logs.push(`Signup failed: ${errorMessage}`)
+    return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`)
   }
 }
