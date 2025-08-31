@@ -4,8 +4,9 @@ import { authOptions } from "../auth/[...nextauth]";
 import { prisma } from "../../../lib/prisma";
 import cloudinary from "../../../lib/cloudinary";
 import formidable, { File } from "formidable";
+import fs from "fs";
 
-// Disable default body parsing so we can handle multipart/form-data
+// Disable default body parsing
 export const config = {
   api: {
     bodyParser: false,
@@ -48,7 +49,6 @@ const uploadFileToCloudinary = (file: File): Promise<string> => {
       }
     );
 
-    const fs = require("fs");
     fs.createReadStream(file.filepath).pipe(stream);
   });
 };
@@ -61,17 +61,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { fields, files } = await parseForm(req);
-
     const { title, description, price, quantity, colors = [], sizes = [] } = fields;
 
     if (!title || !price || !quantity) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Upload files to Cloudinary
     const imageUrls = await Promise.all(files.map(uploadFileToCloudinary));
 
-    // Save product in Prisma
     const product = await prisma.product.create({
       data: {
         title,
@@ -86,7 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     res.status(201).json({ success: true, productId: product.id });
-  } catch (error: unknown) {
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
