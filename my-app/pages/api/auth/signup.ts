@@ -5,12 +5,10 @@ import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-// Response type
 type SignupResponse =
   | { id: string; email: string; role: "buyer" | "seller" }
   | { error: string }
 
-// Type-safe Prisma error
 interface PrismaError extends Error {
   code?: string | number
 }
@@ -26,36 +24,35 @@ export default async function handler(
   const { email, password, role } = req.body as {
     email?: string
     password?: string
-    role?: "buyer" | "seller"
+    role?: string
   }
 
   if (!email || !password || !role) {
     return res.status(400).json({ error: "Missing required fields" })
   }
 
+  // Ensure role is either "buyer" or "seller"
+  if (role !== "buyer" && role !== "seller") {
+    return res.status(400).json({ error: "Invalid role" })
+  }
+
   try {
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user in DB
     const user: User = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role,
-      },
+      data: { email, password: hashedPassword, role },
     })
 
     console.log("User created:", user)
 
+    // Type assertion because we validated role
     return res
       .status(201)
-      .json({ id: user.id, email: user.email, role: user.role })
+      .json({ id: user.id, email: user.email, role: role as "buyer" | "seller" })
   } catch (error) {
     const err = error as PrismaError
     console.error("Signup error:", err)
 
-    // Handle duplicate email errors (Mongo + Prisma)
     if (err.code === 11000 || err.code === "P2002") {
       return res.status(400).json({ error: "Email already exists" })
     }
