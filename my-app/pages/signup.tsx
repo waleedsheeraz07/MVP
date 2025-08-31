@@ -1,11 +1,17 @@
 import { GetServerSideProps } from "next"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, User } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 type Role = "buyer" | "seller"
 
 interface SignupProps {
   error?: string
+}
+
+interface FormBody {
+  email: string
+  password: string
+  role: Role
 }
 
 export default function SignupPage({ error }: SignupProps) {
@@ -38,20 +44,22 @@ export default function SignupPage({ error }: SignupProps) {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  if (req.method === "POST") {
-    // Parse POST form data
-    const body = await new Promise<{ email: string; password: string; role: Role }>((resolve, reject) => {
+export const getServerSideProps: GetServerSideProps<SignupProps> = async ({ req }) => {
+  if (req.method !== "POST") return { props: {} }
+
+  try {
+    // Parse POST body
+    const body: FormBody = await new Promise((resolve, reject) => {
       let data = ""
       req.on("data", chunk => data += chunk)
       req.on("end", () => {
         try {
           const params = new URLSearchParams(data)
-          resolve({
-            email: params.get("email") || "",
-            password: params.get("password") || "",
-            role: (params.get("role") as Role) || "buyer",
-          })
+          const email = params.get("email") || ""
+          const password = params.get("password") || ""
+          const roleParam = params.get("role") as Role
+          const role: Role = roleParam === "seller" ? "seller" : "buyer"
+          resolve({ email, password, role })
         } catch (err) {
           reject(err)
         }
@@ -63,33 +71,28 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
       return { props: { error: "Email and password are required" } }
     }
 
-    try {
-      const prisma = new PrismaClient()
-      const hashedPassword = await bcrypt.hash(body.password, 10)
+    const prisma = new PrismaClient()
+    const hashedPassword = await bcrypt.hash(body.password, 10)
 
-      await prisma.user.create({
-        data: {
-          email: body.email,
-          password: hashedPassword,
-          role: body.role,
-        },
-      })
+    await prisma.user.create({
+      data: {
+        email: body.email,
+        password: hashedPassword,
+        role: body.role,
+      },
+    })
 
-      return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
-        },
-      }
-    } catch (err: any) {
-      // Check for unique email error
-      if (err.code === "P2002") {
-        return { props: { error: "Email already exists" } }
-      }
-      console.error("Signup failed:", err)
-      return { props: { error: "Signup failed, please try again" } }
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
     }
+  } catch (err) {
+    // Properly typed error handling
+    if (err instanceof Error && "code" in err && (err as any).code === "P2002") {
+      return { props: { error: "Email already exists" } }
+    }
+    return { props: { error: "Signup failed, please try again" } }
   }
-
-  return { props: {} }
 }
