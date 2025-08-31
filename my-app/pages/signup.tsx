@@ -12,17 +12,23 @@ const SignupPage = () => {
     e.preventDefault()
     setError("")
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role }),
-    })
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      })
 
-    const data = await res.json()
-    if (res.ok) {
-      router.push("/login")
-    } else {
-      setError(data.error || "Signup failed")
+      const data = await res.json()
+
+      if (res.ok) {
+        router.push("/login")
+      } else {
+        setError(data.error || "Signup failed")
+      }
+    } catch (err) {
+      console.error("Signup fetch error:", err)
+      setError("Signup failed due to network error")
     }
   }
 
