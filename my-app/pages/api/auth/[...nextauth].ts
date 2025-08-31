@@ -28,7 +28,6 @@ export const authOptions: AuthOptions = {
 
         return {
           id: user.id,
-          name: user.name ?? user.email.split("@")[0],
           email: user.email,
           role: user.role,
         };
