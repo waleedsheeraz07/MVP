@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
 export default function SellProductPage() {
@@ -11,34 +11,27 @@ export default function SellProductPage() {
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // add file
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setImages([...images, ...Array.from(e.target.files)]);
-    }
-  };
+  // Generate previews when images change
+  useEffect(() => {
+    const newPreviews = images.map((file) => URL.createObjectURL(file));
+    setPreviews(newPreviews);
 
-  const uploadImagesToCloudinary = async (): Promise<string[]> => {
-    const uploadedUrls: string[] = [];
-    for (const file of images) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_PRESET!);
+    // Cleanup memory
+    return () => newPreviews.forEach((url) => URL.revokeObjectURL(url));
+  }, [images]);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: "POST", body: formData }
-      );
+  const handleAddImage = () => setImages([...images, new File([], "")]);
 
-      const data = await res.json();
-      if (data.secure_url) uploadedUrls.push(data.secure_url);
-    }
-    return uploadedUrls;
+  const handleImageChange = (index: number, file: File) => {
+    const newImages = [...images];
+    newImages[index] = file;
+    setImages(newImages);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,22 +40,19 @@ export default function SellProductPage() {
     setError("");
 
     try {
-      // Step 1: upload images to Cloudinary
-      const uploadedUrls = await uploadImagesToCloudinary();
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("quantity", quantity);
 
-      // Step 2: send product data with Cloudinary URLs
+      colors.forEach((c) => formData.append("colors[]", c));
+      sizes.forEach((s) => formData.append("sizes[]", s));
+      images.forEach((img) => formData.append("images", img));
+
       const res = await fetch("/api/products/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          price,
-          quantity,
-          colors,
-          sizes,
-          images: uploadedUrls,
-        }),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -74,6 +64,7 @@ export default function SellProductPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
+    } finally {
       setLoading(false);
     }
   };
@@ -90,12 +81,14 @@ export default function SellProductPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <input
@@ -104,6 +97,7 @@ export default function SellProductPage() {
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <input
@@ -112,35 +106,52 @@ export default function SellProductPage() {
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
-        <h3>Upload Images</h3>
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleImageChange}
-        />
+        <h3>Images</h3>
+        {images.map((img, idx) => (
+          <div key={idx} style={{ marginBottom: "1rem" }}>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => e.target.files?.[0] && handleImageChange(idx, e.target.files[0])}
+              style={{ display: "block", marginBottom: "0.5rem", width: "100%" }}
+            />
+            {previews[idx] && (
+              <img
+                src={previews[idx]}
+                alt={`Preview ${idx}`}
+                style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover", border: "1px solid #ccc" }}
+              />
+            )}
+          </div>
+        ))}
+        <button type="button" onClick={handleAddImage} style={{ marginBottom: "1rem" }}>
+          Add Image
+        </button>
 
         <input
           type="text"
           placeholder="Colors (comma separated)"
           value={colors.join(",")}
-          onChange={(e) =>
-            setColors(e.target.value.split(",").map((c) => c.trim()))
-          }
+          onChange={(e) => setColors(e.target.value.split(",").map((c) => c.trim()))}
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <input
           type="text"
           placeholder="Sizes (comma separated)"
           value={sizes.join(",")}
-          onChange={(e) =>
-            setSizes(e.target.value.split(",").map((s) => s.trim()))
-          }
+          onChange={(e) => setSizes(e.target.value.split(",").map((s) => s.trim()))}
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
-        <button type="submit" disabled={loading}>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+        >
           {loading ? "Saving..." : "Create Product"}
         </button>
       </form>
