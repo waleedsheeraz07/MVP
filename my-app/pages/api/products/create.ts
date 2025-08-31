@@ -4,9 +4,8 @@ import { authOptions } from "../auth/[...nextauth]";
 import { prisma } from "../../../lib/prisma";
 import cloudinary from "../../../lib/cloudinary";
 import formidable, { File } from "formidable-serverless";
-import fs from "fs";
 
-// Disable default body parsing
+// Disable Next.js default body parsing
 export const config = {
   api: {
     bodyParser: false,
@@ -49,7 +48,15 @@ const uploadFileToCloudinary = (file: File): Promise<string> => {
       }
     );
 
-    fs.createReadStream(file.filepath).pipe(stream);
+    // Use formidable file's arrayBuffer for serverless upload
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (reader.result) {
+        const buffer = Buffer.from(reader.result as ArrayBuffer);
+        stream.end(buffer);
+      }
+    };
+    reader.readAsArrayBuffer(file as any);
   });
 };
 
