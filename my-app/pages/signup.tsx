@@ -1,4 +1,6 @@
 import { GetServerSideProps } from "next"
+import { PrismaClient } from "@prisma/client"
+import bcrypt from "bcryptjs"
 
 type Role = "buyer" | "seller"
 
@@ -36,32 +38,33 @@ export default function SignupPage({ error }: SignupProps) {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  if (context.req.method === "POST") {
-    try {
-      // Parse the form body
-      const body = await new Promise<{ email: string; password: string; role: Role }>((resolve, reject) => {
-        let data = ''
-        context.req.on('data', chunk => data += chunk)
-        context.req.on('end', () => {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  if (req.method === "POST") {
+    // Parse POST form data
+    const body = await new Promise<{ email: string; password: string; role: Role }>((resolve, reject) => {
+      let data = ""
+      req.on("data", chunk => data += chunk)
+      req.on("end", () => {
+        try {
           const params = new URLSearchParams(data)
           resolve({
-            email: params.get('email') || '',
-            password: params.get('password') || '',
-            role: (params.get('role') as Role) || "buyer",
+            email: params.get("email") || "",
+            password: params.get("password") || "",
+            role: (params.get("role") as Role) || "buyer",
           })
-        })
-        context.req.on('error', reject)
+        } catch (err) {
+          reject(err)
+        }
       })
+      req.on("error", reject)
+    })
 
-      if (!body.email || !body.password) {
-        return { props: { error: "Email and password are required" } }
-      }
+    if (!body.email || !body.password) {
+      return { props: { error: "Email and password are required" } }
+    }
 
-      const { PrismaClient } = await import("@prisma/client")
-      const bcrypt = (await import("bcryptjs")).default
+    try {
       const prisma = new PrismaClient()
-
       const hashedPassword = await bcrypt.hash(body.password, 10)
 
       await prisma.user.create({
@@ -78,13 +81,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           permanent: false,
         },
       }
-    } catch (error) {
-      // Properly type the error object
-      const e = error as { code?: string }
-      if (e.code === "P2002") {
+    } catch (err: any) {
+      // Check for unique email error
+      if (err.code === "P2002") {
         return { props: { error: "Email already exists" } }
       }
-      console.error("Signup failed:", e)
+      console.error("Signup failed:", err)
       return { props: { error: "Signup failed, please try again" } }
     }
   }
