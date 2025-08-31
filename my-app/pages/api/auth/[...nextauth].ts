@@ -6,7 +6,7 @@ import { compare } from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-export default NextAuth({
+export const authOptions = { // ✅ export options
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -24,15 +24,13 @@ export default NextAuth({
         const isValid = await compare(credentials.password, user.password)
         if (!isValid) return null
 
-        return { id: user.id, email: user.email, role: user.role }
-      }
+          return { id: user.id, name: user.email.split("@")[0], email: user.email, role: user.role }
+}
     })
   ],
-  session: {
-    strategy: "jwt"
-  },
-  pages: {
-    signIn: "/login", // redirect to custom login page
-  },
+  session: { strategy: "jwt" },
+  pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
-})
+}
+
+export default NextAuth(authOptions)
