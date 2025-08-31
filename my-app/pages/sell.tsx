@@ -16,13 +16,30 @@ export default function SellProductPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleImageChange = (index: number, file: File) => {
-    const newImages = [...images];
-    newImages[index] = file;
-    setImages(newImages);
+  // add file
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImages([...images, ...Array.from(e.target.files)]);
+    }
   };
 
-  const handleAddImage = () => setImages([...images, new File([], "")]);
+  const uploadImagesToCloudinary = async (): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+    for (const file of images) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_PRESET!);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: "POST", body: formData }
+      );
+
+      const data = await res.json();
+      if (data.secure_url) uploadedUrls.push(data.secure_url);
+    }
+    return uploadedUrls;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +47,22 @@ export default function SellProductPage() {
     setError("");
 
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("quantity", quantity);
-      colors.forEach((c) => formData.append("colors[]", c));
-      sizes.forEach((s) => formData.append("sizes[]", s));
-      images.forEach((img) => formData.append("images", img));
+      // Step 1: upload images to Cloudinary
+      const uploadedUrls = await uploadImagesToCloudinary();
 
+      // Step 2: send product data with Cloudinary URLs
       const res = await fetch("/api/products/create", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          price,
+          quantity,
+          colors,
+          sizes,
+          images: uploadedUrls,
+        }),
       });
 
       if (!res.ok) {
@@ -69,14 +90,12 @@ export default function SellProductPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <input
@@ -85,7 +104,6 @@ export default function SellProductPage() {
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <input
@@ -94,44 +112,35 @@ export default function SellProductPage() {
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
-        <h3>Images</h3>
-        {images.map((img, idx) => (
-          <input
-            key={idx}
-            type="file"
-            accept="image/*"
-            onChange={(e) => e.target.files?.[0] && handleImageChange(idx, e.target.files[0])}
-            style={{ display: "block", margin: "0.5rem 0", width: "100%" }}
-          />
-        ))}
-        <button type="button" onClick={handleAddImage} style={{ marginBottom: "1rem" }}>
-          Add Image
-        </button>
+        <h3>Upload Images</h3>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleImageChange}
+        />
 
         <input
           type="text"
           placeholder="Colors (comma separated)"
           value={colors.join(",")}
-          onChange={(e) => setColors(e.target.value.split(",").map((c) => c.trim()))}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
+          onChange={(e) =>
+            setColors(e.target.value.split(",").map((c) => c.trim()))
+          }
         />
 
         <input
           type="text"
           placeholder="Sizes (comma separated)"
           value={sizes.join(",")}
-          onChange={(e) => setSizes(e.target.value.split(",").map((s) => s.trim()))}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
+          onChange={(e) =>
+            setSizes(e.target.value.split(",").map((s) => s.trim()))
+          }
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
-        >
+        <button type="submit" disabled={loading}>
           {loading ? "Saving..." : "Create Product"}
         </button>
       </form>
