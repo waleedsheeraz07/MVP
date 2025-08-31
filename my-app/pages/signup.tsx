@@ -39,7 +39,7 @@ export default function SignupPage({ error }: SignupProps) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   if (context.req.method === "POST") {
     try {
-      // Parse form data
+      // Parse the form body
       const body = await new Promise<{ email: string; password: string; role: Role }>((resolve, reject) => {
         let data = ''
         context.req.on('data', chunk => data += chunk)
@@ -72,19 +72,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         },
       })
 
-      // Redirect to login on success
       return {
         redirect: {
           destination: "/login",
           permanent: false,
         },
       }
-    } catch (err: any) {
-      // Check for Prisma unique constraint error
-      if (err.code === "P2002") {
+    } catch (error) {
+      // Properly type the error object
+      const e = error as { code?: string }
+      if (e.code === "P2002") {
         return { props: { error: "Email already exists" } }
       }
-      console.error("Signup error:", err)
+      console.error("Signup failed:", e)
       return { props: { error: "Signup failed, please try again" } }
     }
   }
