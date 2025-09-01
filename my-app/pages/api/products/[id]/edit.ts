@@ -1,13 +1,12 @@
 // pages/api/products/[id]/edit.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]";
+import { authOptions } from "../../auth/[...nextauth]";
 import { prisma } from "../../../../lib/prisma";
+import cloudinary from "../../../../lib/cloudinary";
 import formidable, { File, Files, Fields } from "formidable";
 import fs from "fs";
-import cloudinary from "../../../../lib/cloudinary";
 
-// Disable Next.js default body parsing
 export const config = { api: { bodyParser: false } };
 
 interface FormFields {
@@ -15,19 +14,18 @@ interface FormFields {
   description?: string;
   price: string;
   quantity: string;
-  colors?: string[];
-  sizes?: string[];
+  colors?: string;
+  sizes?: string;
+  existingImages?: string[];
 }
 
-// Normalize string or string[] to string[]
 const normalizeField = (field?: string | string[]): string[] =>
   !field ? [] : Array.isArray(field) ? field.map(String) : [String(field)];
 
-// Parse form data
 const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: File[] }> =>
   new Promise((resolve, reject) => {
     const form = formidable({ multiples: true });
-    form.parse(req, (err: any, fields: Fields, files: Files) => {
+    form.parse(req, (err, fields: Fields, files: Files) => {
       if (err) return reject(err);
 
       const uploadedFiles: File[] = [];
@@ -41,15 +39,19 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: Fi
         description: fields.description?.toString(),
         price: fields.price?.toString() || "0",
         quantity: fields.quantity?.toString() || "0",
-        colors: normalizeField(fields.colors),
-        sizes: normalizeField(fields.sizes),
+        colors: fields.colors?.toString(),
+        sizes: fields.sizes?.toString(),
+        existingImages: fields.existingImages
+          ? Array.isArray(fields.existingImages)
+            ? fields.existingImages.map(String)
+            : [String(fields.existingImages)]
+          : [],
       };
 
       resolve({ fields: safeFields, files: uploadedFiles });
     });
   });
 
-// Upload file to Cloudinary
 const uploadFileToCloudinary = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream({ folder: "products" }, (err, result) => {
@@ -66,40 +68,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return res.status(401).json({ error: "Unauthorized" });
 
   const productId = req.query.id as string;
-  if (!productId) return res.status(400).json({ error: "Product ID missing" });
+  if (!productId) return res.status(400).json({ error: "Product ID is required" });
 
   try {
+    const { fields, files } = await parseForm(req);
+
+    // Find product and check ownership
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) return res.status(404).json({ error: "Product not found" });
 
-    // Only owner can edit
     const userId = (session.user as { id?: string }).id;
-    if (product.ownerId !== userId) return res.status(403).json({ error: "Forbidden" });
+    if (product.ownerId !== userId) return res.status(403).json({ error: "Not authorized" });
 
-    const { fields, files } = await parseForm(req);
-    const { title, description, price, quantity, colors, sizes } = fields;
+    // Upload new images if any
+    const newImageUrls = await Promise.all(files.map(uploadFileToCloudinary));
 
-    // Upload new images if provided
-    let imageUrls = product.images; // keep old images by default
-    if (files.length > 0) {
-      const uploadedUrls = await Promise.all(files.map(uploadFileToCloudinary));
-      imageUrls = uploadedUrls;
-    }
+    // Merge existing + new images
+    const finalImages = [...(fields.existingImages || []), ...newImageUrls];
 
-    const updatedProduct = await prisma.product.update({
+    // Update the product
+    const updated = await prisma.product.update({
       where: { id: productId },
       data: {
-        title,
-        description: description || "",
-        price: parseFloat(price),
-        quantity: parseInt(quantity, 10),
-        colors,
-        sizes,
-        images: imageUrls,
+        title: fields.title,
+        description: fields.description || "",
+        price: parseFloat(fields.price),
+        quantity: parseInt(fields.quantity, 10),
+        colors: normalizeField(fields.colors?.split(",")),
+        sizes: normalizeField(fields.sizes?.split(",")),
+        images: finalImages,
       },
     });
 
-    res.status(200).json({ success: true, product: updatedProduct });
+    res.status(200).json({ success: true, product: updated });
   } catch (error) {
     console.error("Error editing product:", error);
     res.status(500).json({ error: "Internal server error", debug: error });
