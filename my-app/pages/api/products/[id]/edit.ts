@@ -118,11 +118,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         finalImages,
       },
     });
-  } catch (error: any) {
-    console.error("Error editing product:", error);
+  } catch (error: unknown) {
+  console.error("Error editing product:", error);
+
+  if (error instanceof Error) {
     res.status(500).json({
       error: "Internal server error",
-      debug: error?.message || error,
+      debug: { message: error.message, stack: error.stack },
+    });
+  } else {
+    res.status(500).json({
+      error: "Internal server error",
+      debug: String(error),
     });
   }
 }
