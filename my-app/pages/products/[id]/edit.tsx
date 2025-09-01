@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/router";
 
 interface Product {
@@ -24,25 +24,25 @@ export default function EditProductPage({ productId }: EditProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [debug, setDebug] = useState<any>(null);
+  const [debug, setDebug] = useState<unknown>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [colors, setColors] = useState<string>("");
-  const [sizes, setSizes] = useState<string>("");
+  const [colors, setColors] = useState("");
+  const [sizes, setSizes] = useState("");
 
-  const [images, setImages] = useState<File[]>([]); // new uploads
-  const [previews, setPreviews] = useState<string[]>([]); // new previews
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
 
-  const [existingImages, setExistingImages] = useState<string[]>([]); // already uploaded
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // Load product data on mount
+  // Load product
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`/api/products/${productId}/edit`);
+        const res = await fetch(`/api/products/${productId}`);
         if (!res.ok) throw new Error("Failed to fetch product");
         const data: Product = await res.json();
         setTitle(data.title);
@@ -58,27 +58,20 @@ export default function EditProductPage({ productId }: EditProps) {
         setLoading(false);
       }
     }
-
     fetchProduct();
   }, [productId]);
 
-  // Handle new file uploads and previews
-  const handleImageChange = (files: FileList | null) => {
-    if (!files) return;
-    const fileArray = Array.from(files);
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
     setImages((prev) => {
-      const updated = [...prev, ...fileArray];
+      const updated = [...prev, ...files];
       setPreviews(updated.map((f) => URL.createObjectURL(f)));
       return updated;
     });
   };
 
-  // Remove existing image
-  const removeExistingImage = (url: string) => {
-    setExistingImages(existingImages.filter((img) => img !== url));
-  };
-
-  // Remove new image
+  const removeExistingImage = (url: string) => setExistingImages(existingImages.filter((img) => img !== url));
   const removeNewImage = (url: string) => {
     const index = previews.findIndex((p) => p === url);
     if (index >= 0) {
@@ -87,7 +80,7 @@ export default function EditProductPage({ productId }: EditProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
@@ -102,25 +95,18 @@ export default function EditProductPage({ productId }: EditProps) {
       formData.append("colors", colors);
       formData.append("sizes", sizes);
 
-      // keep existing images
       existingImages.forEach((img) => formData.append("existingImages", img));
-
-      // add new images
       images.forEach((file) => formData.append("images", file));
 
-      const res = await fetch(`/api/products/${productId}/edit`, {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch(`/api/products/${productId}/edit`, { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update product");
 
-      router.push("/products"); // redirect to products page
+      router.push("/products");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
-      setDebug((err as { debug?: any })?.debug || null);
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      // store debug info
+      setDebug((err as { debug?: unknown })?.debug ?? null);
     } finally {
       setSaving(false);
     }
@@ -133,8 +119,7 @@ export default function EditProductPage({ productId }: EditProps) {
       if (!res.ok) throw new Error("Failed to delete product");
       router.push("/products");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+      setError(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
@@ -147,10 +132,10 @@ export default function EditProductPage({ productId }: EditProps) {
       {debug && <pre style={{ background: "#f0f0f0", padding: "1rem" }}>{JSON.stringify(debug, null, 2)}</pre>}
 
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="number" placeholder="Price" value={price} onChange={e => setPrice(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
 
         <h3>Existing Images</h3>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
@@ -163,7 +148,7 @@ export default function EditProductPage({ productId }: EditProps) {
         </div>
 
         <h3>Upload New Images</h3>
-        <input type="file" accept="image/*" multiple onChange={e => handleImageChange(e.target.files)} style={{ display: "block", marginBottom: "1rem", width: "100%" }} />
+        <input type="file" accept="image/*" multiple onChange={handleImageChange} style={{ display: "block", marginBottom: "1rem", width: "100%" }} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
           {previews.map((url) => (
             <div key={url} style={{ position: "relative" }}>
@@ -173,13 +158,12 @@ export default function EditProductPage({ productId }: EditProps) {
           ))}
         </div>
 
-        <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={(e) => setColors(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={(e) => setSizes(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
 
         <button type="submit" disabled={saving} style={{ padding: "0.5rem 1rem", cursor: "pointer", marginRight: "1rem" }}>
           {saving ? "Saving..." : "Save Changes"}
         </button>
-
         <button type="button" onClick={handleDelete} style={{ padding: "0.5rem 1rem", cursor: "pointer", background: "red", color: "white" }}>
           Delete Product
         </button>
