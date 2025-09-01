@@ -22,6 +22,12 @@ interface FormFields {
   sizes?: string[];
 }
 
+// Normalize any field into a string[]
+const normalizeField = (field?: string | string[]): string[] => {
+  if (!field) return [];
+  return Array.isArray(field) ? field.map((v) => v.toString()) : [field.toString()];
+};
+
 const parseForm = (
   req: NextApiRequest
 ): Promise<{ fields: FormFields; files: File[] }> => {
@@ -40,22 +46,13 @@ const parseForm = (
         }
       }
 
-      // Safe mapping: ensure all fields are properly coerced into expected types
       const safeFields: FormFields = {
         title: fields.title?.toString() || "",
         description: fields.description?.toString(),
         price: fields.price?.toString() || "0",
         quantity: fields.quantity?.toString() || "0",
-        colors: Array.isArray(fields.colors)
-          ? fields.colors.map((c) => c.toString())
-          : fields.colors
-          ? [fields.colors.toString()]
-          : [],
-        sizes: Array.isArray(fields.sizes)
-          ? fields.sizes.map((s) => s.toString())
-          : fields.sizes
-          ? [fields.sizes.toString()]
-          : [],
+        colors: normalizeField(fields.colors),
+        sizes: normalizeField(fields.sizes),
       };
 
       resolve({ fields: safeFields, files: uploadedFiles });
@@ -81,11 +78,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "POST")
+  if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
 
   const session = await getServerSession(req, res, authOptions);
-  if (!session) return res.status(401).json({ error: "Unauthorized" });
+  if (!session) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
     const { fields, files } = await parseForm(req);
