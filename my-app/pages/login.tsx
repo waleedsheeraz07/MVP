@@ -104,6 +104,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
 
           <button
             type="submit"
+            disabled={loading}
             style={{
               padding: "0.75rem",
               borderRadius: "8px",
@@ -115,7 +116,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
               transition: "0.2s",
             }}
           >
-            Login
+             {loading ? "Logging In..." : "Login"}
           </button>
         </form>
 
