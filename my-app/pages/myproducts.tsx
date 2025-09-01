@@ -54,64 +54,80 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>My Products</h1>
+    <div style={{ padding: "1rem", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
+      <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>My Products</h1>
 
-      {/* Search and filters */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginBottom: "1rem" }}>
+      {/* Search & Filters */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.5rem",
+          marginBottom: "1rem",
+          alignItems: "center",
+        }}
+      >
         <input
           type="text"
           placeholder="Search by title..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: "0.5rem", minWidth: "200px" }}
+          style={{
+            padding: "0.5rem",
+            minWidth: "150px",
+            flexGrow: 1,
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+          }}
         />
 
-        <label>Sort:</label>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value as "alpha" | "priceAsc" | "priceDesc")}>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as "alpha" | "priceAsc" | "priceDesc")}
+          style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
+        >
           <option value="alpha">A → Z</option>
           <option value="priceAsc">Price ↑</option>
           <option value="priceDesc">Price ↓</option>
         </select>
 
-        <label>Price:</label>
-        <input
-          type="number"
-          value={priceRange[0]}
-          min={0}
-          onChange={e => handlePriceChange(e, 0)}
-          style={{ width: "70px" }}
-        />
-        -
-        <input
-          type="number"
-          value={priceRange[1]}
-          min={0}
-          onChange={e => handlePriceChange(e, 1)}
-          style={{ width: "70px" }}
-        />
+        <div style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
+          <input
+            type="number"
+            value={priceRange[0]}
+            min={0}
+            onChange={e => handlePriceChange(e, 0)}
+            style={{ width: "70px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
+          />
+          -
+          <input
+            type="number"
+            value={priceRange[1]}
+            min={0}
+            onChange={e => handlePriceChange(e, 1)}
+            style={{ width: "70px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
+          />
+        </div>
 
-        <label>Colors:</label>
         <select
           multiple
           value={selectedColors}
-          onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, option => option.value))}
-          style={{ minWidth: "120px" }}
+          onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
+          style={{ minWidth: "100px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc", flexGrow: 1 }}
         >
-          {allColors.map(color => (
-            <option key={color} value={color}>{color}</option>
+          {allColors.map(c => (
+            <option key={c} value={c}>{c}</option>
           ))}
         </select>
 
-        <label>Sizes:</label>
         <select
           multiple
           value={selectedSizes}
-          onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, option => option.value))}
-          style={{ minWidth: "120px" }}
+          onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
+          style={{ minWidth: "100px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc", flexGrow: 1 }}
         >
-          {allSizes.map(size => (
-            <option key={size} value={size}>{size}</option>
+          {allSizes.map(s => (
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </div>
@@ -119,18 +135,39 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
       {/* Products Grid */}
       {filteredProducts.length === 0 && <p>No products found.</p>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "1rem",
+        }}
+      >
         {filteredProducts.map(product => (
           <Link key={product.id} href={`/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-            <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden", padding: "0.5rem", cursor: "pointer" }}>
+            <div
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                overflow: "hidden",
+                padding: "0.5rem",
+                cursor: "pointer",
+                background: "#fff",
+                transition: "0.2s",
+              }}
+            >
               {product.images[0] && (
                 <img
                   src={product.images[0]}
                   alt={product.title}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    height: "180px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                  }}
                 />
               )}
-              <h2 style={{ margin: "0.5rem 0" }}>{product.title}</h2>
+              <h2 style={{ margin: "0.5rem 0", fontSize: "1.1rem" }}>{product.title}</h2>
               <p style={{ margin: "0.25rem 0", fontWeight: "bold" }}>${product.price.toFixed(2)}</p>
             </div>
           </Link>
