@@ -3,39 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 
-import { GetServerSidePropsContext } from "next";
-import { getServerSession } from "next-auth/next";
-import { signOut } from "next-auth/react";
-import { authOptions } from "./api/auth/[...nextauth]";
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
-
-  if (!session) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
-  return { props: { session } };
-}
-
-interface DashboardProps {
-  session: {
-    user: {
-      name: string;
-      email: string;
-      role: string;
-    };
-  };
-}
-
-
-
-
-
-interface DebugInfo {
-  [key: string]: unknown;
-}
-
 export default function SellProductPage() {
   const router = useRouter();
 
@@ -49,7 +16,6 @@ export default function SellProductPage() {
   const [sizes, setSizes] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [debug, setDebug] = useState<DebugInfo | null>(null);
 
   const handleImageChange = (files: FileList | null) => {
     if (!files) return;
@@ -61,11 +27,15 @@ export default function SellProductPage() {
     });
   };
 
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setDebug(null);
 
     try {
       const formData = new FormData();
@@ -79,52 +49,136 @@ export default function SellProductPage() {
 
       const res = await fetch("/api/products/create", { method: "POST", body: formData });
       const data = await res.json();
+      if (!res.ok) throw data;
 
-      if (!res.ok) throw data; // Throw the JSON directly
-
-      router.push("/products");
-    } catch (err: unknown) {
-      // Handle thrown error safely
-      if (err && typeof err === "object" && "error" in err) {
-        const e = err as { error?: string; detail?: unknown };
-        setError(e.error || "Something went wrong");
-        setDebug(e.detail ? { detail: e.detail } : null);
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong");
-      }
+      router.push("/myproducts");
+    } catch (err: any) {
+      setError(err?.error || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Sell a Product</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {debug && (
-        <pre style={{ background: "#f0f0f0", padding: "1rem", maxHeight: "300px", overflow: "auto" }}>
-          {JSON.stringify(debug, null, 2)}
-        </pre>
-      )}
+    <div style={{
+      maxWidth: "800px",
+      margin: "2rem auto",
+      padding: "1rem",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+    }}>
+      <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>Sell a Product</h1>
 
-      <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="number" placeholder="Price" value={price} onChange={e => setPrice(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
-        <h3>Images</h3>
-        <input type="file" accept="image/*" multiple onChange={e => handleImageChange(e.target.files)} style={{ display: "block", marginBottom: "1rem", width: "100%" }} />
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-          {previews.map((url, idx) => <img key={idx} src={url} alt={`Preview ${idx}`} style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover", border: "1px solid #ccc" }} />)}
+      <form onSubmit={handleSubmit} style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "1rem"
+      }}>
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          required
+          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
+        />
+
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%", minHeight: "100px" }}
+        />
+
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <input
+            type="number"
+            placeholder="Price"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+            required
+            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", flex: "1 1 45%" }}
+          />
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={quantity}
+            onChange={e => setQuantity(e.target.value)}
+            required
+            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", flex: "1 1 45%" }}
+          />
         </div>
 
-        <input type="text" placeholder="Colors (comma separated, e.g. Red,Blue)" value={colors} onChange={e => setColors(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="text" placeholder="Sizes (comma separated, e.g. S,M,L)" value={sizes} onChange={e => setSizes(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <div>
+          <h3 style={{ marginBottom: "0.5rem" }}>Images</h3>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={e => handleImageChange(e.target.files)}
+            style={{ display: "block", marginBottom: "0.5rem", width: "100%" }}
+          />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            {previews.map((url, idx) => (
+              <div key={idx} style={{ position: "relative" }}>
+                <img
+                  src={url}
+                  alt={`Preview ${idx}`}
+                  style={{ width: "120px", height: "120px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ccc" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  style={{
+                    position: "absolute",
+                    top: "-8px",
+                    right: "-8px",
+                    background: "red",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "24px",
+                    height: "24px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                >×</button>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <button type="submit" disabled={loading} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
+        <input
+          type="text"
+          placeholder="Colors (comma separated, e.g. Red,Blue)"
+          value={colors}
+          onChange={e => setColors(e.target.value)}
+          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
+        />
+
+        <input
+          type="text"
+          placeholder="Sizes (comma separated, e.g. S,M,L)"
+          value={sizes}
+          onChange={e => setSizes(e.target.value)}
+          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: "0.75rem",
+            borderRadius: "8px",
+            border: "none",
+            background: "#4CAF50",
+            color: "#fff",
+            fontSize: "1rem",
+            cursor: "pointer",
+            transition: "0.2s",
+          }}
+        >
           {loading ? "Saving..." : "Create Product"}
         </button>
       </form>
