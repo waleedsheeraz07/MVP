@@ -12,11 +12,12 @@ export default function SellProductPage() {
   const [quantity, setQuantity] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [colors, setColors] = useState<string>("");
-  const [sizes, setSizes] = useState<string>("");
+  const [colors, setColors] = useState("");
+  const [sizes, setSizes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Handle image selection
   const handleImageChange = (files: FileList | null) => {
     if (!files) return;
     const fileArray = Array.from(files);
@@ -27,12 +28,14 @@ export default function SellProductPage() {
     });
   };
 
+  // Remove selected image
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Form submit handler
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -47,34 +50,48 @@ export default function SellProductPage() {
       formData.append("sizes", sizes);
       images.forEach(file => formData.append("images", file));
 
-      const res = await fetch("/api/products/create", { method: "POST", body: formData });
+      const res = await fetch("/api/products/create", {
+        method: "POST",
+        body: formData,
+      });
+
       const data = await res.json();
+
       if (!res.ok) throw data;
 
       router.push("/myproducts");
-    } catch (err: any) {
-      setError(err?.error || "Something went wrong");
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "error" in err) {
+        setError((err as { error?: string }).error || "Something went wrong");
+      } else {
+        setError("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{
-      maxWidth: "800px",
-      margin: "2rem auto",
-      padding: "1rem",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-    }}>
+    <div
+      style={{
+        maxWidth: "800px",
+        margin: "2rem auto",
+        padding: "1rem",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      }}
+    >
       <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>Sell a Product</h1>
 
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
-      <form onSubmit={handleSubmit} style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "1rem"
-      }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
         <input
           type="text"
           placeholder="Title"
@@ -88,7 +105,13 @@ export default function SellProductPage() {
           placeholder="Description"
           value={description}
           onChange={e => setDescription(e.target.value)}
-          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%", minHeight: "100px" }}
+          style={{
+            padding: "0.75rem",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            width: "100%",
+            minHeight: "100px",
+          }}
         />
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
@@ -125,7 +148,13 @@ export default function SellProductPage() {
                 <img
                   src={url}
                   alt={`Preview ${idx}`}
-                  style={{ width: "120px", height: "120px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ccc" }}
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                  }}
                 />
                 <button
                   type="button"
@@ -143,7 +172,9 @@ export default function SellProductPage() {
                     cursor: "pointer",
                     fontWeight: "bold",
                   }}
-                >×</button>
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
