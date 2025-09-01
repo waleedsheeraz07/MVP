@@ -1,7 +1,6 @@
 // pages/myproducts.tsx
 import { prisma } from "../lib/prisma";
 import Link from "next/link";
-import Image from "next/image";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { GetServerSidePropsContext } from "next";
@@ -125,9 +124,11 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
           <Link key={product.id} href={`/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
             <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden", padding: "0.5rem", cursor: "pointer" }}>
               {product.images[0] && (
-                <div style={{ position: "relative", width: "100%", height: "200px" }}>
-                  <Image src={product.images[0]} alt={product.title} fill style={{ objectFit: "cover" }} />
-                </div>
+                <img
+                  src={product.images[0]}
+                  alt={product.title}
+                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
+                />
               )}
               <h2 style={{ margin: "0.5rem 0" }}>{product.title}</h2>
               <p style={{ margin: "0.25rem 0", fontWeight: "bold" }}>${product.price.toFixed(2)}</p>
