@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 
+interface DebugInfo {
+  [key: string]: unknown;
+}
+
 export default function SellProductPage() {
   const router = useRouter();
 
@@ -16,7 +20,7 @@ export default function SellProductPage() {
   const [sizes, setSizes] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [debug, setDebug] = useState<any>(null);
+  const [debug, setDebug] = useState<DebugInfo | null>(null);
 
   const handleImageChange = (files: FileList | null) => {
     if (!files) return;
@@ -47,15 +51,21 @@ export default function SellProductPage() {
       const res = await fetch("/api/products/create", { method: "POST", body: formData });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      if (!res.ok) throw data; // Throw the JSON directly
 
       router.push("/dashboard");
-   } catch (err: unknown) {
-  if (err instanceof Error) setError(err.message);
-  else setError("Something went wrong");
-  // @ts-ignore: might exist in the response
-  setDebug((err as { debug?: unknown })?.debug || null);
-}finally {
+    } catch (err: unknown) {
+      // Handle thrown error safely
+      if (err && typeof err === "object" && "error" in err) {
+        const e = err as { error?: string; detail?: unknown };
+        setError(e.error || "Something went wrong");
+        setDebug(e.detail ? { detail: e.detail } : null);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong");
+      }
+    } finally {
       setLoading(false);
     }
   };
