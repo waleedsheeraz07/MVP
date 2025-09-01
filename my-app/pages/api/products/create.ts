@@ -98,7 +98,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     res.status(201).json({ success: true, productId: product.id, debug: { fields, fileNames: files.map(f => f.originalFilename), imageUrls } });
-  } catch (error: any) {
-    res.status(500).json({ error: "Internal server error", detail: error?.message || error });
-  }
+  } catch (error: unknown) {
+  const message = error instanceof Error ? error.message : JSON.stringify(error);
+  res.status(500).json({ error: "Internal server error", detail: message });
+}
 }
