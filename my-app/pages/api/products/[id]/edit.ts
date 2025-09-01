@@ -1,136 +1,72 @@
-// pages/api/products/[id]/edit.ts
-import { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]";
-import { prisma } from "../../../../lib/prisma";
-import cloudinary from "../../../../lib/cloudinary";
-import formidable, { File, Files, Fields } from "formidable";
-import fs from "fs";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export const config = { api: { bodyParser: false } };
-
-interface FormFields {
-  title: string;
-  description?: string;
-  price: string;
-  quantity: string;
-  colors?: string;
-  sizes?: string;
-  existingImages?: string[];
-}
-
-const normalizeField = (field?: string | string[]): string[] =>
-  !field ? [] : Array.isArray(field) ? field.map(String) : [String(field)];
-
-const parseForm = (
-  req: NextApiRequest
-): Promise<{ fields: FormFields; files: File[] }> =>
-  new Promise((resolve, reject) => {
-    const form = formidable({ multiples: true });
-    form.parse(req, (err, fields: Fields, files: Files) => {
-      if (err) return reject(err);
-
-      const uploadedFiles: File[] = [];
-      if (files.images) {
-        if (Array.isArray(files.images)) uploadedFiles.push(...(files.images as File[]));
-        else uploadedFiles.push(files.images as File);
-      }
-
-      const safeFields: FormFields = {
-        title: fields.title?.toString() || "",
-        description: fields.description?.toString(),
-        price: fields.price?.toString() || "0",
-        quantity: fields.quantity?.toString() || "0",
-        colors: fields.colors?.toString(),
-        sizes: fields.sizes?.toString(),
-        existingImages: fields.existingImages
-          ? Array.isArray(fields.existingImages)
-            ? fields.existingImages.map(String)
-            : [String(fields.existingImages)]
-          : [],
-      };
-
-      resolve({ fields: safeFields, files: uploadedFiles });
-    });
-  });
-
-const uploadFileToCloudinary = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder: "products" },
-      (err, result) => {
-        if (err) return reject(err);
-        resolve(result?.secure_url || "");
-      }
-    );
-    fs.createReadStream(file.filepath).pipe(stream);
-  });
+// Mock database
+const mockDB: Record<string, any> = {
+  "1": {
+    id: "1",
+    title: "Sample Product",
+    description: "A demo product",
+    price: 100,
+    quantity: 10,
+    colors: ["red", "blue"],
+    sizes: ["M", "L"],
+    images: ["/sample1.jpg"],
+  },
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST")
-    return res.status(405).json({ error: "Method not allowed" });
-
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) return res.status(401).json({ error: "Unauthorized" });
-
-  const productId = req.query.id as string;
-  if (!productId) return res.status(400).json({ error: "Product ID is required" });
+  const { id } = req.query;
 
   try {
-    const { fields, files } = await parseForm(req);
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ error: "Invalid product ID" });
+    }
 
-    // Find product and check ownership
-    const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) return res.status(404).json({ error: "Product not found" });
+    if (req.method === "GET") {
+      const product = mockDB[id];
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+      return res.status(200).json(product);
+    }
 
-    const userId = (session.user as { id?: string }).id;
-    if (product.ownerId !== userId)
-      return res.status(403).json({ error: "Not authorized" });
+    if (req.method === "POST") {
+      const { title, description, price, quantity, colors, sizes } = req.body;
 
-    // Upload new images if any
-    const newImageUrls = await Promise.all(files.map(uploadFileToCloudinary));
+      console.log("Update request body:", req.body);
 
-    // Merge existing + new images
-    const finalImages = [...(fields.existingImages || []), ...newImageUrls];
+      if (!mockDB[id]) {
+        return res.status(404).json({ error: "Product not found" });
+      }
 
-    // Update the product
-    const updated = await prisma.product.update({
-      where: { id: productId },
-      data: {
-        title: fields.title,
-        description: fields.description || "",
-        price: parseFloat(fields.price),
-        quantity: parseInt(fields.quantity, 10),
-        colors: normalizeField(fields.colors?.split(",")),
-        sizes: normalizeField(fields.sizes?.split(",")),
-        images: finalImages,
-      },
-    });
+      mockDB[id] = {
+        ...mockDB[id],
+        title,
+        description,
+        price: Number(price),
+        quantity: Number(quantity),
+        colors: typeof colors === "string" ? colors.split(",") : [],
+        sizes: typeof sizes === "string" ? sizes.split(",") : [],
+        images: mockDB[id].images, // keep existing for now
+      };
 
-    // ✅ Return debug info as well
-    res.status(200).json({
-      success: true,
-      product: updated,
-      debug: {
-        fields,
-        uploadedFilesCount: files.length,
-        newImageUrls,
-        finalImages,
-      },
-    });
+      return res.status(200).json({ success: true, product: mockDB[id] });
+    }
+
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error: unknown) {
-  console.error("Error editing product:", error);
+    console.error("Error editing product:", error);
 
-  if (error instanceof Error) {
-    res.status(500).json({
-      error: "Internal server error",
-      debug: { message: error.message, stack: error.stack },
-    });
-  } else {
-    res.status(500).json({
-      error: "Internal server error",
-      debug: String(error),
-    });
+    if (error instanceof Error) {
+      res.status(500).json({
+        error: "Internal server error",
+        debug: { message: error.message, stack: error.stack },
+      });
+    } else {
+      res.status(500).json({
+        error: "Internal server error",
+        debug: String(error),
+      });
+    }
   }
-}
 }
