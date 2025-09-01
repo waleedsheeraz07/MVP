@@ -12,8 +12,8 @@ export default function SellProductPage() {
   const [quantity, setQuantity] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [colors, setColors] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<string[]>([]);
+  const [colors, setColors] = useState<string>("");
+  const [sizes, setSizes] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,13 +41,15 @@ export default function SellProductPage() {
       formData.append("price", price);
       formData.append("quantity", quantity);
 
-      colors.forEach((c) => formData.append("colors[]", c));
-      sizes.forEach((s) => formData.append("sizes[]", s));
+      // send as plain strings — API will split by comma
+      formData.append("colors", colors);
+      formData.append("sizes", sizes);
+
       images.forEach((file) => formData.append("images", file));
 
       const res = await fetch("/api/products/create", {
         method: "POST",
-        body: formData, // send as FormData
+        body: formData,
       });
 
       if (!res.ok) {
@@ -126,17 +128,17 @@ export default function SellProductPage() {
 
         <input
           type="text"
-          placeholder="Colors (comma separated)"
-          value={colors.join(",")}
-          onChange={(e) => setColors(e.target.value.split(",").map((c) => c.trim()))}
+          placeholder="Colors (comma separated, e.g. Red,Blue,Green)"
+          value={colors}
+          onChange={(e) => setColors(e.target.value)}
           style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
         <input
           type="text"
-          placeholder="Sizes (comma separated)"
-          value={sizes.join(",")}
-          onChange={(e) => setSizes(e.target.value.split(",").map((s) => s.trim()))}
+          placeholder="Sizes (comma separated, e.g. S,M,L,XL)"
+          value={sizes}
+          onChange={(e) => setSizes(e.target.value)}
           style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
         />
 
