@@ -1,72 +1,132 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+// pages/api/products/[id]/edit.ts
+import { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]";
+import { prisma } from "../../../../lib/prisma";
+import cloudinary from "../../../../lib/cloudinary";
+import formidable, { File, Fields, Files } from "formidable";
+import fs from "fs";
 
-// Mock database
-const mockDB: Record<string, any> = {
-  "1": {
-    id: "1",
-    title: "Sample Product",
-    description: "A demo product",
-    price: 100,
-    quantity: 10,
-    colors: ["red", "blue"],
-    sizes: ["M", "L"],
-    images: ["/sample1.jpg"],
-  },
-};
+export const config = { api: { bodyParser: false } };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+interface FormFields {
+  title: string;
+  description?: string;
+  price: string;
+  quantity: string;
+  colors?: string;
+  sizes?: string;
+  existingImages?: string[];
+}
 
-  try {
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({ error: "Invalid product ID" });
-    }
+const normalizeField = (field?: string | string[]): string[] =>
+  !field ? [] : Array.isArray(field) ? field.map(String) : [String(field)];
 
-    if (req.method === "GET") {
-      const product = mockDB[id];
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
+const parseForm = (
+  req: NextApiRequest
+): Promise<{ fields: FormFields; files: File[] }> =>
+  new Promise((resolve, reject) => {
+    const form = formidable({ multiples: true });
+    form.parse(req, (err: Error | null, fields: Fields, files: Files) => {
+      if (err) return reject(err);
+
+      const uploadedFiles: File[] = [];
+      if (files.images) {
+        if (Array.isArray(files.images)) {
+          uploadedFiles.push(...(files.images as File[]));
+        } else {
+          uploadedFiles.push(files.images as File);
+        }
       }
-      return res.status(200).json(product);
-    }
 
-    if (req.method === "POST") {
-      const { title, description, price, quantity, colors, sizes } = req.body;
-
-      console.log("Update request body:", req.body);
-
-      if (!mockDB[id]) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-
-      mockDB[id] = {
-        ...mockDB[id],
-        title,
-        description,
-        price: Number(price),
-        quantity: Number(quantity),
-        colors: typeof colors === "string" ? colors.split(",") : [],
-        sizes: typeof sizes === "string" ? sizes.split(",") : [],
-        images: mockDB[id].images, // keep existing for now
+      const safeFields: FormFields = {
+        title: fields.title?.toString() || "",
+        description: fields.description?.toString(),
+        price: fields.price?.toString() || "0",
+        quantity: fields.quantity?.toString() || "0",
+        colors: fields.colors?.toString(),
+        sizes: fields.sizes?.toString(),
+        existingImages: fields.existingImages
+          ? Array.isArray(fields.existingImages)
+            ? fields.existingImages.map(String)
+            : [String(fields.existingImages)]
+          : [],
       };
 
-      return res.status(200).json({ success: true, product: mockDB[id] });
+      resolve({ fields: safeFields, files: uploadedFiles });
+    });
+  });
+
+const uploadFileToCloudinary = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "products" },
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result?.secure_url || "");
+      }
+    );
+    fs.createReadStream(file.filepath).pipe(stream);
+  });
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const productId = req.query.id as string;
+  if (!productId) {
+    return res.status(400).json({ error: "Product ID is required" });
+  }
+
+  try {
+    const { fields, files } = await parseForm(req);
+
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
     }
 
-    return res.status(405).json({ error: "Method not allowed" });
+    const userId = (session.user as { id?: string }).id;
+    if (product.ownerId !== userId) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const newImageUrls = await Promise.all(files.map(uploadFileToCloudinary));
+
+    const finalImages = [...(fields.existingImages || []), ...newImageUrls];
+
+    const updated = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        title: fields.title,
+        description: fields.description || "",
+        price: parseFloat(fields.price),
+        quantity: parseInt(fields.quantity, 10),
+        colors: fields.colors ? fields.colors.split(",").map(c => c.trim()) : [],
+        sizes: fields.sizes ? fields.sizes.split(",").map(s => s.trim()) : [],
+        images: finalImages,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      product: updated,
+      debug: { fields, newImageUrls, finalImages },
+    });
   } catch (error: unknown) {
     console.error("Error editing product:", error);
-
-    if (error instanceof Error) {
-      res.status(500).json({
-        error: "Internal server error",
-        debug: { message: error.message, stack: error.stack },
-      });
-    } else {
-      res.status(500).json({
-        error: "Internal server error",
-        debug: String(error),
-      });
-    }
+    res.status(500).json({
+      error: "Internal server error",
+      debug: error instanceof Error ? error.message : String(error),
+    });
   }
 }
