@@ -1,23 +1,14 @@
-import { GetServerSideProps } from "next";
-import { PrismaClient, Prisma } from "@prisma/client";
-import bcrypt from "bcryptjs";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
 type Role = "buyer" | "seller";
 
-interface SignupProps {
-  error?: string;
-}
-
-const prisma = new PrismaClient();
-
-export default function SignupPage({ error: serverError }: SignupProps) {
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("buyer");
-  const [error, setError] = useState(serverError || "");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -33,13 +24,17 @@ export default function SignupPage({ error: serverError }: SignupProps) {
         body: JSON.stringify({ email, password, role }),
       });
 
-      const data = await res.json();
+      const data: { error?: string } = await res.json();
 
       if (!res.ok) throw data;
 
       router.push("/login");
-    } catch (err: any) {
-      setError(err?.error || "Signup failed, please try again");
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "error" in err) {
+        setError((err as { error?: string }).error || "Signup failed, please try again");
+      } else {
+        setError("Signup failed, please try again");
+      }
     } finally {
       setLoading(false);
     }
@@ -67,9 +62,7 @@ export default function SignupPage({ error: serverError }: SignupProps) {
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
-        <h1 style={{ textAlign: "center", marginBottom: "1.5rem", fontSize: "1.8rem" }}>
-          Sign Up
-        </h1>
+        <h1 style={{ textAlign: "center", marginBottom: "1.5rem", fontSize: "1.8rem" }}>Sign Up</h1>
 
         {error && (
           <p
@@ -93,12 +86,7 @@ export default function SignupPage({ error: serverError }: SignupProps) {
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
-            style={{
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              width: "100%",
-            }}
+            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
           />
 
           <input
@@ -107,23 +95,13 @@ export default function SignupPage({ error: serverError }: SignupProps) {
             required
             value={password}
             onChange={e => setPassword(e.target.value)}
-            style={{
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              width: "100%",
-            }}
+            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
           />
 
           <select
             value={role}
             onChange={e => setRole(e.target.value as Role)}
-            style={{
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              width: "100%",
-            }}
+            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
           >
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
@@ -157,8 +135,3 @@ export default function SignupPage({ error: serverError }: SignupProps) {
     </div>
   );
 }
-
-// You can keep your server-side signup logic or move it to /api/auth/signup for cleaner handling
-export const getServerSideProps: GetServerSideProps<SignupProps> = async ({ req }) => {
-  return { props: {} };
-};
