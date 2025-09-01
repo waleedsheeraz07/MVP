@@ -22,7 +22,9 @@ interface FormFields {
 const normalizeField = (field?: string | string[]): string[] =>
   !field ? [] : Array.isArray(field) ? field.map(String) : [String(field)];
 
-const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: File[] }> =>
+const parseForm = (
+  req: NextApiRequest
+): Promise<{ fields: FormFields; files: File[] }> =>
   new Promise((resolve, reject) => {
     const form = formidable({ multiples: true });
     form.parse(req, (err, fields: Fields, files: Files) => {
@@ -54,15 +56,19 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: Fi
 
 const uploadFileToCloudinary = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream({ folder: "products" }, (err, result) => {
-      if (err) return reject(err);
-      resolve(result?.secure_url || "");
-    });
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "products" },
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result?.secure_url || "");
+      }
+    );
     fs.createReadStream(file.filepath).pipe(stream);
   });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
 
   const session = await getServerSession(req, res, authOptions);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
@@ -78,7 +84,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!product) return res.status(404).json({ error: "Product not found" });
 
     const userId = (session.user as { id?: string }).id;
-    if (product.ownerId !== userId) return res.status(403).json({ error: "Not authorized" });
+    if (product.ownerId !== userId)
+      return res.status(403).json({ error: "Not authorized" });
 
     // Upload new images if any
     const newImageUrls = await Promise.all(files.map(uploadFileToCloudinary));
@@ -100,9 +107,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    res.status(200).json({ success: true, product: updated });
-  } catch (error) {
+    // ✅ Return debug info as well
+    res.status(200).json({
+      success: true,
+      product: updated,
+      debug: {
+        fields,
+        uploadedFilesCount: files.length,
+        newImageUrls,
+        finalImages,
+      },
+    });
+  } catch (error: any) {
     console.error("Error editing product:", error);
-    res.status(500).json({ error: "Internal server error", debug: error });
+    res.status(500).json({
+      error: "Internal server error",
+      debug: error?.message || error,
+    });
   }
 }
