@@ -67,10 +67,9 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
       case "relevance":
         const searchLower = search.toLowerCase();
         result.sort((a, b) => {
-          const aTitle = a.title.toLowerCase();
-          const bTitle = b.title.toLowerCase();
-          const score = (title: string) => title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
-          return score(bTitle) - score(aTitle);
+          const score = (title: string) =>
+            title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
+          return score(b.title.toLowerCase()) - score(a.title.toLowerCase());
         });
         break;
     }
@@ -80,7 +79,23 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
 
   return (
     <div style={{ padding: "1rem", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>My Products</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h1 style={{ fontSize: "2rem" }}>My Products</h1>
+        <Link href="/sell">
+          <button style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "#4CAF50",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            transition: "0.2s"
+          }}>
+            Add New Product
+          </button>
+        </Link>
+      </div>
 
       {/* Filters & Search */}
       <div style={{
