@@ -14,12 +14,9 @@ interface Product {
   images: string[];
 }
 
-interface EditProps {
-  productId: string;
-}
-
-export default function EditProductPage({ productId }: EditProps) {
+export default function EditProductPage() {
   const router = useRouter();
+  const { id: productId } = router.query;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,11 +36,18 @@ export default function EditProductPage({ productId }: EditProps) {
 
   // Load product
   useEffect(() => {
+    if (!productId) return;
+
     async function fetchProduct() {
+      setLoading(true);
       try {
+        console.log("Fetching product", productId);
         const res = await fetch(`/api/products/${productId}/edit`);
-        if (!res.ok) throw new Error("Failed to fetch product");
-        const data: Product = await res.json();
+        const data = await res.json();
+
+        console.log("Fetch response:", res.status, data);
+
+        if (!res.ok) throw new Error(data.error || "Failed to fetch product");
 
         setTitle(data.title);
         setDescription(data.description || "");
@@ -53,7 +57,9 @@ export default function EditProductPage({ productId }: EditProps) {
         setSizes(data.sizes.join(","));
         setExistingImages(data.images || []);
       } catch (err: unknown) {
+        console.error("Fetch error:", err);
         setError(err instanceof Error ? err.message : "Something went wrong");
+        setDebug(JSON.stringify(err, null, 2));
       } finally {
         setLoading(false);
       }
@@ -71,7 +77,9 @@ export default function EditProductPage({ productId }: EditProps) {
     });
   };
 
-  const removeExistingImage = (url: string) => setExistingImages((prev) => prev.filter((img) => img !== url));
+  const removeExistingImage = (url: string) =>
+    setExistingImages((prev) => prev.filter((img) => img !== url));
+
   const removeNewImage = (url: string) => {
     const index = previews.findIndex((p) => p === url);
     if (index >= 0) {
@@ -98,15 +106,23 @@ export default function EditProductPage({ productId }: EditProps) {
       existingImages.forEach((img) => formData.append("existingImages", img));
       images.forEach((file) => formData.append("images", file));
 
-      const res = await fetch(`/api/products/${productId}/edit`, { method: "POST", body: formData });
+      console.log("Submitting form data:", { title, description, price, quantity, colors, sizes, existingImages });
+
+      const res = await fetch(`/api/products/${productId}/edit`, {
+        method: "POST",
+        body: formData,
+      });
       const data = await res.json();
+
+      console.log("Submit response:", res.status, data);
 
       if (!res.ok) throw new Error(data.error || "Failed to update product");
 
       router.push("/products");
     } catch (err: unknown) {
+      console.error("Submit error:", err);
       setError(err instanceof Error ? err.message : "Something went wrong");
-      setDebug(JSON.stringify((err as { debug?: unknown })?.debug ?? null, null, 2));
+      setDebug(JSON.stringify(err, null, 2));
     } finally {
       setSaving(false);
     }
@@ -115,11 +131,16 @@ export default function EditProductPage({ productId }: EditProps) {
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
+      console.log("Deleting product", productId);
       const res = await fetch(`/api/products/${productId}/delete`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete product");
+      const data = await res.json();
+      console.log("Delete response:", res.status, data);
+      if (!res.ok) throw new Error(data.error || "Failed to delete product");
       router.push("/products");
     } catch (err: unknown) {
+      console.error("Delete error:", err);
       setError(err instanceof Error ? err.message : "Something went wrong");
+      setDebug(JSON.stringify(err, null, 2));
     }
   };
 
@@ -136,70 +157,35 @@ export default function EditProductPage({ productId }: EditProps) {
         </pre>
       )}
 
+      {/* form */}
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <input
-          type="number"
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
+        <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required />
+        <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
 
         <h3>Existing Images</h3>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-          {existingImages.map((url) => (
-            <div key={url} style={{ position: "relative" }}>
-              <img src={url} alt="Existing" style={{ maxWidth: "150px", maxHeight: "150px", objectFit: "cover" }} />
-              <button type="button" onClick={() => removeExistingImage(url)} style={{ position: "absolute", top: 0, right: 0, background: "red", color: "white", border: "none" }}>X</button>
-            </div>
-          ))}
-        </div>
+        {existingImages.map((url) => (
+          <div key={url}>
+            <img src={url} alt="Existing" style={{ width: "100px" }} />
+            <button type="button" onClick={() => removeExistingImage(url)}>X</button>
+          </div>
+        ))}
 
         <h3>Upload New Images</h3>
-        <input type="file" accept="image/*" multiple onChange={handleImageChange} style={{ display: "block", marginBottom: "1rem", width: "100%" }} />
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-          {previews.map((url) => (
-            <div key={url} style={{ position: "relative" }}>
-              <img src={url} alt="Preview" style={{ maxWidth: "150px", maxHeight: "150px", objectFit: "cover" }} />
-              <button type="button" onClick={() => removeNewImage(url)} style={{ position: "absolute", top: 0, right: 0, background: "red", color: "white", border: "none" }}>X</button>
-            </div>
-          ))}
-        </div>
+        <input type="file" accept="image/*" multiple onChange={handleImageChange} />
+        {previews.map((url) => (
+          <div key={url}>
+            <img src={url} alt="Preview" style={{ width: "100px" }} />
+            <button type="button" onClick={() => removeNewImage(url)}>X</button>
+          </div>
+        ))}
 
-        <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={(e) => setColors(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={(e) => setSizes(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="text" placeholder="Colors" value={colors} onChange={(e) => setColors(e.target.value)} />
+        <input type="text" placeholder="Sizes" value={sizes} onChange={(e) => setSizes(e.target.value)} />
 
-        <button type="submit" disabled={saving} style={{ padding: "0.5rem 1rem", cursor: "pointer", marginRight: "1rem" }}>
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-
-        <button type="button" onClick={handleDelete} style={{ padding: "0.5rem 1rem", cursor: "pointer", background: "red", color: "white" }}>
+        <button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
+        <button type="button" onClick={handleDelete} style={{ background: "red", color: "white" }}>
           Delete Product
         </button>
       </form>
