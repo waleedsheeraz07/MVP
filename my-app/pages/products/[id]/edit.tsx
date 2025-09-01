@@ -41,7 +41,7 @@ export default function EditProductPage({ productId }: EditProps) {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`/api/products/${productId}`);
+        const res = await fetch(`/api/products/${productId}/edit`);
         if (!res.ok) throw new Error("Failed to fetch product");
         const data: Product = await res.json();
 
