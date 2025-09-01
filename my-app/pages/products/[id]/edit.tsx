@@ -23,8 +23,8 @@ export default function EditProductPage({ productId }: EditProps) {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [debug, setDebug] = useState<unknown>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [debug, setDebug] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -35,7 +35,6 @@ export default function EditProductPage({ productId }: EditProps) {
 
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
   // Load product
@@ -45,6 +44,7 @@ export default function EditProductPage({ productId }: EditProps) {
         const res = await fetch(`/api/products/${productId}`);
         if (!res.ok) throw new Error("Failed to fetch product");
         const data: Product = await res.json();
+
         setTitle(data.title);
         setDescription(data.description || "");
         setPrice(data.price.toString());
@@ -71,7 +71,7 @@ export default function EditProductPage({ productId }: EditProps) {
     });
   };
 
-  const removeExistingImage = (url: string) => setExistingImages(existingImages.filter((img) => img !== url));
+  const removeExistingImage = (url: string) => setExistingImages((prev) => prev.filter((img) => img !== url));
   const removeNewImage = (url: string) => {
     const index = previews.findIndex((p) => p === url);
     if (index >= 0) {
@@ -83,7 +83,7 @@ export default function EditProductPage({ productId }: EditProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setError("");
+    setError(null);
     setDebug(null);
 
     try {
@@ -100,13 +100,13 @@ export default function EditProductPage({ productId }: EditProps) {
 
       const res = await fetch(`/api/products/${productId}/edit`, { method: "POST", body: formData });
       const data = await res.json();
+
       if (!res.ok) throw new Error(data.error || "Failed to update product");
 
       router.push("/products");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      // store debug info
-      setDebug((err as { debug?: unknown })?.debug ?? null);
+      setDebug(JSON.stringify((err as { debug?: unknown })?.debug ?? null, null, 2));
     } finally {
       setSaving(false);
     }
@@ -128,14 +128,48 @@ export default function EditProductPage({ productId }: EditProps) {
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Edit Product</h1>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {debug && <pre style={{ background: "#f0f0f0", padding: "1rem" }}>{JSON.stringify(debug, null, 2)}</pre>}
+      {debug && (
+        <pre style={{ background: "#f0f0f0", padding: "1rem", maxHeight: "300px", overflow: "auto" }}>
+          {debug}
+        </pre>
+      )}
 
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
-        <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
+        />
+
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
+        />
+
+        <input
+          type="number"
+          placeholder="Price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          required
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
+        />
+
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          required
+          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
+        />
 
         <h3>Existing Images</h3>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
@@ -164,6 +198,7 @@ export default function EditProductPage({ productId }: EditProps) {
         <button type="submit" disabled={saving} style={{ padding: "0.5rem 1rem", cursor: "pointer", marginRight: "1rem" }}>
           {saving ? "Saving..." : "Save Changes"}
         </button>
+
         <button type="button" onClick={handleDelete} style={{ padding: "0.5rem 1rem", cursor: "pointer", background: "red", color: "white" }}>
           Delete Product
         </button>
