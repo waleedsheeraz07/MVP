@@ -5,7 +5,7 @@ import Image from "next/image";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { GetServerSidePropsContext } from "next";
-import { useState, useMemo } from "react";
+import { useState, useMemo, ChangeEvent } from "react";
 
 interface Product {
   id: string;
@@ -34,6 +34,11 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
 
+  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
+    const val = Number(e.target.value);
+    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
+  };
+
   const filteredProducts = useMemo(() => {
     return products
       .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
@@ -41,37 +46,30 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
       .filter(p => selectedSizes.length === 0 || p.sizes.some(s => selectedSizes.includes(s)))
       .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
       .sort((a, b) => {
-        if (sortBy === "alpha") return a.title.localeCompare(b.title);
-        if (sortBy === "priceAsc") return a.price - b.price;
-        return b.price - a.price; // priceDesc
+        switch (sortBy) {
+          case "alpha": return a.title.localeCompare(b.title);
+          case "priceAsc": return a.price - b.price;
+          case "priceDesc": return b.price - a.price;
+        }
       });
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
-
-  const toggleFilter = (value: string, setFn: (vals: string[]) => void) => {
-    setFn(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
-  };
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
-    const val = Number(e.target.value);
-    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
-  };
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>My Products</h1>
 
-      {/* Search & Filters */}
-      <div style={{ marginBottom: "1rem" }}>
+      {/* Search and filters */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginBottom: "1rem" }}>
         <input
           type="text"
           placeholder="Search by title..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: "0.5rem", width: "200px", marginRight: "1rem" }}
+          style={{ padding: "0.5rem", minWidth: "200px" }}
         />
 
         <label>Sort:</label>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} style={{ marginLeft: "0.5rem", marginRight: "1rem" }}>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value as "alpha" | "priceAsc" | "priceDesc")}>
           <option value="alpha">A → Z</option>
           <option value="priceAsc">Price ↑</option>
           <option value="priceDesc">Price ↓</option>
@@ -83,7 +81,7 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
           value={priceRange[0]}
           min={0}
           onChange={e => handlePriceChange(e, 0)}
-          style={{ width: "70px", margin: "0 0.25rem" }}
+          style={{ width: "70px" }}
         />
         -
         <input
@@ -91,48 +89,32 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
           value={priceRange[1]}
           min={0}
           onChange={e => handlePriceChange(e, 1)}
-          style={{ width: "70px", margin: "0 0.25rem" }}
+          style={{ width: "70px" }}
         />
-      </div>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <strong>Colors:</strong>{" "}
-        {allColors.map(color => (
-          <button
-            key={color}
-            onClick={() => toggleFilter(color, setSelectedColors)}
-            style={{
-              margin: "0 0.25rem",
-              padding: "0.25rem 0.5rem",
-              background: selectedColors.includes(color) ? "#333" : "#eee",
-              color: selectedColors.includes(color) ? "#fff" : "#000",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            {color}
-          </button>
-        ))}
-      </div>
+        <label>Colors:</label>
+        <select
+          multiple
+          value={selectedColors}
+          onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ minWidth: "120px" }}
+        >
+          {allColors.map(color => (
+            <option key={color} value={color}>{color}</option>
+          ))}
+        </select>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <strong>Sizes:</strong>{" "}
-        {allSizes.map(size => (
-          <button
-            key={size}
-            onClick={() => toggleFilter(size, setSelectedSizes)}
-            style={{
-              margin: "0 0.25rem",
-              padding: "0.25rem 0.5rem",
-              background: selectedSizes.includes(size) ? "#333" : "#eee",
-              color: selectedSizes.includes(size) ? "#fff" : "#000",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            {size}
-          </button>
-        ))}
+        <label>Sizes:</label>
+        <select
+          multiple
+          value={selectedSizes}
+          onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ minWidth: "120px" }}
+        >
+          {allSizes.map(size => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+        </select>
       </div>
 
       {/* Products Grid */}
