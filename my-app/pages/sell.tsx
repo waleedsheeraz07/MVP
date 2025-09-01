@@ -3,6 +3,35 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 
+import { GetServerSidePropsContext } from "next";
+import { getServerSession } from "next-auth/next";
+import { signOut } from "next-auth/react";
+import { authOptions } from "./api/auth/[...nextauth]";
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  return { props: { session } };
+}
+
+interface DashboardProps {
+  session: {
+    user: {
+      name: string;
+      email: string;
+      role: string;
+    };
+  };
+}
+
+
+
+
+
 interface DebugInfo {
   [key: string]: unknown;
 }
