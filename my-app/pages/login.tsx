@@ -11,7 +11,8 @@ interface LoginPageProps {
 export default function LoginPage({ csrfToken }: LoginPageProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
-
+  const [loading, setLoading] = useState(false);
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const target = e.currentTarget as typeof e.currentTarget & {
