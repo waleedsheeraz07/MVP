@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 import { prisma } from "../../../lib/prisma";
 import cloudinary from "../../../lib/cloudinary";
-import formidable, { File } from "formidable-serverless";
+import formidable, { Files, Fields, File } from "formidable";
 import fs from "fs";
 
 // Disable Next.js default body parsing
@@ -18,8 +18,8 @@ interface FormFields {
   description?: string;
   price: string;
   quantity: string;
-  colors?: string[];
-  sizes?: string[];
+  colors?: string[] | string;
+  sizes?: string[] | string;
 }
 
 const parseForm = (
@@ -28,19 +28,19 @@ const parseForm = (
   return new Promise((resolve, reject) => {
     const form = formidable({ multiples: true });
 
-    form.parse(req, (err, fields, files) => {
+    form.parse(req, (err, fields: Fields, files: Files) => {
       if (err) return reject(err);
 
       const uploadedFiles: File[] = [];
       if (files.images) {
         if (Array.isArray(files.images)) {
-          uploadedFiles.push(...files.images);
+          uploadedFiles.push(...files.images as File[]);
         } else {
           uploadedFiles.push(files.images as File);
         }
       }
 
-      resolve({ fields: fields as unknown as FormFields, files: uploadedFiles });
+      resolve({ fields: fields as FormFields, files: uploadedFiles });
     });
   });
 };
@@ -55,7 +55,6 @@ const uploadFileToCloudinary = (file: File): Promise<string> => {
       }
     );
 
-    // Use Node.js stream from the uploaded file
     fs.createReadStream(file.filepath).pipe(uploadStream);
   });
 };
@@ -86,9 +85,9 @@ export default async function handler(
         title,
         description: description || "",
         price: parseFloat(price),
-        quantity: parseInt(quantity),
-        colors,
-        sizes,
+        quantity: parseInt(quantity, 10),
+        colors: Array.isArray(colors) ? colors : [colors],
+        sizes: Array.isArray(sizes) ? sizes : [sizes],
         ownerId: (session.user as { id: string }).id,
         images: imageUrls,
       },
