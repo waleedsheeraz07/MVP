@@ -50,10 +50,12 @@ export default function SellProductPage() {
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-      setDebug(err.debug || null);
-    } finally {
+   } catch (err: unknown) {
+  if (err instanceof Error) setError(err.message);
+  else setError("Something went wrong");
+  // @ts-ignore: might exist in the response
+  setDebug((err as { debug?: unknown })?.debug || null);
+}finally {
       setLoading(false);
     }
   };
