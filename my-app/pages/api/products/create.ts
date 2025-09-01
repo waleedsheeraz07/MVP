@@ -4,6 +4,7 @@ import { authOptions } from "../auth/[...nextauth]";
 import { prisma } from "../../../lib/prisma";
 import cloudinary from "../../../lib/cloudinary";
 import formidable, { File } from "formidable-serverless";
+import fs from "fs";
 
 // Disable Next.js default body parsing
 export const config = {
@@ -21,26 +22,32 @@ interface FormFields {
   sizes?: string[];
 }
 
-const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: File[] }> => {
+const parseForm = (
+  req: NextApiRequest
+): Promise<{ fields: FormFields; files: File[] }> => {
   return new Promise((resolve, reject) => {
     const form = formidable({ multiples: true });
+
     form.parse(req, (err, fields, files) => {
       if (err) return reject(err);
 
       const uploadedFiles: File[] = [];
       if (files.images) {
-        if (Array.isArray(files.images)) uploadedFiles.push(...files.images);
-        else uploadedFiles.push(files.images as File);
+        if (Array.isArray(files.images)) {
+          uploadedFiles.push(...files.images);
+        } else {
+          uploadedFiles.push(files.images as File);
+        }
       }
 
-      resolve({ fields: fields as FormFields, files: uploadedFiles });
+      resolve({ fields: fields as unknown as FormFields, files: uploadedFiles });
     });
   });
 };
 
 const uploadFileToCloudinary = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
+    const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "products" },
       (error, result) => {
         if (error) return reject(error);
@@ -48,27 +55,25 @@ const uploadFileToCloudinary = (file: File): Promise<string> => {
       }
     );
 
-    // Use formidable file's arrayBuffer for serverless upload
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (reader.result) {
-        const buffer = Buffer.from(reader.result as ArrayBuffer);
-        stream.end(buffer);
-      }
-    };
-    reader.readAsArrayBuffer(file as any);
+    // Use Node.js stream from the uploaded file
+    fs.createReadStream(file.filepath).pipe(uploadStream);
   });
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
 
   const session = await getServerSession(req, res, authOptions);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const { fields, files } = await parseForm(req);
-    const { title, description, price, quantity, colors = [], sizes = [] } = fields;
+    const { title, description, price, quantity, colors = [], sizes = [] } =
+      fields;
 
     if (!title || !price || !quantity) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -84,14 +89,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         quantity: parseInt(quantity),
         colors,
         sizes,
-        ownerId: session.user.id,
+        ownerId: (session.user as { id: string }).id,
         images: imageUrls,
       },
     });
 
     res.status(201).json({ success: true, productId: product.id });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating product:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
