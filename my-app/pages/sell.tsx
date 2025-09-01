@@ -133,15 +133,37 @@ export default function SellProductPage() {
           />
         </div>
 
+        {/* Custom File Upload Button */}
         <div>
           <h3 style={{ marginBottom: "0.5rem" }}>Images</h3>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={e => handleImageChange(e.target.files)}
-            style={{ display: "block", marginBottom: "0.5rem", width: "100%" }}
-          />
+
+          <label
+            style={{
+              display: "inline-block",
+              width: "100%",
+              padding: "0.7rem 1rem",
+              border: "1px dashed #bfb1a3",
+              borderRadius: "10px",
+              backgroundColor: "#fffaf5",
+              color: "#4e2a0f",
+              fontSize: "0.95rem",
+              cursor: "pointer",
+              transition: "0.25s ease",
+              textAlign: "center",
+              boxSizing: "border-box",
+              marginBottom: "0.5rem",
+            }}
+          >
+            Upload Images
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={e => handleImageChange(e.target.files)}
+              style={{ display: "none" }}
+            />
+          </label>
+
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
             {previews.map((url, idx) => (
               <div key={idx} style={{ position: "relative" }}>
