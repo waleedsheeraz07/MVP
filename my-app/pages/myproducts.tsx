@@ -20,11 +20,13 @@ interface MyProductsPageProps {
   products: Product[];
 }
 
+type SortOption = "alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance";
+
 export default function MyProductsPage({ products }: MyProductsPageProps) {
   const [search, setSearch] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<"alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance">("alpha");
+  const [sortBy, setSortBy] = useState<SortOption>("alpha");
   const [priceRange, setPriceRange] = useState<[number, number]>(() => {
     const prices = products.map(p => p.price);
     return [Math.min(...prices), Math.max(...prices)];
@@ -44,7 +46,6 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
       .filter(p => selectedColors.length === 0 || p.colors.some(c => selectedColors.includes(c)))
       .filter(p => selectedSizes.length === 0 || p.sizes.some(s => selectedSizes.includes(s)));
 
-    // Smart search and relevance
     if (search.trim() !== "") {
       const searchLower = search.toLowerCase();
       result = result.filter(p => p.title.toLowerCase().includes(searchLower));
@@ -64,14 +65,12 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
         result.sort((a, b) => b.price - a.price);
         break;
       case "relevance":
-        // Smart relevance: exact match first, then startsWith, then includes
         const searchLower = search.toLowerCase();
         result.sort((a, b) => {
           const aTitle = a.title.toLowerCase();
           const bTitle = b.title.toLowerCase();
-          const aScore = aTitle === searchLower ? 3 : aTitle.startsWith(searchLower) ? 2 : aTitle.includes(searchLower) ? 1 : 0;
-          const bScore = bTitle === searchLower ? 3 : bTitle.startsWith(searchLower) ? 2 : bTitle.includes(searchLower) ? 1 : 0;
-          return bScore - aScore;
+          const score = (title: string) => title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
+          return score(bTitle) - score(aTitle);
         });
         break;
     }
@@ -84,7 +83,13 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
       <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>My Products</h1>
 
       {/* Filters & Search */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem", alignItems: "center" }}>
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.5rem",
+        marginBottom: "1rem",
+        alignItems: "center",
+      }}>
         <input
           type="text"
           placeholder="Search by title..."
@@ -95,7 +100,7 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
 
         <select
           value={sortBy}
-          onChange={e => setSortBy(e.target.value as any)}
+          onChange={e => setSortBy(e.target.value as SortOption)}
           style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
         >
           <option value="alpha">A → Z</option>
@@ -145,7 +150,11 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
       {/* Products Grid */}
       {filteredProducts.length === 0 && <p>No products found.</p>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+        gap: "1rem",
+      }}>
         {filteredProducts.map(product => (
           <Link key={product.id} href={`/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
             <div style={{
