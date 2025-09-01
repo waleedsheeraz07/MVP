@@ -53,7 +53,7 @@ export default function SellProductPage() {
 
       if (!res.ok) throw data; // Throw the JSON directly
 
-      router.push("/dashboard");
+      router.push("/products");
     } catch (err: unknown) {
       // Handle thrown error safely
       if (err && typeof err === "object" && "error" in err) {
