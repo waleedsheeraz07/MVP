@@ -16,15 +16,14 @@ export default function SellProductPage() {
   const [sizes, setSizes] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [debug, setDebug] = useState<any>(null);
 
-  // Add files and generate previews
   const handleImageChange = (files: FileList | null) => {
     if (!files) return;
     const fileArray = Array.from(files);
-    setImages((prev) => {
+    setImages(prev => {
       const updated = [...prev, ...fileArray];
-      const urls = updated.map((f) => URL.createObjectURL(f));
-      setPreviews(urls);
+      setPreviews(updated.map(f => URL.createObjectURL(f)));
       return updated;
     });
   };
@@ -33,6 +32,7 @@ export default function SellProductPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setDebug(null);
 
     try {
       const formData = new FormData();
@@ -40,27 +40,19 @@ export default function SellProductPage() {
       formData.append("description", description);
       formData.append("price", price);
       formData.append("quantity", quantity);
-
-      // send as plain strings — API will split by comma
       formData.append("colors", colors);
       formData.append("sizes", sizes);
+      images.forEach(file => formData.append("images", file));
 
-      images.forEach((file) => formData.append("images", file));
+      const res = await fetch("/api/products/create", { method: "POST", body: formData });
+      const data = await res.json();
 
-      const res = await fetch("/api/products/create", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Something went wrong");
-      }
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
 
       router.push("/dashboard");
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+      setDebug(err.debug || null);
     } finally {
       setLoading(false);
     }
@@ -70,83 +62,28 @@ export default function SellProductPage() {
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Sell a Product</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
+      {debug && (
+        <pre style={{ background: "#f0f0f0", padding: "1rem", maxHeight: "300px", overflow: "auto" }}>
+          {JSON.stringify(debug, null, 2)}
+        </pre>
+      )}
 
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <input
-          type="number"
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          required
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
+        <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="number" placeholder="Price" value={price} onChange={e => setPrice(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} required style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
 
         <h3>Images</h3>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => handleImageChange(e.target.files)}
-          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
-        />
-
+        <input type="file" accept="image/*" multiple onChange={e => handleImageChange(e.target.files)} style={{ display: "block", marginBottom: "1rem", width: "100%" }} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-          {previews.map((url, idx) => (
-            <img
-              key={idx}
-              src={url}
-              alt={`Preview ${idx}`}
-              style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover", border: "1px solid #ccc" }}
-            />
-          ))}
+          {previews.map((url, idx) => <img key={idx} src={url} alt={`Preview ${idx}`} style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover", border: "1px solid #ccc" }} />)}
         </div>
 
-        <input
-          type="text"
-          placeholder="Colors (comma separated, e.g. Red,Blue,Green)"
-          value={colors}
-          onChange={(e) => setColors(e.target.value)}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
+        <input type="text" placeholder="Colors (comma separated, e.g. Red,Blue)" value={colors} onChange={e => setColors(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
+        <input type="text" placeholder="Sizes (comma separated, e.g. S,M,L)" value={sizes} onChange={e => setSizes(e.target.value)} style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }} />
 
-        <input
-          type="text"
-          placeholder="Sizes (comma separated, e.g. S,M,L,XL)"
-          value={sizes}
-          onChange={(e) => setSizes(e.target.value)}
-          style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
-        >
+        <button type="submit" disabled={loading} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>
           {loading ? "Saving..." : "Create Product"}
         </button>
       </form>
