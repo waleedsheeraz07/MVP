@@ -18,8 +18,8 @@ interface FormFields {
   description?: string;
   price: string;
   quantity: string;
-  colors?: string[] | string;
-  sizes?: string[] | string;
+  colors?: string[];
+  sizes?: string[];
 }
 
 const parseForm = (
@@ -34,13 +34,31 @@ const parseForm = (
       const uploadedFiles: File[] = [];
       if (files.images) {
         if (Array.isArray(files.images)) {
-          uploadedFiles.push(...files.images as File[]);
+          uploadedFiles.push(...(files.images as File[]));
         } else {
           uploadedFiles.push(files.images as File);
         }
       }
 
-      resolve({ fields: fields as FormFields, files: uploadedFiles });
+      // Safe mapping: ensure all fields are properly coerced into expected types
+      const safeFields: FormFields = {
+        title: fields.title?.toString() || "",
+        description: fields.description?.toString(),
+        price: fields.price?.toString() || "0",
+        quantity: fields.quantity?.toString() || "0",
+        colors: Array.isArray(fields.colors)
+          ? fields.colors.map((c) => c.toString())
+          : fields.colors
+          ? [fields.colors.toString()]
+          : [],
+        sizes: Array.isArray(fields.sizes)
+          ? fields.sizes.map((s) => s.toString())
+          : fields.sizes
+          ? [fields.sizes.toString()]
+          : [],
+      };
+
+      resolve({ fields: safeFields, files: uploadedFiles });
     });
   });
 };
@@ -86,8 +104,8 @@ export default async function handler(
         description: description || "",
         price: parseFloat(price),
         quantity: parseInt(quantity, 10),
-        colors: Array.isArray(colors) ? colors : [colors],
-        sizes: Array.isArray(sizes) ? sizes : [sizes],
+        colors,
+        sizes,
         ownerId: (session.user as { id: string }).id,
         images: imageUrls,
       },
