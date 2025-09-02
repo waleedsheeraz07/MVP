@@ -2,7 +2,67 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/router"
+import { GetServerSidePropsContext } from "next"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../api/auth/[...nextauth]"
+import { prisma } from "../../lib/prisma" // adjust path
 
+// --- SERVER SIDE FETCH ---
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions)
+
+  if (!session) {
+    return { redirect: { destination: "/login", permanent: false } }
+  }
+
+  const { id } = context.query
+  if (!id || typeof id !== "string") return { notFound: true }
+
+  // fetch categories for tree
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
+  })
+
+  const mappedCategories = categories.map(cat => ({
+    _id: cat.id,
+    title: cat.title,
+    order: cat.order,
+    parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
+  }))
+
+  // fetch product with categories
+  const productData = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      categories: { select: { categoryId: true } },
+    },
+  })
+
+  if (!productData) return { notFound: true }
+
+  return {
+    props: {
+      session,
+      categories: mappedCategories,
+      product: {
+        id: productData.id,
+        title: productData.title,
+        description: productData.description || "",
+        price: productData.price,
+        quantity: productData.quantity,
+        colors: productData.colors || [],
+        sizes: productData.sizes || [],
+        condition: productData.condition,
+        era: productData.era,
+        images: productData.images || [],
+        categories: productData.categories,
+      },
+    },
+  }
+}
+
+// --- TYPES ---
 interface CategoryRaw {
   _id: string
   title: string
@@ -14,9 +74,27 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
+interface ProductCategory {
+  categoryId: string
+}
+
+interface Product {
+  id: string
+  title: string
+  description: string
+  price: number
+  quantity: number
+  colors: string[]
+  sizes: string[]
+  condition: string
+  era: string
+  images: string[]
+  categories: ProductCategory[]
+}
+
 interface EditProductPageProps {
   categories: CategoryRaw[]
-  product: any
+  product: Product
 }
 
 export default function EditProductPage({ categories, product }: EditProductPageProps) {
@@ -24,17 +102,17 @@ export default function EditProductPage({ categories, product }: EditProductPage
 
   // --- STATES ---
   const [title, setTitle] = useState(product.title)
-  const [description, setDescription] = useState(product.description || "")
+  const [description, setDescription] = useState(product.description)
   const [price, setPrice] = useState(product.price.toString())
   const [quantity, setQuantity] = useState(product.quantity.toString())
   const [colors, setColors] = useState(product.colors.join(", "))
   const [sizes, setSizes] = useState(product.sizes.join(", "))
-  const [condition, setCondition] = useState(product.condition || "")
-  const [era, setEra] = useState(product.era || "")
+  const [condition, setCondition] = useState(product.condition)
+  const [era, setEra] = useState(product.era)
   const [before1900, setBefore1900] = useState("")
 
   const [selectedCategories, setSelectedCategories] = useState(
-    product.categories.map((c: any) => c.categoryId)
+    product.categories.map(c => c.categoryId)
   )
 
   const [images, setImages] = useState<File[]>([])
@@ -71,7 +149,7 @@ export default function EditProductPage({ categories, product }: EditProductPage
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    cats.forEach(cat => (map[cat._id] = { ...cat, children: [] }))
     cats.forEach(cat => {
       if (cat.parent?._id && map[cat.parent._id]) map[cat.parent._id].children.push(map[cat._id])
       else roots.push(map[cat._id])
@@ -133,7 +211,7 @@ export default function EditProductPage({ categories, product }: EditProductPage
     )
   }
 
-  // --- SUBMIT HANDLER ---
+  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
@@ -164,7 +242,8 @@ export default function EditProductPage({ categories, product }: EditProductPage
 
       router.push("/myproducts")
     } catch (err: unknown) {
-      setError(err && typeof err === "object" && "error" in err ? (err as any).error : "Something went wrong")
+      const e = err as { error?: string }
+      setError(e.error || "Something went wrong")
     } finally {
       setLoading(false)
     }
@@ -179,18 +258,22 @@ export default function EditProductPage({ categories, product }: EditProductPage
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
       <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Edit Product</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
+          Edit Product
+        </h1>
 
         {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input type="text" placeholder="Title *" value={title} onChange={e => setTitle(e.target.value)} required className="input" />
           <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} className="input min-h-[100px]" />
+
           <div className="flex gap-4 flex-wrap">
             <input type="number" placeholder="Price *" value={price} onChange={e => setPrice(e.target.value)} required className="input flex-1" />
             <input type="number" placeholder="Quantity *" value={quantity} onChange={e => setQuantity(e.target.value)} required className="input flex-1" />
           </div>
 
+          {/* Category Tree */}
           <div>
             <h3 className="mb-2 font-medium">Categories *</h3>
             <div className="border p-3 rounded-lg max-h-64 overflow-y-auto bg-[#fffaf5]">
@@ -198,11 +281,13 @@ export default function EditProductPage({ categories, product }: EditProductPage
             </div>
           </div>
 
+          {/* Condition */}
           <select value={condition} onChange={e => setCondition(e.target.value)} required className="input">
             <option value="">Select Condition *</option>
             {["Untouched","Excellent","Good","Fair","Slightly Damaged","Damaged","Highly Damaged"].map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
           </select>
 
+          {/* Era */}
           <div>
             <select value={era} onChange={e => setEra(e.target.value)} required className="input">
               <option value="">Select Era *</option>
@@ -211,6 +296,7 @@ export default function EditProductPage({ categories, product }: EditProductPage
             {era === "before1900" && <input type="number" placeholder="Enter Year (before 1900)" value={before1900} onChange={e => setBefore1900(e.target.value)} className="input mt-2" />}
           </div>
 
+          {/* Images */}
           <div>
             <h3 className="mb-2 font-medium">Images</h3>
             <label className="block w-full p-3 border border-dashed border-[#d4b996] rounded-lg text-center cursor-pointer bg-[#fffaf5] text-[#3e2f25] hover:bg-[#f8efe4] transition">
@@ -230,7 +316,7 @@ export default function EditProductPage({ categories, product }: EditProductPage
           <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
           <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} className="input" />
 
-         <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition">
+          <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition">
             {loading ? "Saving..." : "Update Product"}
           </button>
         </form>
