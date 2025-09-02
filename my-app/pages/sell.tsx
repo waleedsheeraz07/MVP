@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { prisma } from "../lib/prisma"; // adjust path to your prisma client
+import prisma from "../lib/prisma"; // adjust path to your prisma client
 
 // --- SERVER SIDE FETCH ---
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -15,8 +15,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { redirect: { destination: "/login", permanent: false } };
   }
 
+  // Fetch flat categories (you can later expand to nested if you want tree UI)
   const categories = await prisma.category.findMany({
-    select: { id: true, name: true },
+    select: { id: true, title: true },
+    orderBy: { order: "asc" },
   });
 
   return { props: { session, categories } };
@@ -24,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 // --- TYPES ---
 interface SellProductPageProps {
-  categories: { id: string; name: string }[];
+  categories: { id: string; title: string }[];
 }
 
 export default function SellProductPage({ categories }: SellProductPageProps) {
@@ -175,7 +177,7 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
             <option value="">Select Category *</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>
-                {cat.name}
+                {cat.title}
               </option>
             ))}
           </select>
