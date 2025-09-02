@@ -287,6 +287,7 @@ const deleteProduct = async () => {
   setLoading(false)
   setModal(prev => ({ ...prev, open: false }))
 }
+}
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
