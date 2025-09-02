@@ -1,41 +1,53 @@
-// pages/api/products/delete.ts
-import { NextApiRequest, NextApiResponse } from "next"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "../auth/[...nextauth]"
-import { prisma } from "../../../lib/prisma"
+import { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
+import { prisma } from "../../../lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "DELETE") {
-    return res.status(405).json({ error: "Method not allowed" })
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const session = await getServerSession(req, res, authOptions)
-  if (!session) {
-    return res.status(401).json({ error: "Unauthorized" })
-  }
-
-  const { id } = req.query
-  if (!id || typeof id !== "string") {
-    return res.status(400).json({ error: "Product ID is required" })
-  }
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    // If your schema has `id Int`, convert string -> number
-    const productId = Number(id)
+    const { id } = req.query;
 
-    if (isNaN(productId)) {
-      return res.status(400).json({ error: "Invalid product ID" })
+    if (!id || Array.isArray(id)) {
+      return res.status(400).json({ error: "Product ID is required" });
     }
 
-    // Optional: verify ownership
-    // const product = await prisma.product.findUnique({ where: { id: productId } })
-    // if (product?.userId !== session.user.id) return res.status(403).json({ error: "Forbidden" })
+    const productId = Number(id);
+    if (isNaN(productId)) {
+      return res.status(400).json({ error: "Invalid Product ID" });
+    }
 
-    await prisma.product.delete({ where: { id: productId } })
+    // Check product exists
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) return res.status(404).json({ error: "Product not found" });
 
-    return res.status(200).json({ message: "Product deleted successfully" })
-  } catch (err: unknown) {
-  console.error("Delete error:", err)
-  return res.status(500).json({ error: "Failed to delete product" })
-}
+    // Check ownership
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) return res.status(401).json({ error: "User ID not found in session" });
+    if (product.ownerId !== userId) {
+      return res.status(403).json({ error: "Forbidden: You don’t own this product" });
+    }
+
+    // Delete related categories first (join table cleanup)
+    await prisma.productCategory.deleteMany({
+      where: { productId },
+    });
+
+    // Delete product itself
+    await prisma.product.delete({
+      where: { id: productId },
+    });
+
+    return res.status(200).json({ success: true, message: "Product deleted successfully" });
+  } catch (error: unknown) {
+    console.error("Delete error:", error);
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    return res.status(500).json({ error: "Internal server error", detail: message });
+  }
 }
