@@ -78,10 +78,9 @@ const uploadFileToCloudinary = (file: File): Promise<string> =>
   })
 
 const deleteCloudinaryImage = (url: string) => {
-  // Extract public_id from Cloudinary URL
   const parts = url.split("/")
   const filename = parts[parts.length - 1]
-  const public_id = filename.split(".")[0] // remove extension
+  const public_id = filename.split(".")[0]
   return cloudinary.uploader.destroy(`products/${public_id}`)
 }
 
@@ -109,13 +108,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const currentProduct = await prisma.product.findUnique({ where: { id: productId } })
     if (!currentProduct) return res.status(404).json({ error: "Product not found" })
 
+    // Safe existing images
+    const safeExistingImages = existingImages || []
+
     // Determine images to delete
-    const imagesToDelete = currentProduct.images.filter(img => !existingImages.includes(img))
+    const imagesToDelete = currentProduct.images.filter(img => !safeExistingImages.includes(img))
     await Promise.all(imagesToDelete.map(deleteCloudinaryImage))
 
     // Upload new images
     const newImageUrls = await Promise.all(files.map(uploadFileToCloudinary))
-    const finalImages = [...existingImages, ...newImageUrls]
+    const finalImages = [...safeExistingImages, ...newImageUrls]
 
     // Update product fields
     await prisma.product.update({
