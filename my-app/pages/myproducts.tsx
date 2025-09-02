@@ -171,7 +171,7 @@ export default function MyProductsPage({ products }: MyProductsPageProps) {
         gap: "1rem",
       }}>
         {filteredProducts.map(product => (
-          <Link key={product.id} href={`/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <Link key={product.id} href={`/admin/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
             <div style={{
               border: "1px solid #ddd",
               borderRadius: "10px",
