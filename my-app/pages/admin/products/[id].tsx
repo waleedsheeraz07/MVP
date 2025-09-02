@@ -288,11 +288,20 @@ const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
 // --- DELETE HANDLER ---
 const deleteProduct = async () => {
   setLoading(true)
+  setError("")
+
   try {
-    const res = await fetch(`/api/products/delete?id=${product.id}`, {
+    // Using FormData just for consistency (optional)
+    const formData = new FormData()
+    formData.append("productId", product.id)
+
+    const res = await fetch("/api/products/delete?" + new URLSearchParams({ productId: product.id }), {
       method: "DELETE",
     })
-    if (!res.ok) throw await res.json()
+
+    const data = await res.json()
+    if (!res.ok) throw data
+
     router.push("/myproducts")
   } catch (err: unknown) {
     if (err && typeof err === "object" && "error" in err) {
