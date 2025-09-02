@@ -93,8 +93,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = (session.user as { id?: string }).id;
     if (!userId) return res.status(401).json({ error: "User ID not found in session" });
 
+    // Upload images
     const imageUrls = await Promise.all(files.map(uploadFileToCloudinary));
 
+    // Create product
     const product = await prisma.product.create({
       data: {
         title,
@@ -107,11 +109,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         era: era || "",
         ownerId: userId,
         images: imageUrls,
-        categories: {
-          connect: categories?.map(id => ({ id })) || [],
-        },
       },
     });
+
+    // Link categories via join table
+    if (categories && categories.length) {
+      const categoryLinks = categories.map(catId =>
+        prisma.productCategory.create({
+          data: { productId: product.id, categoryId: catId },
+        })
+      );
+      await Promise.all(categoryLinks);
+    }
 
     res.status(201).json({
       success: true,
@@ -120,6 +129,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields,
         fileNames: files.map(f => f.originalFilename),
         imageUrls,
+        categoriesLinked: categories,
       },
     });
   } catch (error: unknown) {
