@@ -64,6 +64,7 @@ model Category {
   parentId  String?    @db.ObjectId
   parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  Category[] @relation("CategoryChildren")
- createdAt DateTime   @default(now())
+	products  Product[]  @relation("ProductCategories")
+	createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
