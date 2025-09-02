@@ -1,3 +1,4 @@
+// pages/api/products/delete.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
@@ -12,29 +13,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    const { id } = req.query;
+    const { productId } = req.query;
 
-    if (!id || Array.isArray(id)) {
-      return res.status(400).json({ error: "Product ID is required" });
+    if (!productId || typeof productId !== "string") {
+      return res.status(400).json({ error: "Invalid or missing productId" });
     }
 
-    const productId = Number(id);
-    if (isNaN(productId)) {
-      return res.status(400).json({ error: "Invalid Product ID" });
-    }
-
-    // Check product exists
-    const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) return res.status(404).json({ error: "Product not found" });
-
-    // Check ownership
     const userId = (session.user as { id?: string }).id;
     if (!userId) return res.status(401).json({ error: "User ID not found in session" });
-    if (product.ownerId !== userId) {
-      return res.status(403).json({ error: "Forbidden: You don’t own this product" });
+
+    // Verify product ownership
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
     }
 
-    // Delete related categories first (join table cleanup)
+    if (product.ownerId !== userId) {
+      return res.status(403).json({ error: "Forbidden – not your product" });
+    }
+
+    // Delete product categories first (join table cleanup)
     await prisma.productCategory.deleteMany({
       where: { productId },
     });
@@ -45,9 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     return res.status(200).json({ success: true, message: "Product deleted successfully" });
-  } catch (error: unknown) {
-    console.error("Delete error:", error);
-    const message = error instanceof Error ? error.message : JSON.stringify(error);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : JSON.stringify(err);
     return res.status(500).json({ error: "Internal server error", detail: message });
   }
 }
