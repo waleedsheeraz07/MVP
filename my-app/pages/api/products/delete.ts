@@ -20,16 +20,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Optional: verify ownership if products are user-specific
-    // const product = await prisma.product.findUnique({ where: { id } })
-    // if (product.userId !== session.user.id) return res.status(403).json({ error: "Forbidden" })
+    // If your schema has `id Int`, convert string -> number
+    const productId = Number(id)
 
-    // Delete the product
-    await prisma.product.delete({ where: { id } })
+    if (isNaN(productId)) {
+      return res.status(400).json({ error: "Invalid product ID" })
+    }
+
+    // Optional: verify ownership
+    // const product = await prisma.product.findUnique({ where: { id: productId } })
+    // if (product?.userId !== session.user.id) return res.status(403).json({ error: "Forbidden" })
+
+    await prisma.product.delete({ where: { id: productId } })
 
     return res.status(200).json({ message: "Product deleted successfully" })
-  } catch (err: unknown) {
-    console.error(err)
+  } catch (err: any) {
+    console.error("Delete error:", err)
     return res.status(500).json({ error: "Failed to delete product" })
   }
 }
