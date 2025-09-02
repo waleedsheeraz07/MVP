@@ -11,6 +11,7 @@ interface LoginPageProps {
 export default function LoginPage({ csrfToken }: LoginPageProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -59,14 +60,23 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
             className="input"
           />
 
-          <input
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            placeholder="Password"
-            required
-            className="input"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="current-password"
+              placeholder="Password"
+              required
+              className="input pr-12"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(prev => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
 
           <button
             type="submit"
