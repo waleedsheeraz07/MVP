@@ -122,7 +122,8 @@ export default function EditProductPage({ categories, product }: EditProductPage
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-
+  const [modal, setModal] = useState<{ type: "update" | "delete"; open: boolean }>({ type: "update", open: false })
+  
   // --- IMAGE HANDLERS ---
   const handleImageChange = (files: FileList | null) => {
     if (!files) return
@@ -316,11 +317,15 @@ export default function EditProductPage({ categories, product }: EditProductPage
           <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
           <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} className="input" />
 
-          <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition">
-            {loading ? "Saving..." : "Update Product"}
-          </button>
+          <div className="flex gap-4">
+            <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition flex-1">{loading ? "Saving..." : "Update Product"}</button>
+            <button type="button" onClick={()=>setModal({ type:"delete", open:true })} className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex-1">Delete</button>
+          </div>
         </form>
       </div>
+
+{modal.open && modal.type==="update" && <ConfirmModal message="Are you sure you want to update this product?" onConfirm={submitUpdate} onCancel={()=>setModal({...modal, open:false})} />}
+      {modal.open && modal.type==="delete" && <ConfirmModal message="Are you sure you want to delete this product?" onConfirm={deleteProduct} onCancel={()=>setModal({...modal, open:false})} />}
 
       <style jsx>{`
         .input { padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #ccc; width: 100%; background-color: #fff; color: #000; }
