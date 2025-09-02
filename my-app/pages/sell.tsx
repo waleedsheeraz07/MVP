@@ -54,7 +54,7 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
-  const [quantity, setQuantity] = useState("")
+  const [quantity, setQuantity] = useState<number>(1)
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [colors, setColors] = useState("")
