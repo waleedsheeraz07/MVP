@@ -98,14 +98,28 @@ interface EditProductPageProps {
 }
 
 // --- REUSABLE CONFIRM MODAL ---
-interface ConfirmModalProps { message: string; onConfirm: () => void; onCancel: () => void }
+interface ConfirmModalProps {
+  message: string
+  onConfirm: () => void | Promise<void>
+  onCancel: () => void
+}
 const ConfirmModal = ({ message, onConfirm, onCancel }: ConfirmModalProps) => (
   <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
     <div className="bg-white p-6 rounded-xl shadow-lg w-96 text-center">
       <p className="mb-4">{message}</p>
       <div className="flex justify-around gap-4">
-        <button onClick={onConfirm} className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg">Yes</button>
-        <button onClick={onCancel} className="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+        <button
+          onClick={onConfirm}
+          className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg"
+        >
+          Yes
+        </button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 bg-gray-300 rounded-lg"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   </div>
@@ -138,6 +152,13 @@ export default function EditProductPage({ categories, product }: EditProductPage
   const [error, setError] = useState("")
   const [modal, setModal] = useState<{ type: "update" | "delete"; open: boolean }>({ type: "update", open: false })
   
+// --- MODAL STATE ---
+const [modal, setModal] = useState<{ type: "update" | "delete"; open: boolean }>({
+  type: "update",
+  open: false,
+}
+)
+
   // --- IMAGE HANDLERS ---
   const handleImageChange = (files: FileList | null) => {
     if (!files) return
@@ -226,68 +247,74 @@ export default function EditProductPage({ categories, product }: EditProductPage
     )
   }
 
-  // --- SUBMIT ---
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+// --- FORM HANDLER (for form submit) ---
+const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+  if (e) e.preventDefault()
+  setLoading(true)
+  setError("")
 
-    try {
-      const formData = new FormData()
-      formData.append("title", title)
-      formData.append("description", description)
-      formData.append("price", price)
-      formData.append("quantity", quantity)
-      formData.append("colors", colors)
-      formData.append("sizes", sizes)
-      formData.append("categories", JSON.stringify(selectedCategories))
-      formData.append("condition", condition)
-      formData.append("era", era === "before1900" ? before1900 : era)
-      formData.append("existingImages", JSON.stringify(existingImages))
+  try {
+    const formData = new FormData()
+    formData.append("title", title)
+    formData.append("description", description)
+    formData.append("price", price)
+    formData.append("quantity", quantity)
+    formData.append("colors", colors)
+    formData.append("sizes", sizes)
+    formData.append("categories", JSON.stringify(selectedCategories))
+    formData.append("condition", condition)
+    formData.append("era", era === "before1900" ? before1900 : era)
+    formData.append("existingImages", JSON.stringify(existingImages))
 
-      images.forEach(file => formData.append("images", file))
+    images.forEach(file => formData.append("images", file))
 
-      const res = await fetch(`/api/products/update?id=${product.id}`, {
-        method: "POST",
-        body: formData,
-      })
+    const res = await fetch(`/api/products/update?id=${product.id}`, {
+      method: "POST",
+      body: formData,
+    })
 
-      const data = await res.json()
-      if (!res.ok) throw data
+    const data = await res.json()
+    if (!res.ok) throw data
 
-      router.push("/myproducts")
-    } catch (err: unknown) {
-      const e = err as { error?: string }
-      setError(e.error || "Something went wrong")
-    } finally {
-      setLoading(false)
-    }
+    router.push("/myproducts")
+  } catch (err: unknown) {
+    const e = err as { error?: string }
+    setError(e.error || "Something went wrong")
+  } finally {
+    setLoading(false)
+    setModal(prev => ({ ...prev, open: false }))
   }
+}
 
-  const eraOptions = [
+// --- DELETE HANDLER ---
+const deleteProduct = async () => {
+  setLoading(true)
+  try {
+    const res = await fetch(`/api/products/delete?id=${product.id}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) throw await res.json()
+    router.push("/myproducts")
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && "error" in err) {
+      setError((err as { error?: string }).error || "Delete failed")
+    } else if (err instanceof Error) {
+      setError(err.message || "Delete failed")
+    } else {
+      setError("Delete failed")
+    }
+  } finally {
+    setLoading(false)
+    setModal(prev => ({ ...prev, open: false }))
+  }
+}
+
+
+const eraOptions = [
     "before1900","1900–1909","1910–1919","1920–1929","1930–1939",
     "1940–1949","1950–1959","1960–1969","1970–1979","1980–1989",
     "1990–1999","2000–2009","2010–2019","2020–2025"
   ]
-const deleteProduct = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/products/delete?id=${product.id}`, { method: "DELETE" })
-      if (!res.ok) throw await res.json()
-      router.push("/myproducts")
-   } catch (err: unknown) {
-  if (err && typeof err === "object" && "error" in err) {
-    setError((err as { error?: string }).error || "Delete failed")
-  } else if (err instanceof Error) {
-    setError(err.message || "Delete failed")
-  } else {
-    setError("Delete failed")
-  }
-} finally {
-  setLoading(false)
-  setModal(prev => ({ ...prev, open: false }))
-}
-}
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
@@ -350,15 +377,42 @@ const deleteProduct = async () => {
           <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
           <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} className="input" />
 
-          <div className="flex gap-4">
-            <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition flex-1">{loading ? "Saving..." : "Update Product"}</button>
-            <button type="button" onClick={()=>setModal({ type:"delete", open:true })} className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex-1">Delete</button>
-          </div>
+          // --- BUTTONS ---
+<div className="flex gap-4">
+  <button
+    type="submit"
+    disabled={loading}
+    className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition flex-1"
+  >
+    {loading ? "Saving..." : "Update Product"}
+  </button>
+  <button
+    type="button"
+    onClick={() => setModal({ type: "delete", open: true })}
+    className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex-1"
+  >
+    Delete
+  </button>
+</div>
         </form>
       </div>
 
-{modal.open && modal.type==="update" && <ConfirmModal message="Are you sure you want to update this product?" onConfirm={handleSubmit} onCancel={()=>setModal({...modal, open:false})} />}
-      {modal.open && modal.type==="delete" && <ConfirmModal message="Are you sure you want to delete this product?" onConfirm={deleteProduct} onCancel={()=>setModal({...modal, open:false})} />}
+// --- CONFIRM MODALS ---
+{modal.open && modal.type === "update" && (
+  <ConfirmModal
+    message="Are you sure you want to update this product?"
+    onConfirm={() => handleSubmit()}  // ✅ wrapper, no event
+    onCancel={() => setModal({ ...modal, open: false })}
+  />
+)}
+
+{modal.open && modal.type === "delete" && (
+  <ConfirmModal
+    message="Are you sure you want to delete this product?"
+    onConfirm={deleteProduct}
+    onCancel={() => setModal({ ...modal, open: false })}
+  />
+)}
 
       <style jsx>{`
         .input { padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #ccc; width: 100%; background-color: #fff; color: #000; }
