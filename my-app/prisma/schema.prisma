@@ -47,7 +47,10 @@ model Product {
   images      String[]       // required, can be empty
   colors      String[]       @default([])
   sizes       String[]       @default([])
-  quantity    Int
+  condition   String     @default("")
+  era         String     @default("")
+  categories  Category[] @relation("ProductCategories")
+	quantity    Int
   ownerId     String          @db.ObjectId
   owner       User            @relation(fields: [ownerId], references: [id])
   createdAt   DateTime        @default(now())
