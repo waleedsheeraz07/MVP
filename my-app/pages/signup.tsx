@@ -2,19 +2,18 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
-type Role = "buyer" | "seller";
-
 export default function SignupPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [role, setRole] = useState<Role | "">("");
+  const role = "buyer"; // fixed role
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
 
@@ -26,21 +25,26 @@ export default function SignupPage() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
   const handleNext = () => {
     setError("");
-    if (step === 0 && !role) return setError("Please select a role to continue");
+
     if (step === 1) {
       if (!firstName.trim()) return setError("First name is required");
       if (!email.trim()) return setError("Email is required");
       if (!validateEmail(email)) return setError("Enter a valid email address");
+      if (!phone.trim()) return setError("Phone number is required");
     }
+
     if (step === 3) {
       if (!password || !confirmPassword) return setError("Both password fields are required");
       if (password !== confirmPassword) return setError("Passwords do not match");
     }
+
     setStep(prev => prev + 1);
   };
 
@@ -58,6 +62,7 @@ export default function SignupPage() {
           firstName,
           lastName,
           email,
+          phone,
           dob,
           gender,
           address1,
@@ -86,26 +91,6 @@ export default function SignupPage() {
     switch (step) {
       case 0:
         return (
-          <div className="flex flex-col gap-4">
-            <p className="text-center font-semibold mb-2">Sign up as:</p>
-            <div className="flex gap-4 justify-center">
-              {(["buyer", "seller"] as Role[]).map(r => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={`px-6 py-2 rounded-lg font-semibold border ${
-                    role === r ? "bg-[#3e2f25] text-[#fdf8f3]" : "border-[#ccc]"
-                  }`}
-                >
-                  {r.charAt(0).toUpperCase() + r.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      case 1:
-        return (
           <>
             <input
               type="text"
@@ -132,6 +117,15 @@ export default function SignupPage() {
               autoComplete="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              className="input"
+            />
+            <input
+              type="tel"
+              placeholder="Phone Number *"
+              name="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
               className="input"
             />
             <div className="relative">
@@ -163,7 +157,7 @@ export default function SignupPage() {
             </select>
           </>
         );
-      case 2:
+      case 1:
         return (
           <>
             <input
@@ -213,27 +207,45 @@ export default function SignupPage() {
             />
           </>
         );
-      case 3:
+      case 2:
         return (
           <>
-            <input
-              type="password"
-              placeholder="Password *"
-              name="new-password"
-              autoComplete="new-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="input"
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password *"
-              name="confirm-password"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="input"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password *"
+                name="new-password"
+                autoComplete="new-password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="input pr-12"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
+                onClick={() => setShowPassword(prev => !prev)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password *"
+                name="confirm-password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="input pr-12"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </>
         );
     }
@@ -248,11 +260,11 @@ export default function SignupPage() {
         <div className="relative mb-6">
           <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
           <div className="flex justify-between relative z-10">
-            {[0,1,2,3].map(s => (
+            {[0,1,2].map(s => (
               <div key={s} className="flex flex-col items-center w-8">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold
                   ${s <= step ? "bg-[#3e2f25] text-[#fdf8f3]" : "bg-[#d4b996] text-[#3e2f25]"}`}>
-                  {s === 0 ? "R" : s}
+                  {s}
                 </div>
               </div>
             ))}
@@ -269,7 +281,7 @@ export default function SignupPage() {
               Back
             </button>
           )}
-          {step < 3 ? (
+          {step < 2 ? (
             <button onClick={handleNext} className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto">
               Next
             </button>
