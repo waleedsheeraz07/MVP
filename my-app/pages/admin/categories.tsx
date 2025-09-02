@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
+import styles from '../../styles/admincat.module.css'
+import AdminHeader from '../components/AdminHeader'
 import {
   DndContext,
   closestCenter,
