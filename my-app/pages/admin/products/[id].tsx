@@ -150,7 +150,6 @@ export default function EditProductPage({ categories, product }: EditProductPage
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [modal, setModal] = useState<{ type: "update" | "delete"; open: boolean }>({ type: "update", open: false })
   
 // --- MODAL STATE ---
 const [modal, setModal] = useState<{ type: "update" | "delete"; open: boolean }>({
