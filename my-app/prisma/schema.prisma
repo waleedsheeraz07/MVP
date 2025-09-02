@@ -41,7 +41,13 @@ model Category {
   title     String
   order     Int        @default(0)
   parentId  String?    @db.ObjectId
-  parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  parent    Category?  @relation(
+    "CategoryChildren",
+    fields: [parentId],
+    references: [id],
+    onDelete: Cascade,   // delete children when parent is deleted
+    onUpdate: Cascade
+  )
   children  Category[] @relation("CategoryChildren")
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
