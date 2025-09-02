@@ -64,11 +64,6 @@ model Category {
   parentId  String?    @db.ObjectId
   parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  Category[] @relation("CategoryChildren")
- 
-// Relations
-  products    Product[] // back-relation for owned products
-
-
  createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
