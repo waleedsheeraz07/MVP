@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
-import { signOut } from "next-auth/react";
-import Link from "next/link";
 import { authOptions } from "./api/auth/[...nextauth]";
+import prisma from "../lib/prisma"; // adjust path to your prisma client
 
+// --- SERVER SIDE FETCH ---
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
@@ -15,24 +15,22 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { redirect: { destination: "/login", permanent: false } };
   }
 
-  return { props: { session } };
+  const categories = await prisma.category.findMany({
+    select: { id: true, name: true },
+  });
+
+  return { props: { session, categories } };
 }
 
-interface DashboardProps {
-  session: {
-    user: {
-      name: string;
-      email: string;
-      role: string;
-    };
-  };
+// --- TYPES ---
+interface SellProductPageProps {
+  categories: { id: string; name: string }[];
 }
 
-
-
-export default function SellProductPage() {
+export default function SellProductPage({ categories }: SellProductPageProps) {
   const router = useRouter();
 
+  // FORM STATES
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -41,10 +39,15 @@ export default function SellProductPage() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [colors, setColors] = useState("");
   const [sizes, setSizes] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [condition, setCondition] = useState("");
+  const [era, setEra] = useState("");
+  const [before1900, setBefore1900] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Handle image selection
+  // IMAGE HANDLERS
   const handleImageChange = (files: FileList | null) => {
     if (!files) return;
     const fileArray = Array.from(files);
@@ -55,13 +58,12 @@ export default function SellProductPage() {
     });
   };
 
-  // Remove selected image
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Form submit handler
+  // FORM SUBMIT
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -75,6 +77,10 @@ export default function SellProductPage() {
       formData.append("quantity", quantity);
       formData.append("colors", colors);
       formData.append("sizes", sizes);
+      formData.append("categoryId", categoryId);
+      formData.append("condition", condition);
+      formData.append("era", era === "before1900" ? before1900 : era);
+
       images.forEach(file => formData.append("images", file));
 
       const res = await fetch("/api/products/create", {
@@ -98,170 +104,192 @@ export default function SellProductPage() {
     }
   };
 
+  // --- ERA OPTIONS ---
+  const eraOptions = [
+    "1900–1909",
+    "1910–1919",
+    "1920–1929",
+    "1930–1939",
+    "1940–1949",
+    "1950–1959",
+    "1960–1969",
+    "1970–1979",
+    "1980–1989",
+    "1990–1999",
+    "2000–2009",
+    "2010–2019",
+    "2020–2025",
+    "before1900",
+  ];
+
   return (
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "2rem auto",
-        padding: "1rem",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      }}
-    >
-      <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>Sell a Product</h1>
+    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
+      <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sell a Product</h1>
 
-      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+        {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
-          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          style={{
-            padding: "0.75rem",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-            width: "100%",
-            minHeight: "100px",
-          }}
-        />
-
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
-            type="number"
-            placeholder="Price"
-            value={price}
-            onChange={e => setPrice(e.target.value)}
+            type="text"
+            placeholder="Title *"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
             required
-            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", flex: "1 1 45%" }}
+            className="input"
           />
-          <input
-            type="number"
-            placeholder="Quantity"
-            value={quantity}
-            onChange={e => setQuantity(e.target.value)}
-            required
-            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", flex: "1 1 45%" }}
+
+          <textarea
+            placeholder="Description"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            className="input min-h-[100px]"
           />
-        </div>
 
-        {/* Custom File Upload Button */}
-        <div>
-          <h3 style={{ marginBottom: "0.5rem" }}>Images</h3>
-
-          <label
-            style={{
-              display: "inline-block",
-              width: "100%",
-              padding: "0.7rem 1rem",
-              border: "1px dashed #bfb1a3",
-              borderRadius: "10px",
-              backgroundColor: "#fffaf5",
-              color: "#4e2a0f",
-              fontSize: "0.95rem",
-              cursor: "pointer",
-              transition: "0.25s ease",
-              textAlign: "center",
-              boxSizing: "border-box",
-              marginBottom: "0.5rem",
-            }}
-          >
-            Upload Images
+          <div className="flex gap-4 flex-wrap">
             <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={e => handleImageChange(e.target.files)}
-              style={{ display: "none" }}
+              type="number"
+              placeholder="Price *"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              required
+              className="input flex-1"
             />
-          </label>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-            {previews.map((url, idx) => (
-              <div key={idx} style={{ position: "relative" }}>
-                <img
-                  src={url}
-                  alt={`Preview ${idx}`}
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx)}
-                  style={{
-                    position: "absolute",
-                    top: "-8px",
-                    right: "-8px",
-                    background: "red",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "24px",
-                    height: "24px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+            <input
+              type="number"
+              placeholder="Quantity *"
+              value={quantity}
+              onChange={e => setQuantity(e.target.value)}
+              required
+              className="input flex-1"
+            />
           </div>
-        </div>
 
-        <input
-          type="text"
-          placeholder="Colors (comma separated, e.g. Red,Blue)"
-          value={colors}
-          onChange={e => setColors(e.target.value)}
-          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
-        />
+          {/* Category */}
+          <select
+            value={categoryId}
+            onChange={e => setCategoryId(e.target.value)}
+            required
+            className="input"
+          >
+            <option value="">Select Category *</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
 
-        <input
-          type="text"
-          placeholder="Sizes (comma separated, e.g. S,M,L)"
-          value={sizes}
-          onChange={e => setSizes(e.target.value)}
-          style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
-        />
+          {/* Condition */}
+          <select
+            value={condition}
+            onChange={e => setCondition(e.target.value)}
+            required
+            className="input"
+          >
+            <option value="">Select Condition *</option>
+            {["Good", "Excellent", "Untouched", "Bad", "Broken", "Torn"].map(c => (
+              <option key={c} value={c.toLowerCase()}>
+                {c}
+              </option>
+            ))}
+          </select>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "0.75rem",
-            borderRadius: "8px",
-            border: "none",
-            background: "#4CAF50",
-            color: "#fff",
-            fontSize: "1rem",
-            cursor: "pointer",
-            transition: "0.2s",
-          }}
-        >
-          {loading ? "Saving..." : "Create Product"}
-        </button>
-      </form>
+          {/* Era */}
+          <div>
+            <select
+              value={era}
+              onChange={e => setEra(e.target.value)}
+              required
+              className="input"
+            >
+              <option value="">Select Era *</option>
+              {eraOptions.map(opt => (
+                <option key={opt} value={opt}>
+                  {opt === "before1900" ? "Before 1900" : opt}
+                </option>
+              ))}
+            </select>
+            {era === "before1900" && (
+              <input
+                type="number"
+                placeholder="Enter Year (before 1900)"
+                value={before1900}
+                onChange={e => setBefore1900(e.target.value)}
+                className="input mt-2"
+              />
+            )}
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <h3 className="mb-2 font-medium">Images</h3>
+            <label className="block w-full p-3 border border-dashed border-[#d4b996] rounded-lg text-center cursor-pointer bg-[#fffaf5] text-[#3e2f25] hover:bg-[#f8efe4] transition">
+              Upload Images
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={e => handleImageChange(e.target.files)}
+                className="hidden"
+              />
+            </label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {previews.map((url, idx) => (
+                <div key={idx} className="relative">
+                  <img
+                    src={url}
+                    alt={`Preview ${idx}`}
+                    className="w-24 h-24 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <input
+            type="text"
+            placeholder="Colors (comma separated)"
+            value={colors}
+            onChange={e => setColors(e.target.value)}
+            className="input"
+          />
+
+          <input
+            type="text"
+            placeholder="Sizes (comma separated)"
+            value={sizes}
+            onChange={e => setSizes(e.target.value)}
+            className="input"
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
+          >
+            {loading ? "Saving..." : "Create Product"}
+          </button>
+        </form>
+      </div>
+
+      <style jsx>{`
+        .input {
+          padding: 0.75rem;
+          border-radius: 0.75rem;
+          border: 1px solid #ccc;
+          width: 100%;
+          background-color: #fff;
+          color: #000;
+        }
+      `}</style>
     </div>
   );
 }
