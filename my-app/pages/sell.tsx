@@ -1,110 +1,206 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { GetServerSidePropsContext } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "./api/auth/[...nextauth]";
-import { prisma } from "../lib/prisma"; // adjust path to your prisma client
+import { useState, useMemo } from "react"
+import { useRouter } from "next/router"
+import { GetServerSidePropsContext } from "next"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "./api/auth/[...nextauth]"
+import prisma from "../lib/prisma" // adjust path
 
 // --- SERVER SIDE FETCH ---
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
+  const session = await getServerSession(context.req, context.res, authOptions)
 
   if (!session) {
-    return { redirect: { destination: "/login", permanent: false } };
+    return { redirect: { destination: "/login", permanent: false } }
   }
 
-  // Fetch flat categories (you can later expand to nested if you want tree UI)
+  // fetch categories with parent for tree building
   const categories = await prisma.category.findMany({
-    select: { id: true, title: true },
+    select: { id: true, title: true, order: true, parentId: true },
     orderBy: { order: "asc" },
-  });
+  })
 
-  return { props: { session, categories } };
+  // map to frontend format
+  const mapped = categories.map(cat => ({
+    _id: cat.id,
+    title: cat.title,
+    order: cat.order,
+    parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
+  }))
+
+  return { props: { session, categories: mapped } }
 }
 
 // --- TYPES ---
+interface CategoryRaw {
+  _id: string
+  title: string
+  parent?: { _id: string; title: string }
+  order?: number
+}
+interface CategoryNode extends CategoryRaw {
+  children: CategoryNode[]
+}
+
 interface SellProductPageProps {
-  categories: { id: string; title: string }[];
+  categories: CategoryRaw[]
 }
 
 export default function SellProductPage({ categories }: SellProductPageProps) {
-  const router = useRouter();
+  const router = useRouter()
 
   // FORM STATES
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [images, setImages] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [colors, setColors] = useState("");
-  const [sizes, setSizes] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [condition, setCondition] = useState("");
-  const [era, setEra] = useState("");
-  const [before1900, setBefore1900] = useState("");
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [price, setPrice] = useState("")
+  const [quantity, setQuantity] = useState("")
+  const [images, setImages] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
+  const [colors, setColors] = useState("")
+  const [sizes, setSizes] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [condition, setCondition] = useState("")
+  const [era, setEra] = useState("")
+  const [before1900, setBefore1900] = useState("")
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   // IMAGE HANDLERS
   const handleImageChange = (files: FileList | null) => {
-    if (!files) return;
-    const fileArray = Array.from(files);
+    if (!files) return
+    const fileArray = Array.from(files)
     setImages(prev => {
-      const updated = [...prev, ...fileArray];
-      setPreviews(updated.map(f => URL.createObjectURL(f)));
-      return updated;
-    });
-  };
+      const updated = [...prev, ...fileArray]
+      setPreviews(updated.map(f => URL.createObjectURL(f)))
+      return updated
+    })
+  }
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setPreviews(prev => prev.filter((_, i) => i !== index));
-  };
+    setImages(prev => prev.filter((_, i) => i !== index))
+    setPreviews(prev => prev.filter((_, i) => i !== index))
+  }
 
-  // FORM SUBMIT
+  // CATEGORY TREE BUILD
+  const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
+    const map: Record<string, CategoryNode> = {}
+    const roots: CategoryNode[] = []
+
+    cats.forEach(cat => {
+      map[cat._id] = { ...cat, children: [] }
+    })
+
+    cats.forEach(cat => {
+      if (cat.parent?._id && map[cat.parent._id]) {
+        map[cat.parent._id].children.push(map[cat._id])
+      } else {
+        roots.push(map[cat._id])
+      }
+    })
+
+    const sortTree = (nodes: CategoryNode[]) => {
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.forEach(n => sortTree(n.children))
+    }
+
+    sortTree(roots)
+    return roots
+  }
+
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
+
+  const toggleCategoryExpand = (id: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const handleCategoryToggle = (id: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
+
+  const CategoryNodeItem: React.FC<{ node: CategoryNode }> = ({ node }) => {
+    const isExpanded = expandedCategories.has(node._id)
+
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          {node.children.length > 0 && (
+            <button
+              type="button"
+              onClick={() => toggleCategoryExpand(node._id)}
+              className="text-sm"
+            >
+              {isExpanded ? "▾" : "▸"}
+            </button>
+          )}
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={selectedCategories.includes(node._id)}
+              onChange={() => handleCategoryToggle(node._id)}
+            />
+            {node.title}
+          </label>
+        </div>
+        {isExpanded && node.children.length > 0 && (
+          <div className="ml-6">
+            {node.children.map(child => (
+              <CategoryNodeItem key={child._id} node={child} />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("quantity", quantity);
-      formData.append("colors", colors);
-      formData.append("sizes", sizes);
-      formData.append("categoryId", categoryId);
-      formData.append("condition", condition);
-      formData.append("era", era === "before1900" ? before1900 : era);
+      const formData = new FormData()
+      formData.append("title", title)
+      formData.append("description", description)
+      formData.append("price", price)
+      formData.append("quantity", quantity)
+      formData.append("colors", colors)
+      formData.append("sizes", sizes)
+      formData.append("categories", JSON.stringify(selectedCategories))
+      formData.append("condition", condition)
+      formData.append("era", era === "before1900" ? before1900 : era)
 
-      images.forEach(file => formData.append("images", file));
+      images.forEach(file => formData.append("images", file))
 
       const res = await fetch("/api/products/create", {
         method: "POST",
         body: formData,
-      });
+      })
 
-      const data = await res.json();
+      const data = await res.json()
+      if (!res.ok) throw data
 
-      if (!res.ok) throw data;
-
-      router.push("/myproducts");
+      router.push("/myproducts")
     } catch (err: unknown) {
       if (err && typeof err === "object" && "error" in err) {
-        setError((err as { error?: string }).error || "Something went wrong");
+        setError((err as { error?: string }).error || "Something went wrong")
       } else {
-        setError("Something went wrong");
+        setError("Something went wrong")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // --- ERA OPTIONS ---
   const eraOptions = [
@@ -122,14 +218,20 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
     "2010–2019",
     "2020–2025",
     "before1900",
-  ];
+  ]
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
       <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sell a Product</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
+          Sell a Product
+        </h1>
 
-        {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
+        {error && (
+          <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
@@ -167,20 +269,15 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
             />
           </div>
 
-          {/* Category */}
-          <select
-            value={categoryId}
-            onChange={e => setCategoryId(e.target.value)}
-            required
-            className="input"
-          >
-            <option value="">Select Category *</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>
-                {cat.title}
-              </option>
-            ))}
-          </select>
+          {/* Categories */}
+          <div>
+            <h3 className="mb-2 font-medium">Categories *</h3>
+            <div className="border p-3 rounded-lg max-h-64 overflow-y-auto bg-[#fffaf5]">
+              {categoryTree.map(node => (
+                <CategoryNodeItem key={node._id} node={node} />
+              ))}
+            </div>
+          </div>
 
           {/* Condition */}
           <select
@@ -293,5 +390,5 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
         }
       `}</style>
     </div>
-  );
+  )
 }
