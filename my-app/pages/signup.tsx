@@ -1,137 +1,160 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
-
-type Role = "buyer" | "seller";
+import { useState } from "react"
+import { useRouter } from "next/router"
+import Link from "next/link"
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("buyer");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const router = useRouter()
+  const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  // Step 1
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [dob, setDob] = useState("")
+  const [gender, setGender] = useState("")
 
+  // Step 2
+  const [address1, setAddress1] = useState("")
+  const [address2, setAddress2] = useState("")
+  const [state, setState] = useState("")
+  const [country, setCountry] = useState("")
+  const [postalCode, setPostalCode] = useState("")
+
+  // Step 3
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+
+  const handleNext = () => {
+    setError("")
+    if (step === 1) {
+      if (!firstName.trim()) return setError("First name is required")
+      if (!email.trim()) return setError("Email is required")
+    }
+    if (step === 3) {
+      if (!password || !confirmPassword) return setError("Both password fields are required")
+      if (password !== confirmPassword) return setError("Passwords do not match")
+    }
+    setStep(prev => prev + 1)
+  }
+
+  const handlePrev = () => setStep(prev => Math.max(prev - 1, 1))
+
+  const handleSubmit = async () => {
+    setLoading(true)
+    setError("")
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
-      });
-
-      const data: { error?: string } = await res.json();
-
-      if (!res.ok) throw data;
-
-      router.push("/login");
-    } catch (err: unknown) {
-      if (typeof err === "object" && err !== null && "error" in err) {
-        setError((err as { error?: string }).error || "Signup failed, please try again");
-      } else {
-        setError("Signup failed, please try again");
-      }
+        body: JSON.stringify({
+          firstName, lastName, email, dob, gender,
+          address1, address2, state, country, postalCode,
+          password,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw data
+      router.push("/login")
+    } catch (err: any) {
+      setError(err.error || "Signup failed, try again")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const stepContent = () => {
+    switch (step) {
+      case 1: return (
+        <>
+          <input type="text" placeholder="First Name *" value={firstName} onChange={e => setFirstName(e.target.value)} className="input"/>
+          <input type="text" placeholder="Last Name" value={lastName} onChange={e => setLastName(e.target.value)} className="input"/>
+          <input type="email" placeholder="Email Address *" value={email} onChange={e => setEmail(e.target.value)} className="input"/>
+          <input type="date" placeholder="Date of Birth" value={dob} onChange={e => setDob(e.target.value)} className="input"/>
+          <select value={gender} onChange={e => setGender(e.target.value)} className="input">
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </>
+      )
+      case 2: return (
+        <>
+          <input type="text" placeholder="Address Line 1" value={address1} onChange={e => setAddress1(e.target.value)} className="input"/>
+          <input type="text" placeholder="Address Line 2 (Optional)" value={address2} onChange={e => setAddress2(e.target.value)} className="input"/>
+          <input type="text" placeholder="State" value={state} onChange={e => setState(e.target.value)} className="input"/>
+          <input type="text" placeholder="Country" value={country} onChange={e => setCountry(e.target.value)} className="input"/>
+          <input type="text" placeholder="Postal Code" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="input"/>
+        </>
+      )
+      case 3: return (
+        <>
+          <input type="password" placeholder="Password *" value={password} onChange={e => setPassword(e.target.value)} className="input"/>
+          <input type="password" placeholder="Confirm Password *" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="input"/>
+        </>
+      )
+    }
+  }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "1rem",
-        backgroundColor: "#f9f5f0",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          backgroundColor: "#fff",
-          padding: "2rem",
-          borderRadius: "12px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h1 style={{ textAlign: "center", marginBottom: "1.5rem", fontSize: "1.8rem" }}>Sign Up</h1>
+    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
+      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sign Up</h1>
 
-        {error && (
-          <p
-            style={{
-              color: "red",
-              background: "#ffe5e5",
-              padding: "0.75rem",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              textAlign: "center",
-            }}
-          >
-            {error}
-          </p>
-        )}
+        {/* Connected Progress Bar */}
+        <div className="relative mb-6">
+          <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
+          <div className="flex justify-between relative z-10">
+            {[1,2,3].map(s => (
+              <div key={s} className="flex flex-col items-center w-8">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold
+                  ${s <= step ? "bg-[#3e2f25] text-[#fdf8f3]" : "bg-[#d4b996] text-[#3e2f25]"}`}>
+                  {s}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
-          />
+        {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
-          />
+        <div className="flex flex-col gap-4">{stepContent()}</div>
 
-          <select
-            value={role}
-            onChange={e => setRole(e.target.value as Role)}
-            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #ccc", width: "100%" }}
-          >
-            <option value="buyer">Buyer</option>
-            <option value="seller">Seller</option>
-          </select>
+        <div className="flex justify-between mt-6">
+          {step > 1 && (
+            <button onClick={handlePrev} className="px-4 py-2 bg-[#d4b996] text-[#3e2f25] rounded-lg hover:bg-[#c4a57e] transition">
+              Back
+            </button>
+          )}
+          {step < 3 ? (
+            <button onClick={handleNext} className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto">
+              Next
+            </button>
+          ) : (
+            <button onClick={handleSubmit} disabled={loading} className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto">
+              {loading ? "Signing Up..." : "Sign Up"}
+            </button>
+          )}
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: "#4CAF50",
-              color: "#fff",
-              fontSize: "1rem",
-              cursor: "pointer",
-              transition: "0.2s",
-            }}
-          >
-            {loading ? "Signing Up..." : "Sign Up"}
-          </button>
-        </form>
-
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}>
+        <p className="text-center text-sm mt-4">
           Already have an account?{" "}
-          <Link href="/login" style={{ color: "#4CAF50", fontWeight: "bold", textDecoration: "underline" }}>
+          <Link href="/login" className="text-[#3e2f25] font-semibold underline">
             Login
           </Link>
         </p>
       </div>
+
+      <style jsx>{`
+        .input {
+          padding: 0.75rem;
+          border-radius: 0.75rem;
+          border: 1px solid #ccc;
+          width: 100%;
+        }
+      `}</style>
     </div>
-  );
+  )
 }
