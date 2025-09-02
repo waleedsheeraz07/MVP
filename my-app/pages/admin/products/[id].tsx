@@ -377,7 +377,6 @@ const eraOptions = [
           <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
           <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} className="input" />
 
-          // --- BUTTONS ---
 <div className="flex gap-4">
   <button
     type="submit"
@@ -397,7 +396,7 @@ const eraOptions = [
         </form>
       </div>
 
-// --- CONFIRM MODALS ---
+
 {modal.open && modal.type === "update" && (
   <ConfirmModal
     message="Are you sure you want to update this product?"
