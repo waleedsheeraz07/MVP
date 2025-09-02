@@ -34,8 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await prisma.product.delete({ where: { id: productId } })
 
     return res.status(200).json({ message: "Product deleted successfully" })
-  } catch (err: any) {
-    console.error("Delete error:", err)
-    return res.status(500).json({ error: "Failed to delete product" })
-  }
+  } catch (err: unknown) {
+  console.error("Delete error:", err)
+  return res.status(500).json({ error: "Failed to delete product" })
+}
 }
