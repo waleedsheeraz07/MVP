@@ -1,0 +1,275 @@
+/* ---------------- Base Reset ---------------- */
+
+/* ---------------- Prevent Selection ---------------- */
+.item,
+.toggleBtn,
+.title {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* ---------------- Drag Handle ---------------- */
+.dragHandle {
+  cursor: grab;
+  -webkit-user-drag: none;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+  color: #C89B3C;
+  font-size: 14px;
+  padding-left: 0.3rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.dragHandle:hover {
+  color: #b3842f;
+  transform: scale(1.15);
+}
+
+.item:active .dragHandle {
+  cursor: grabbing;
+  color: #a07225;
+  transform: scale(1.2);
+}
+
+/* ---------------- Item ---------------- */
+.item {
+  background: #fffaf5;
+  border: 2px solid #D6BCA6;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
+}
+
+/* While actively dragging, stop transitions to prevent vibration */
+.item.dragging {
+  transition: none !important;
+  box-shadow: none !important;
+  opacity: 0.6; /* faint ghost of original */
+}
+
+/* ---------------- Drag Overlay (floating element) ---------------- */
+.dragOverlay {
+  background: #fffefb;
+  border: 2px solid #C89B3C;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  box-shadow: 0 6px 16px rgba(78, 42, 15, 0.25);
+  transform: scale(1.05);
+  opacity: 0.95;
+  font-weight: 600;
+  z-index: 9999;
+}
+
+
+
+
+
+/* ---------------- Page Container ---------------- */
+.container {
+  padding: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #fffdfb;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(78, 42, 15, 0.12);
+}
+
+/* ---------------- Heading ---------------- */
+.pageTitle {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #4E2A0F;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------------- Controls (Mobile-First) ---------------- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.controls input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-size: 1rem;
+  border: 2px solid #D6BCA6;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.controls input:focus {
+  border-color: #C89B3C;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.2);
+}
+
+.controls button {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #C89B3C, #b3842f);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.controls button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b3842f, #a07225);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.controls button:disabled {
+  background: #e0d6c9;
+  cursor: not-allowed;
+}
+
+/* ---------------- Tree Wrapper ---------------- */
+.treeWrapper {
+  padding: 0.5rem;
+  background: #fffaf5;
+  border-radius: 8px;
+  border: 2px solid #D6BCA6;
+  overflow-x: auto;
+}
+
+.treeLineWrapper {
+  margin-bottom: 0.4rem;
+}
+
+.childBranch {
+  margin-left: 0.6rem;
+  border-left: 1.5px dashed #D6BCA6;
+  padding-left: 0.5rem;
+}
+
+/* ---------------- Sortable Item ---------------- */
+.item {
+  background: #fffaf5;
+  border: 2px solid #D6BCA6;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
+}
+
+.item:hover {
+  box-shadow: 0 3px 8px rgba(123, 63, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.item:active {
+  transform: scale(1.01);
+}
+
+.selected {
+  border-color: #C89B3C;
+  background: #fdf7ef;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
+}
+
+/* ---------------- Item Content ---------------- */
+.itemContent {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #C89B3C;
+  font-size: 11px;
+  cursor: pointer;
+  margin-right: 0.2rem;
+  transition: transform 0.2s ease;
+}
+
+.toggleBtn:hover {
+  transform: scale(1.2);
+  color: #b3842f;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4E2A0F;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.title:hover {
+  color: #C89B3C;
+}
+
+/* ---------------- Larger Screens ---------------- */
+@media (min-width: 769px) {
+  .pageTitle {
+    font-size: 24px;
+    margin-bottom: 1.5rem;
+  }
+
+  .controls {
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .controls input {
+    flex: 1 1 220px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+  }
+
+  .controls button {
+    width: auto;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .treeWrapper {
+    padding: 0.7rem;
+  }
+
+  .childBranch {
+    margin-left: 0.8rem;
+    padding-left: 0.7rem;
+    border-left-width: 2px;
+  }
+
+  .item {
+    padding: 0.6rem 0.7rem;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .toggleBtn {
+    font-size: 12px;
+  }
+
+  .dragHandle {
+    font-size: 15px;
+  }
+}
