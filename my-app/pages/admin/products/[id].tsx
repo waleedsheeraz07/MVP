@@ -275,9 +275,18 @@ const deleteProduct = async () => {
       const res = await fetch(`/api/products/delete?id=${product.id}`, { method: "DELETE" })
       if (!res.ok) throw await res.json()
       router.push("/myproducts")
-    } catch(err:any){ setError(err.error || "Delete failed") }
-    finally { setLoading(false); setModal({ ...modal, open: false }) }
+   } catch (err: unknown) {
+  if (err && typeof err === "object" && "error" in err) {
+    setError((err as { error?: string }).error || "Delete failed")
+  } else if (err instanceof Error) {
+    setError(err.message || "Delete failed")
+  } else {
+    setError("Delete failed")
   }
+} finally {
+  setLoading(false)
+  setModal(prev => ({ ...prev, open: false }))
+}
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
