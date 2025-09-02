@@ -21,6 +21,7 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
 
+// ---------------- Types ----------------
 export interface Category {
   id: string
   title: string
@@ -29,7 +30,8 @@ export interface Category {
   children?: Category[]
 }
 
-const buildTree = (categories: Category[]): Category[] => {
+// ---------------- Build hierarchical tree ----------------
+const buildTree = (categories: Category[] = []): Category[] => {
   const map: Record<string, Category & { children: Category[] }> = {}
   const roots: (Category & { children: Category[] })[] = []
 
@@ -51,6 +53,7 @@ const buildTree = (categories: Category[]): Category[] => {
   return roots
 }
 
+// ---------------- Sortable Item ----------------
 interface SortableItemProps {
   id: string
   title: string
@@ -92,6 +95,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
   )
 }
 
+// ---------------- Recursive Tree Renderer ----------------
 const renderTree = (
   nodes: Category[],
   selectedId: string | null,
@@ -133,12 +137,13 @@ const renderTree = (
   )
 }
 
+// ---------------- Main Component ----------------
 interface Props {
   categories: Category[]
 }
 
 export default function CategoriesPage({ categories: initialCategories }: Props) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories)
+  const [categories, setCategories] = useState<Category[]>(initialCategories || [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -155,6 +160,7 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   const toggleExpand = (id: string) =>
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
+  // Deselect when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -174,10 +180,12 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
     if (!inputTitle.trim()) return
     setIsProcessing(true)
     const parentId = selectedId || null
-
-    // Optimistically update UI
     const tempId = 'temp-' + Math.random().toString(36).substring(2)
-    setCategories(prev => [...prev, { id: tempId, title: inputTitle, parentId, order: prev.filter(c => c.parentId === parentId).length }])
+
+    setCategories(prev => [
+      ...prev,
+      { id: tempId, title: inputTitle, parentId, order: prev.filter(c => c.parentId === parentId).length }
+    ])
     setInputTitle('')
 
     try {
@@ -196,7 +204,6 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
 
-    // Optimistic update
     setCategories(prev => prev.map(c => c.id === selectedId ? { ...c, title: inputTitle } : c))
     setInputTitle('')
 
@@ -210,7 +217,6 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   const handleDelete = async () => {
     if (!selectedId) return
 
-    // Optimistic update
     setCategories(prev => prev.filter(c => c.id !== selectedId))
     setSelectedId(null)
 
@@ -232,7 +238,6 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
     const newIndex = siblings.findIndex(c => c.id === over.id)
     const reordered = arrayMove(siblings, oldIndex, newIndex)
 
-    // Optimistically update order
     setCategories(prev => prev.map(c => {
       if ((c.parentId ?? null) === parentId) {
         return { ...c, order: reordered.findIndex(s => s.id === c.id) }
@@ -240,7 +245,6 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
       return c
     }))
 
-    // Fire API request in background
     fetch('/api/categories/reorder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -284,4 +288,16 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
       </div>
     </>
   )
+}
+
+// ---------------- SSR ----------------
+import { GetServerSideProps } from "next"
+import { prisma } from "../../lib/prisma"
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const categories: Category[] = (await prisma.category.findMany({
+    orderBy: { order: "asc" }
+  })) || []
+
+  return { props: { categories } }
 }
