@@ -21,7 +21,6 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
 
-// ---------------- Types ----------------
 export interface Category {
   id: string
   title: string
@@ -30,7 +29,6 @@ export interface Category {
   children?: Category[]
 }
 
-// ---------------- Build hierarchical tree ----------------
 const buildTree = (categories: Category[]): Category[] => {
   const map: Record<string, Category & { children: Category[] }> = {}
   const roots: (Category & { children: Category[] })[] = []
@@ -53,7 +51,6 @@ const buildTree = (categories: Category[]): Category[] => {
   return roots
 }
 
-// ---------------- Sortable Item ----------------
 interface SortableItemProps {
   id: string
   title: string
@@ -82,29 +79,19 @@ const SortableItem: React.FC<SortableItemProps> = ({
     >
       <div className={styles.itemContent} style={{ marginLeft: level * 20 }}>
         {hasChildren && (
-          <button
-            type="button"
-            onClick={e => { e.stopPropagation(); toggleExpand() }}
-            className={styles.toggleBtn}
-          >
+          <button type="button" onClick={e => { e.stopPropagation(); toggleExpand() }} className={styles.toggleBtn}>
             {isExpanded ? '▼' : '►'}
           </button>
         )}
         <span onClick={onSelect} className={styles.title}>{title}</span>
       </div>
-      <div
-        {...attributes}
-        {...listeners}
-        className={styles.dragHandle}
-        style={{ touchAction: 'none', cursor: 'grab' }}
-      >
+      <div {...attributes} {...listeners} className={styles.dragHandle} style={{ touchAction: 'none', cursor: 'grab' }}>
         ⋮⋮
       </div>
     </div>
   )
 }
 
-// ---------------- Recursive Tree Renderer ----------------
 const renderTree = (
   nodes: Category[],
   selectedId: string | null,
@@ -146,7 +133,6 @@ const renderTree = (
   )
 }
 
-// ---------------- Main Component ----------------
 interface Props {
   categories: Category[]
 }
@@ -169,7 +155,6 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   const toggleExpand = (id: string) =>
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
-  // Deselect when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -184,47 +169,59 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
-  const fetchLatest = async () => {
-    const data: Category[] = await fetch('/api/categories').then(r => r.json())
-    setCategories(data)
-  }
-
+  // ---------------- Optimistic CRUD ----------------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
     const parentId = selectedId || null
-    await fetch('/api/categories/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: inputTitle, parentId }),
-    })
+
+    // Optimistically update UI
+    const tempId = 'temp-' + Math.random().toString(36).substring(2)
+    setCategories(prev => [...prev, { id: tempId, title: inputTitle, parentId, order: prev.filter(c => c.parentId === parentId).length }])
     setInputTitle('')
-    await fetchLatest()
-    setIsProcessing(false)
+
+    try {
+      const res = await fetch('/api/categories/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: inputTitle, parentId }),
+      })
+      const newCategory: Category = await res.json()
+      setCategories(prev => prev.map(c => c.id === tempId ? newCategory : c))
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
+
+    // Optimistic update
+    setCategories(prev => prev.map(c => c.id === selectedId ? { ...c, title: inputTitle } : c))
+    setInputTitle('')
+
     await fetch('/api/categories/update', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: selectedId, title: inputTitle }),
     })
-    setInputTitle('')
-    await fetchLatest()
   }
 
   const handleDelete = async () => {
     if (!selectedId) return
+
+    // Optimistic update
+    setCategories(prev => prev.filter(c => c.id !== selectedId))
+    setSelectedId(null)
+
     await fetch('/api/categories/delete', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: selectedId }),
     })
-    setSelectedId(null)
-    await fetchLatest()
   }
 
+  // ---------------- Smooth Drag ----------------
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -235,25 +232,23 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
     const newIndex = siblings.findIndex(c => c.id === over.id)
     const reordered = arrayMove(siblings, oldIndex, newIndex)
 
-    const newList = categories.map(c => {
+    // Optimistically update order
+    setCategories(prev => prev.map(c => {
       if ((c.parentId ?? null) === parentId) {
         return { ...c, order: reordered.findIndex(s => s.id === c.id) }
       }
       return c
-    })
+    }))
 
-    setCategories(newList)
-
-    await fetch('/api/categories/reorder', {
+    // Fire API request in background
+    fetch('/api/categories/reorder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         parent: parentId,
         order: reordered.map((c, i) => ({ id: c.id, order: i })),
       }),
-    })
-
-    await fetchLatest()
+    }).catch(console.error)
   }
 
   const tree = useMemo(() => buildTree(categories), [categories])
@@ -289,15 +284,4 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
       </div>
     </>
   )
-}
-
-// ---------------- SSR ----------------
-import { GetServerSideProps } from "next"
-import { prisma } from "../../lib/prisma"
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  const categories: Category[] = await prisma.category.findMany({
-    orderBy: { order: "asc" }
-  })
-  return { props: { categories } }
 }
