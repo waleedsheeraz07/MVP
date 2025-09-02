@@ -1,24 +1,24 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../lib/prisma';
+import { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "../../../lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const { title, parent } = req.body;
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    const maxOrder = await prisma.category.aggregate({
-      _max: { order: true },
-    });
+  try {
+    const { title, parentId } = req.body;
 
-    const newCategory = await prisma.category.create({
+    if (!title) return res.status(400).json({ error: "Title is required" });
+
+    const category = await prisma.category.create({
       data: {
         title,
-        parentId: parent || null,
-        order: (maxOrder._max.order ?? 0) + 1,
+        parentId: parentId || null,
       },
     });
 
-    res.json(newCategory);
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(200).json(category);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create category" });
   }
 }
