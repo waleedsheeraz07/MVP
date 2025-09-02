@@ -6,41 +6,46 @@ type Role = "buyer" | "seller";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0); // 0 = choose role
+  const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [role, setRole] = useState<Role | "">(""); // step 0
+  const [role, setRole] = useState<Role | "">("");
 
-  // Step 1: Personal Info
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
 
-  // Step 2: Address
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
   const [postalCode, setPostalCode] = useState("");
 
-  // Step 3: Password
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.toLowerCase());
+  };
+
   const handleNext = () => {
     setError("");
+
     if (step === 0 && !role) return setError("Please select a role to continue");
     if (step === 1) {
       if (!firstName.trim()) return setError("First name is required");
       if (!email.trim()) return setError("Email is required");
+      if (!validateEmail(email)) return setError("Enter a valid email address");
     }
     if (step === 3) {
       if (!password || !confirmPassword) return setError("Both password fields are required");
       if (password !== confirmPassword) return setError("Passwords do not match");
     }
+
     setStep(prev => prev + 1);
   };
 
@@ -128,12 +133,19 @@ export default function SignupPage() {
               onChange={e => setEmail(e.target.value)}
               className="input"
             />
-            <input
-              type="date"
-              value={dob}
-              onChange={e => setDob(e.target.value)}
-              className="input"
-            />
+            <div className="relative">
+              <input
+                type="date"
+                value={dob}
+                onChange={e => setDob(e.target.value)}
+                className="input peer"
+              />
+              {!dob && (
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                  Date of Birth
+                </span>
+              )}
+            </div>
             <select value={gender} onChange={e => setGender(e.target.value)} className="input">
               <option value="">Select Gender</option>
               <option value="male">Male</option>
@@ -219,6 +231,10 @@ export default function SignupPage() {
           width: 100%;
           background-color: #fff;
           color: #000;
+        }
+        .peer:focus + span,
+        .peer:not(:placeholder-shown) + span {
+          display: none;
         }
       `}</style>
     </div>
