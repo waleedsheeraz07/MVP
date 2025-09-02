@@ -1,47 +1,7 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/router"
-import { GetServerSidePropsContext } from "next"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "../api/auth/[...nextauth]"
-import { prisma } from "../../lib/prisma"
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions)
-
-  if (!session) {
-    return { redirect: { destination: "/login", permanent: false } }
-  }
-
-  const productId = context.query.id as string
-  if (!productId) {
-    return { notFound: true }
-  }
-
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { categories: true },
-  })
-
-  if (!product) {
-    return { notFound: true }
-  }
-
-  const categories = await prisma.category.findMany({
-    select: { id: true, title: true, order: true, parentId: true },
-    orderBy: { order: "asc" },
-  })
-
-  const mappedCategories = categories.map(cat => ({
-    _id: cat.id,
-    title: cat.title,
-    order: cat.order,
-    parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
-  }))
-
-  return { props: { session, product, categories: mappedCategories } }
-}
 
 interface CategoryRaw {
   _id: string
@@ -98,10 +58,8 @@ export default function EditProductPage({ categories, product }: EditProductPage
 
   const removeImage = (index: number) => {
     if (index < existingImages.length) {
-      // Remove existing image
       setExistingImages(prev => prev.filter((_, i) => i !== index))
     } else {
-      // Remove newly added image
       const newIndex = index - existingImages.length
       setImages(prev => prev.filter((_, i) => i !== newIndex))
     }
@@ -226,19 +184,13 @@ export default function EditProductPage({ categories, product }: EditProductPage
         {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Title */}
           <input type="text" placeholder="Title *" value={title} onChange={e => setTitle(e.target.value)} required className="input" />
-          
-          {/* Description */}
           <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} className="input min-h-[100px]" />
-
-          {/* Price & Quantity */}
           <div className="flex gap-4 flex-wrap">
             <input type="number" placeholder="Price *" value={price} onChange={e => setPrice(e.target.value)} required className="input flex-1" />
             <input type="number" placeholder="Quantity *" value={quantity} onChange={e => setQuantity(e.target.value)} required className="input flex-1" />
           </div>
 
-          {/* Categories */}
           <div>
             <h3 className="mb-2 font-medium">Categories *</h3>
             <div className="border p-3 rounded-lg max-h-64 overflow-y-auto bg-[#fffaf5]">
@@ -246,13 +198,11 @@ export default function EditProductPage({ categories, product }: EditProductPage
             </div>
           </div>
 
-          {/* Condition */}
           <select value={condition} onChange={e => setCondition(e.target.value)} required className="input">
             <option value="">Select Condition *</option>
             {["Untouched","Excellent","Good","Fair","Slightly Damaged","Damaged","Highly Damaged"].map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
           </select>
 
-          {/* Era */}
           <div>
             <select value={era} onChange={e => setEra(e.target.value)} required className="input">
               <option value="">Select Era *</option>
@@ -261,7 +211,6 @@ export default function EditProductPage({ categories, product }: EditProductPage
             {era === "before1900" && <input type="number" placeholder="Enter Year (before 1900)" value={before1900} onChange={e => setBefore1900(e.target.value)} className="input mt-2" />}
           </div>
 
-          {/* Images */}
           <div>
             <h3 className="mb-2 font-medium">Images</h3>
             <label className="block w-full p-3 border border-dashed border-[#d4b996] rounded-lg text-center cursor-pointer bg-[#fffaf5] text-[#3e2f25] hover:bg-[#f8efe4] transition">
@@ -278,11 +227,10 @@ export default function EditProductPage({ categories, product }: EditProductPage
             </div>
           </div>
 
-          {/* Colors & Sizes */}
           <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
           <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} className="input" />
 
-          <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition">
+         <button type="submit" disabled={loading} className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition">
             {loading ? "Saving..." : "Update Product"}
           </button>
         </form>
