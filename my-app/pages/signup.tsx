@@ -27,14 +27,10 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email.toLowerCase());
-  };
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
   const handleNext = () => {
     setError("");
-
     if (step === 0 && !role) return setError("Please select a role to continue");
     if (step === 1) {
       if (!firstName.trim()) return setError("First name is required");
@@ -45,7 +41,6 @@ export default function SignupPage() {
       if (!password || !confirmPassword) return setError("Both password fields are required");
       if (password !== confirmPassword) return setError("Passwords do not match");
     }
-
     setStep(prev => prev + 1);
   };
 
@@ -115,6 +110,8 @@ export default function SignupPage() {
             <input
               type="text"
               placeholder="First Name *"
+              name="given-name"
+              autoComplete="given-name"
               value={firstName}
               onChange={e => setFirstName(e.target.value)}
               className="input"
@@ -122,6 +119,8 @@ export default function SignupPage() {
             <input
               type="text"
               placeholder="Last Name"
+              name="family-name"
+              autoComplete="family-name"
               value={lastName}
               onChange={e => setLastName(e.target.value)}
               className="input"
@@ -129,6 +128,8 @@ export default function SignupPage() {
             <input
               type="email"
               placeholder="Email Address *"
+              name="email"
+              autoComplete="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="input"
@@ -136,6 +137,8 @@ export default function SignupPage() {
             <div className="relative">
               <input
                 type="date"
+                name="bday"
+                autoComplete="bday"
                 value={dob}
                 onChange={e => setDob(e.target.value)}
                 className="input peer"
@@ -146,7 +149,13 @@ export default function SignupPage() {
                 </span>
               )}
             </div>
-            <select value={gender} onChange={e => setGender(e.target.value)} className="input">
+            <select
+              name="sex"
+              autoComplete="sex"
+              value={gender}
+              onChange={e => setGender(e.target.value)}
+              className="input"
+            >
               <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -157,18 +166,74 @@ export default function SignupPage() {
       case 2:
         return (
           <>
-            <input type="text" placeholder="Address Line 1" value={address1} onChange={e => setAddress1(e.target.value)} className="input"/>
-            <input type="text" placeholder="Address Line 2 (Optional)" value={address2} onChange={e => setAddress2(e.target.value)} className="input"/>
-            <input type="text" placeholder="State" value={state} onChange={e => setState(e.target.value)} className="input"/>
-            <input type="text" placeholder="Country" value={country} onChange={e => setCountry(e.target.value)} className="input"/>
-            <input type="text" placeholder="Postal Code" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="input"/>
+            <input
+              type="text"
+              placeholder="Address Line 1"
+              name="address-line1"
+              autoComplete="address-line1"
+              value={address1}
+              onChange={e => setAddress1(e.target.value)}
+              className="input"
+            />
+            <input
+              type="text"
+              placeholder="Address Line 2 (Optional)"
+              name="address-line2"
+              autoComplete="address-line2"
+              value={address2}
+              onChange={e => setAddress2(e.target.value)}
+              className="input"
+            />
+            <input
+              type="text"
+              placeholder="State"
+              name="address-level1"
+              autoComplete="address-level1"
+              value={state}
+              onChange={e => setState(e.target.value)}
+              className="input"
+            />
+            <input
+              type="text"
+              placeholder="Country"
+              name="country"
+              autoComplete="country"
+              value={country}
+              onChange={e => setCountry(e.target.value)}
+              className="input"
+            />
+            <input
+              type="text"
+              placeholder="Postal Code"
+              name="postal-code"
+              autoComplete="postal-code"
+              value={postalCode}
+              onChange={e => setPostalCode(e.target.value)}
+              className="input"
+            />
           </>
         );
       case 3:
         return (
           <>
-            <input type="password" placeholder="Password *" value={password} onChange={e => setPassword(e.target.value)} className="input"/>
-            <input type="password" placeholder="Confirm Password *" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="input"/>
+            <input
+              type="password"
+              placeholder="Password *"
+              name="new-password"
+              autoComplete="new-password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="input"
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password *"
+              name="confirm-password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              className="input"
+            />
           </>
         );
     }
