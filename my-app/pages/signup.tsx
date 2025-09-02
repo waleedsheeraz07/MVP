@@ -28,19 +28,20 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
   const handleNext = () => {
     setError("");
 
-    if (step === 1) {
+    if (step === 0) {
       if (!firstName.trim()) return setError("First name is required");
       if (!email.trim()) return setError("Email is required");
       if (!validateEmail(email)) return setError("Enter a valid email address");
       if (!phone.trim()) return setError("Phone number is required");
     }
 
-    if (step === 3) {
+    if (step === 2) {
       if (!password || !confirmPassword) return setError("Both password fields are required");
       if (password !== confirmPassword) return setError("Passwords do not match");
     }
@@ -246,6 +247,9 @@ export default function SignupPage() {
                 {showConfirmPassword ? "Hide" : "Show"}
               </button>
             </div>
+            {confirmPassword && confirmPassword !== password && (
+              <p className="text-red-600 text-sm mt-1">Passwords do not match</p>
+            )}
           </>
         );
     }
@@ -260,10 +264,13 @@ export default function SignupPage() {
         <div className="relative mb-6">
           <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
           <div className="flex justify-between relative z-10">
-            {[0,1,2].map(s => (
+            {[0, 1, 2].map(s => (
               <div key={s} className="flex flex-col items-center w-8">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold
-                  ${s <= step ? "bg-[#3e2f25] text-[#fdf8f3]" : "bg-[#d4b996] text-[#3e2f25]"}`}>
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    s <= step ? "bg-[#3e2f25] text-[#fdf8f3]" : "bg-[#d4b996] text-[#3e2f25]"
+                  }`}
+                >
                   {s}
                 </div>
               </div>
@@ -277,16 +284,26 @@ export default function SignupPage() {
 
         <div className="flex justify-between mt-6">
           {step > 0 && (
-            <button onClick={handlePrev} className="px-4 py-2 bg-[#d4b996] text-[#3e2f25] rounded-lg hover:bg-[#c4a57e] transition">
+            <button
+              onClick={handlePrev}
+              className="px-4 py-2 bg-[#d4b996] text-[#3e2f25] rounded-lg hover:bg-[#c4a57e] transition"
+            >
               Back
             </button>
           )}
           {step < 2 ? (
-            <button onClick={handleNext} className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto">
+            <button
+              onClick={handleNext}
+              className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto"
+            >
               Next
             </button>
           ) : (
-            <button onClick={handleSubmit} disabled={loading} className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto">
+            <button
+              onClick={handleSubmit}
+              disabled={loading || confirmPassword !== password}
+              className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {loading ? "Signing Up..." : "Sign Up"}
             </button>
           )}
