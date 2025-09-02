@@ -204,6 +204,7 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
 
   // --- ERA OPTIONS ---
   const eraOptions = [
+    "before1900",
     "1900–1909",
     "1910–1919",
     "1920–1929",
@@ -217,7 +218,6 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
     "2000–2009",
     "2010–2019",
     "2020–2025",
-    "before1900",
   ]
 
   return (
@@ -287,7 +287,7 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
             className="input"
           >
             <option value="">Select Condition *</option>
-            {["Good", "Excellent", "Untouched", "Bad", "Broken", "Torn"].map(c => (
+            {["Untouched", "Excellent", "Good", "Fair", "Slightly Damaged", "Damaged", "Highly Damaged"].map(c => (
               <option key={c} value={c.toLowerCase()}>
                 {c}
               </option>
