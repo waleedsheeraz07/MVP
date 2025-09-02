@@ -5,10 +5,10 @@ import { prisma } from '../lib/prisma'
 
 interface Product {
   id: string
-  name: string
+  title: string
+  description?: string
   price: number
-  image: string // Cloudinary URL
-  slug: string
+  images: string[]
 }
 
 interface Props {
@@ -50,17 +50,23 @@ export default function Home({ products }: Props) {
             {products.map(product => (
               <div key={product.id} className="bg-[#fffdfb] shadow-lg rounded-lg overflow-hidden hover:shadow-2xl transition">
                 <div className="relative w-full h-64">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
+                  {product.images.length > 0 ? (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="bg-gray-200 w-full h-full flex items-center justify-center">
+                      No Image
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1">{product.name}</h3>
+                  <h3 className="text-lg md:text-xl font-semibold mb-1">{product.title}</h3>
                   <p className="text-[#b58b5a] font-bold">${product.price}</p>
-                  <Link href={`/products/${product.slug}`}>
+                  <Link href={`/products/${product.id}`}>
                     <a className="mt-3 inline-block bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded hover:bg-[#5a4436] transition">
                       View Details
                     </a>
@@ -84,20 +90,16 @@ export default function Home({ products }: Props) {
 export async function getServerSideProps() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      price: true,
+      images: true,
+    },
   })
 
-  // Prisma returns Date objects and BigInts, convert if necessary
-  const serializedProducts = products.map(p => ({
-    id: p.id,
-    name: p.name,
-    price: p.price,
-    image: p.image,
-    slug: p.slug,
-  }))
-
   return {
-    props: {
-      products: serializedProducts,
-    },
+    props: { products },
   }
 }
