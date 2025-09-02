@@ -5,7 +5,7 @@ import { useRouter } from "next/router"
 import { GetServerSidePropsContext } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "./api/auth/[...nextauth]"
-import prisma from "../lib/prisma" // adjust path
+import { prisma } from "../lib/prisma" // adjust path
 
 // --- SERVER SIDE FETCH ---
 export async function getServerSideProps(context: GetServerSidePropsContext) {
