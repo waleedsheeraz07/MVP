@@ -183,7 +183,7 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   }, [])
 
   // ---------------- Optimistic CRUD ----------------
-  const handleCreate = async () => {
+  /*const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
     const parentId = selectedId || null
@@ -206,7 +206,41 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
     } finally {
       setIsProcessing(false)
     }
+  }*/
+
+const handleCreate = async () => {
+  if (!inputTitle.trim()) return
+  setIsProcessing(true)
+  const parentId = selectedId || null
+
+  // Compute the new order based on siblings
+  const siblings = categories.filter(c => (c.parentId ?? null) === parentId)
+  const newOrder = siblings.length
+
+  // Optimistic ID
+  const tempId = 'temp-' + Math.random().toString(36).substring(2)
+
+  // Optimistic UI update
+  setCategories(prev => [
+    ...prev,
+    { id: tempId, title: inputTitle, parentId, order: newOrder }
+  ])
+  setInputTitle('')
+
+  try {
+    const res = await fetch('/api/categories/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: inputTitle, parentId, order: newOrder }),
+    })
+    const newCategory: Category = await res.json()
+
+    // Replace temp category with actual response
+    setCategories(prev => prev.map(c => c.id === tempId ? newCategory : c))
+  } finally {
+    setIsProcessing(false)
   }
+}
 
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
