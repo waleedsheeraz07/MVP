@@ -4,44 +4,65 @@ import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-type Role = "buyer" | "seller"
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const logs: string[] = []
-
   if (req.method !== "POST") {
-    logs.push("Invalid method: " + req.method)
-    return res.status(405).redirect(`/signup?error=Method+not+allowed`)
+    return res.status(405).json({ error: "Method not allowed" })
   }
 
-  const { email, password, role } = req.body as { email?: string; password?: string; role?: string }
+  const {
+    firstName,
+    lastName,
+    email,
+    dob,
+    gender,
+    address1,
+    address2,
+    state,
+    country,
+    postalCode,
+    password,
+  } = req.body
 
-  if (!email || !password || !role) {
-    logs.push("Missing required fields")
-    return res.redirect(`/signup?error=Missing+fields&email=${encodeURIComponent(email || "")}&role=${encodeURIComponent(role || "buyer")}`)
-  }
-
-  if (role !== "buyer" && role !== "seller") {
-    logs.push("Invalid role")
-    return res.redirect(`/signup?error=Invalid+role&email=${encodeURIComponent(email)}&role=buyer`)
+  // ---------------- Validation ----------------
+  if (!firstName?.trim() || !email?.trim() || !password) {
+    return res.status(400).json({ error: "First name, email, and password are required" })
   }
 
   try {
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } })
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" })
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Create user
     const user: User = await prisma.user.create({
-      data: { email, password: hashedPassword, role: role as Role },
+      data: {
+        firstName: firstName.trim(),
+        lastName: lastName?.trim() || null,
+        email: email.trim(),
+        dob: dob ? new Date(dob) : null,
+        gender: gender || null,
+        password: hashedPassword,
+        address1: address1?.trim() || null,
+        address2: address2?.trim() || null,
+        state: state?.trim() || null,
+        country: country?.trim() || null,
+        postalCode: postalCode?.trim() || null,
+        role: "buyer", // Default role, or extend page to select
+      },
     })
 
-    logs.push(`User created with ID: ${user.id}`)
-    logs.push("Signup successful! Please log in.")
-
-    return res.redirect(`/signup?logs=${encodeURIComponent(logs.join("|"))}`)
+    return res.status(201).json({ message: "Signup successful", userId: user.id })
   } catch (err: unknown) {
+    console.error("Signup error:", err)
     let errorMessage = "Internal server error"
     if ((err as Prisma.PrismaClientKnownRequestError).code === "P2002") {
       errorMessage = "Email already exists"
     }
-    logs.push(`Signup failed: ${errorMessage}`)
-    return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`)
+    return res.status(500).json({ error: errorMessage })
   }
 }
