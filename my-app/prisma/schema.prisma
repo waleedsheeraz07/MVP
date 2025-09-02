@@ -13,48 +13,47 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  email       String    @unique
-  password    String
-  role        String    // e.g., "buyer" or "seller"
-  
-  // Personal Info
-  firstName   String
-  lastName    String?
-  dob         DateTime? // optional
-  gender      String?   // e.g., "male", "female", "other"
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
+  password  String
+  role      String
 
-  // Address Info
-  address1    String?
-  address2    String?
-  state       String?
-  country     String?
-  postalCode  String?
+  firstName String
+  lastName  String?
+  dob       DateTime?
+  gender    String?
 
-  // Relations
-  products    Product[] // back-relation for owned products
+  address1   String?
+  address2   String?
+  state      String?
+  country    String?
+  postalCode String?
 
-  // Timestamps
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  products  Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Product {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   price       Float
-  images      String[]       // required, can be empty
-  colors      String[]       @default([])
-  sizes       String[]       @default([])
+  images      String[]
+  colors      String[]   @default([])
+  sizes       String[]   @default([])
   condition   String     @default("")
   era         String     @default("")
-  categories  Category[] @relation("ProductCategories")
-	quantity    Int
-  ownerId     String          @db.ObjectId
-  owner       User            @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  quantity    Int
+
+  ownerId     String     @db.ObjectId
+  owner       User       @relation(fields: [ownerId], references: [id])
+
+  categories  ProductCategory[]  // explicit join relation
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Category {
@@ -64,7 +63,21 @@ model Category {
   parentId  String?    @db.ObjectId
   parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  Category[] @relation("CategoryChildren")
-	products  Product[]  @relation("ProductCategories")
-	createdAt DateTime   @default(now())
+
+  products  ProductCategory[] // explicit join relation
+
+  createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+}
+
+// Explicit join table for Product ↔ Category many-to-many
+model ProductCategory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  categoryId String   @db.ObjectId
+
+  product    Product  @relation(fields: [productId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([productId, categoryId])
 }
