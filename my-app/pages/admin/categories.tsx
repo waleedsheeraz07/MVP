@@ -53,6 +53,14 @@ const buildTree = (categories: Category[] = []): Category[] => {
   return roots
 }
 
+// ---------------- Recursive get all descendants ----------------
+const getDescendants = (categories: Category[], parentId: string): string[] => {
+  const children = categories.filter(c => c.parentId === parentId)
+  return children.reduce<string[]>((acc, c) => {
+    return [...acc, c.id, ...getDescendants(categories, c.id)]
+  }, [])
+}
+
 // ---------------- Sortable Item ----------------
 interface SortableItemProps {
   id: string
@@ -160,7 +168,6 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   const toggleExpand = (id: string) =>
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
-  // Deselect when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -217,7 +224,9 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
   const handleDelete = async () => {
     if (!selectedId) return
 
-    setCategories(prev => prev.filter(c => c.id !== selectedId))
+    // Remove selected + descendants
+    const descendants = getDescendants(categories, selectedId)
+    setCategories(prev => prev.filter(c => c.id !== selectedId && !descendants.includes(c.id)))
     setSelectedId(null)
 
     await fetch('/api/categories/delete', {
@@ -232,7 +241,14 @@ export default function CategoriesPage({ categories: initialCategories }: Props)
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const parentId = categories.find(c => c.id === active.id)?.parentId || null
+    const activeCategory = categories.find(c => c.id === active.id)
+    const overCategory = categories.find(c => c.id === over.id)
+    if (!activeCategory || !overCategory) return
+
+    // Only reorder among same parent
+    const parentId = activeCategory.parentId || null
+    if ((overCategory.parentId || null) !== parentId) return
+
     const siblings = categories.filter(c => (c.parentId ?? null) === parentId)
     const oldIndex = siblings.findIndex(c => c.id === active.id)
     const newIndex = siblings.findIndex(c => c.id === over.id)
