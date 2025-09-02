@@ -6,7 +6,7 @@ type Role = "buyer" | "seller";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0); // Step 0 = choose role
+  const [step, setStep] = useState(0); // 0 = choose role
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,10 +41,10 @@ export default function SignupPage() {
       if (!password || !confirmPassword) return setError("Both password fields are required");
       if (password !== confirmPassword) return setError("Passwords do not match");
     }
-    setStep((prev) => prev + 1);
+    setStep(prev => prev + 1);
   };
 
-  const handlePrev = () => setStep((prev) => Math.max(prev - 1, 0));
+  const handlePrev = () => setStep(prev => Math.max(prev - 1, 0));
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -68,7 +68,7 @@ export default function SignupPage() {
           password,
         }),
       });
-      const data: { error?: string } = await res.json(); // specify type
+      const data: { error?: string } = await res.json();
       if (!res.ok) throw data;
       router.push("/login");
     } catch (err: unknown) {
@@ -89,34 +89,51 @@ export default function SignupPage() {
           <div className="flex flex-col gap-4">
             <p className="text-center font-semibold mb-2">Sign up as:</p>
             <div className="flex gap-4 justify-center">
-              <button
-                type="button"
-                onClick={() => setRole("buyer")}
-                className={`px-6 py-2 rounded-lg font-semibold border ${
-                  role === "buyer" ? "bg-[#3e2f25] text-[#fdf8f3]" : "border-[#ccc]"
-                }`}
-              >
-                Buyer
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("seller")}
-                className={`px-6 py-2 rounded-lg font-semibold border ${
-                  role === "seller" ? "bg-[#3e2f25] text-[#fdf8f3]" : "border-[#ccc]"
-                }`}
-              >
-                Seller
-              </button>
+              {(["buyer", "seller"] as Role[]).map(r => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRole(r)}
+                  className={`px-6 py-2 rounded-lg font-semibold border ${
+                    role === r ? "bg-[#3e2f25] text-[#fdf8f3]" : "border-[#ccc]"
+                  }`}
+                >
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
         );
       case 1:
         return (
           <>
-            <input type="text" placeholder="First Name *" value={firstName} onChange={e => setFirstName(e.target.value)} className="input"/>
-            <input type="text" placeholder="Last Name" value={lastName} onChange={e => setLastName(e.target.value)} className="input"/>
-            <input type="email" placeholder="Email Address *" value={email} onChange={e => setEmail(e.target.value)} className="input"/>
-            <input type="date" placeholder="Date of Birth" value={dob} onChange={e => setDob(e.target.value)} className="input"/>
+            <input
+              type="text"
+              placeholder="First Name *"
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              className="input"
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              className="input"
+            />
+            <input
+              type="email"
+              placeholder="Email Address *"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="input"
+            />
+            <input
+              type="date"
+              value={dob}
+              onChange={e => setDob(e.target.value)}
+              className="input"
+            />
             <select value={gender} onChange={e => setGender(e.target.value)} className="input">
               <option value="">Select Gender</option>
               <option value="male">Male</option>
@@ -200,6 +217,8 @@ export default function SignupPage() {
           border-radius: 0.75rem;
           border: 1px solid #ccc;
           width: 100%;
+          background-color: #fff;
+          color: #000;
         }
       `}</style>
     </div>
