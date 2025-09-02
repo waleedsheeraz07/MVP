@@ -269,6 +269,15 @@ export default function EditProductPage({ categories, product }: EditProductPage
     "1940–1949","1950–1959","1960–1969","1970–1979","1980–1989",
     "1990–1999","2000–2009","2010–2019","2020–2025"
   ]
+const deleteProduct = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/products/delete?id=${product.id}`, { method: "DELETE" })
+      if (!res.ok) throw await res.json()
+      router.push("/myproducts")
+    } catch(err:any){ setError(err.error || "Delete failed") }
+    finally { setLoading(false); setModal({ ...modal, open: false }) }
+  }
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
@@ -338,7 +347,7 @@ export default function EditProductPage({ categories, product }: EditProductPage
         </form>
       </div>
 
-{modal.open && modal.type==="update" && <ConfirmModal message="Are you sure you want to update this product?" onConfirm={submitUpdate} onCancel={()=>setModal({...modal, open:false})} />}
+{modal.open && modal.type==="update" && <ConfirmModal message="Are you sure you want to update this product?" onConfirm={handleSubmit} onCancel={()=>setModal({...modal, open:false})} />}
       {modal.open && modal.type==="delete" && <ConfirmModal message="Are you sure you want to delete this product?" onConfirm={deleteProduct} onCancel={()=>setModal({...modal, open:false})} />}
 
       <style jsx>{`
