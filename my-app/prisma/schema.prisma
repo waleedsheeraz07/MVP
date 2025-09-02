@@ -12,13 +12,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
- model User {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  email    String    @unique
-  password String
-  role     String
-  name     String?
-  products Product[] // <-- back-relation for owner
+model User {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  email       String    @unique
+  password    String
+  role        String    // e.g., "buyer" or "seller"
+  
+  // Personal Info
+  firstName   String
+  lastName    String?
+  dob         DateTime? // optional
+  gender      String?   // e.g., "male", "female", "other"
+
+  // Address Info
+  address1    String?
+  address2    String?
+  state       String?
+  country     String?
+  postalCode  String?
+
+  // Relations
+  products    Product[] // back-relation for owned products
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Product {
