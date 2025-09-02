@@ -75,107 +75,112 @@ export default function ProductsPage({ products }: ProductsPageProps) {
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
 
   return (
-    <div style={{ padding: "1rem", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>All Products</h1>
+<div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
+  <div className="max-w-6xl mx-auto">
+    {/* Header */}
+    <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">All Products</h1>
 
-      {/* Filters & Search */}
-      <div style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "0.5rem",
-        marginBottom: "1rem",
-        alignItems: "center",
-      }}>
+    {/* Filters */}
+    <div className="flex flex-wrap gap-3 mb-6 items-center">
+      <input
+        type="text"
+        placeholder="Search by title..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="input flex-grow min-w-[150px]"
+      />
+
+      <select
+        value={sortBy}
+        onChange={e => setSortBy(e.target.value as SortOption)}
+        className="input"
+      >
+        <option value="alpha">A → Z</option>
+        <option value="alphaDesc">Z → A</option>
+        <option value="priceAsc">Price ↑</option>
+        <option value="priceDesc">Price ↓</option>
+        <option value="relevance">Relevance</option>
+      </select>
+
+      <div className="flex gap-2 items-center">
         <input
-          type="text"
-          placeholder="Search by title..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{ padding: "0.5rem", minWidth: "150px", flexGrow: 1, borderRadius: "6px", border: "1px solid #ccc" }}
+          type="number"
+          value={priceRange[0]}
+          min={0}
+          onChange={e => handlePriceChange(e, 0)}
+          className="input w-20"
         />
-
-        <select
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value as SortOption)}
-          style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
-        >
-          <option value="alpha">A → Z</option>
-          <option value="alphaDesc">Z → A</option>
-          <option value="priceAsc">Price ↑</option>
-          <option value="priceDesc">Price ↓</option>
-          <option value="relevance">Relevance</option>
-        </select>
-
-        <div style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
-          <input
-            type="number"
-            value={priceRange[0]}
-            min={0}
-            onChange={e => handlePriceChange(e, 0)}
-            style={{ width: "70px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
-          />
-          -
-          <input
-            type="number"
-            value={priceRange[1]}
-            min={0}
-            onChange={e => handlePriceChange(e, 1)}
-            style={{ width: "70px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
-          />
-        </div>
-
-        <select
-          multiple
-          value={selectedColors}
-          onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-          style={{ minWidth: "100px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc", flexGrow: 1 }}
-        >
-          {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-
-        <select
-          multiple
-          value={selectedSizes}
-          onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
-          style={{ minWidth: "100px", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc", flexGrow: 1 }}
-        >
-          {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        -
+        <input
+          type="number"
+          value={priceRange[1]}
+          min={0}
+          onChange={e => handlePriceChange(e, 1)}
+          className="input w-20"
+        />
       </div>
 
-      {/* Products Grid */}
-      {filteredProducts.length === 0 && <p>No products found.</p>}
+      <select
+        multiple
+        value={selectedColors}
+        onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
+        className="input flex-grow min-w-[100px]"
+      >
+        {allColors.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-        gap: "1rem",
-      }}>
+      <select
+        multiple
+        value={selectedSizes}
+        onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
+        className="input flex-grow min-w-[100px]"
+      >
+        {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
+    </div>
+
+    {/* Products Grid */}
+    {filteredProducts.length === 0 ? (
+      <p className="text-center text-[#3e2f25]">No products found.</p>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredProducts.map(product => (
-          <Link key={product.id} href={`/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-            <div style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              overflow: "hidden",
-              padding: "0.5rem",
-              cursor: "pointer",
-              background: "#fff",
-              transition: "0.2s"
-            }}>
+          <Link key={product.id} href={`/products/${product.id}`} className="block">
+            <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition">
               {product.images[0] && (
                 <img
                   src={product.images[0]}
                   alt={product.title}
-                  style={{ width: "100%", height: "180px", objectFit: "cover", borderRadius: "6px" }}
+                  className="w-full h-48 object-cover"
                 />
               )}
-              <h2 style={{ margin: "0.5rem 0", fontSize: "1.1rem" }}>{product.title}</h2>
-              <p style={{ margin: "0.25rem 0", fontWeight: "bold" }}>${product.price.toFixed(2)}</p>
+              <div className="p-3">
+                <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
+                <p className="mt-1 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
+              </div>
             </div>
           </Link>
         ))}
       </div>
-    </div>
+    )}
+  </div>
+
+  <style jsx>{`
+    .input {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #000;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #3e2f25;
+      box-shadow: 0 0 0 2px rgba(62, 47, 37, 0.2);
+    }
+  `}</style>
+</div>
   );
 }
 
