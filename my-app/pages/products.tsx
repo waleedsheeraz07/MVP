@@ -3,7 +3,9 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { GetServerSidePropsContext } from "next";
 import { useState, useMemo, ChangeEvent } from "react";
+import AdminHeader from "../components/header";
 
+    
 interface Product {
   id: string;
   title: string;
@@ -75,6 +77,9 @@ export default function ProductsPage({ products }: ProductsPageProps) {
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
 
   return (
+<>
+      <AdminHeader title="Cart" titleHref="/cart" />
+      
 <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
   <div className="max-w-6xl mx-auto">
     {/* Header */}
@@ -181,6 +186,7 @@ export default function ProductsPage({ products }: ProductsPageProps) {
     }
   `}</style>
 </div>
+</>
   );
 }
 
