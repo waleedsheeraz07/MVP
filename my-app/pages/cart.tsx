@@ -1,4 +1,3 @@
-// pages/cart.tsx
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -14,7 +13,7 @@ interface CartItem {
     title: string;
     price: number;
     images: string[];
-    quantity: number; // this is the stock
+    quantity: number; // stock
   };
   color: string | null;
   size: string | null;
@@ -36,6 +35,12 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
 
+  // Hooks must be called unconditionally
+  const total = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [cartItems]
+  );
+
   if (!session?.user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
@@ -51,11 +56,9 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     const item = cartItems.find((i) => i.id === itemId);
     if (!item) return;
 
-    // Enforce max stock using product.quantity
     if (newQty < 1 || newQty > item.product.quantity) return;
 
     setLoadingIds((prev) => [...prev, itemId]);
-
     try {
       const res = await fetch("/api/useritem/update", {
         method: "POST",
@@ -64,22 +67,18 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to update quantity");
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update quantity");
       }
 
       const updatedItem = await res.json();
-
       setCartItems((prev) =>
         prev.map((i) =>
-          i.id === itemId
-            ? { ...i, quantity: updatedItem.quantity } // updated quantity
-            : i
+          i.id === itemId ? { ...i, quantity: updatedItem.quantity } : i
         )
       );
-    } catch (err: unknown) {
-      if (err instanceof Error) alert(err.message);
-      else alert("An unexpected error occurred");
+    } catch {
+      alert("Failed to update quantity");
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
@@ -93,31 +92,22 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId }),
       });
-
       if (!res.ok) throw new Error("Failed to remove item");
-
       setCartItems((prev) => prev.filter((i) => i.id !== itemId));
-    } catch (err) {
+    } catch {
       alert("Failed to remove item");
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
   };
 
-  const total = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
-    [cartItems]
-  );
-
   const handleCheckout = () => {
     alert(`Proceeding to checkout. Total: $${total.toFixed(2)}`);
-    // Here you would redirect to a payment page or trigger checkout API
   };
 
   return (
     <>
       <AdminHeader title="Cart" titleHref="/cart" />
-
       <div className="max-w-5xl mx-auto p-6 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
         {cartItems.length === 0 ? (
@@ -198,7 +188,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ...i,
         product: {
           ...i.product,
-          quantity: i.product.quantity ?? 99, // fallback stock
+          quantity: i.product.quantity ?? 99,
         },
       })),
       session,
