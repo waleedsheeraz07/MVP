@@ -3,6 +3,7 @@ import { prisma } from "../../lib/prisma";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import AdminHeader from '../../components/header'
 
 interface ProductDetailProps {
   product: {
@@ -44,6 +45,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   };
 
   return (
+<>
+
+      <AdminHeader title="Admin Panel" titleHref="/admin" />
+      
     <div className="bg-[#fdf8f3] min-h-screen font-sans">
       {/* Image Slider */}
       <div className="relative w-full">
@@ -165,6 +170,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         }
       `}</style>
     </div>
+</>
   );
 }
 
