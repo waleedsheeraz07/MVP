@@ -14,7 +14,7 @@ interface CartItem {
     title: string;
     price: number;
     images: string[];
-    stock: number;
+    quantity: number;
   };
   color: string | null;
   size: string | null;
@@ -169,7 +169,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ...i,
         product: {
           ...i.product,
-          stock: i.product.stock ?? 99, // default max stock if missing
+          quantity: i.product.quantity ?? 99, // default max stock if missing
         },
       })),
       session,
