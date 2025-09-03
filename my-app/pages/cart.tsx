@@ -36,13 +36,13 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   const [cart, setCart] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
 
-  // Total price updates live
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   const handleQuantityChange = async (itemId: string, newQty: number) => {
     const item = cart.find((i) => i.id === itemId);
     if (!item || newQty < 1 || newQty > item.product.quantity) return;
 
+    // Optimistic UI update
     setCart((prev) => prev.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i)));
     setLoadingIds((prev) => [...prev, itemId]);
 
@@ -97,7 +97,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
           const updated = latestCart.find((i) => i.id === item.id);
           if (!updated) continue;
 
-          // If current quantity > stock, reduce it and call handleQuantityChange
+          // If quantity > stock, reduce it and update backend
           if (item.quantity > updated.product.quantity) {
             await handleQuantityChange(item.id, updated.product.quantity);
           }
@@ -114,10 +114,8 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       }
     };
 
-    // Initial check
-    refreshCart();
-
-    const interval = setInterval(refreshCart, 5000);
+    refreshCart(); // run immediately
+    const interval = setInterval(refreshCart, 5000); // run every 5s
 
     return () => clearInterval(interval);
   }, [session?.user?.id, cart]);
@@ -213,19 +211,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { props: { cartItems: [], session } };
   }
 
-  const cartItems = await prisma.userItem.findMany({
+  let cartItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "cart" },
     include: { product: true },
   });
+
+  // On load, enforce quantity <= stock
+  for (const item of cartItems) {
+    if (item.quantity > item.product.quantity) {
+      await prisma.userItem.update({
+        where: { id: item.id },
+        data: { quantity: item.product.quantity },
+      });
+      item.quantity = item.product.quantity;
+    }
+  }
 
   return {
     props: {
       cartItems: cartItems.map((i) => ({
         ...i,
-        product: {
-          ...i.product,
-          quantity: i.product.quantity ?? 0,
-        },
+        product: { ...i.product, quantity: i.product.quantity ?? 0 },
       })),
       session,
     },
