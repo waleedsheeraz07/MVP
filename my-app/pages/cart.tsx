@@ -1,3 +1,4 @@
+// pages/cart.tsx
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -35,6 +36,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   const [cart, setCart] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
 
+  // Total price updates live
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   // Live stock refresh & auto-adjust quantity
@@ -53,6 +55,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
             const updated = latestCart.find((i) => i.id === item.id);
             if (!updated) return item;
 
+            // Reduce quantity if stock drops below current quantity
             const newQty = Math.min(item.quantity, updated.product.quantity);
             return { ...item, quantity: newQty, product: { ...item.product, quantity: updated.product.quantity } };
           })
