@@ -51,7 +51,7 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
     postalCode: user.postalCode || "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<"COD">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "CARD">("COD");
 
   const combinedAddress = `${form.address1}${form.address2 ? ", " + form.address2 : ""}, ${form.state}, ${form.country}, ${form.postalCode}`;
 
