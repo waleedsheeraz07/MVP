@@ -1,5 +1,7 @@
-'use client';
-
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]";
+import { prisma } from "../lib/prisma";
 import { useState } from "react";
 import { useRouter } from "next/router";
 
@@ -145,3 +147,55 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
     </div>
   );
 }
+
+// Server-side props
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session?.user?.id) {
+    return {
+      redirect: { destination: "/auth/signin", permanent: false },
+    };
+  }
+
+  // Fetch user info from DB
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      firstName: true,
+      lastName: true,
+      phone: true,
+      address1: true,
+      address2: true,
+      state: true,
+      country: true,
+      postalCode: true,
+    },
+  });
+
+  // Fetch cart items from DB
+  const userItems = await prisma.userItem.findMany({
+    where: { userId: session.user.id, status: "cart" },
+    include: { product: true },
+  });
+
+  const cartItems: CartItem[] = userItems.map(i => ({
+    id: i.id,
+    quantity: i.quantity,
+    color: i.color,
+    size: i.size,
+    product: {
+      id: i.product.id,
+      title: i.product.title,
+      price: i.product.price,
+      images: i.product.images,
+    },
+  }));
+
+  return {
+    props: {
+      user: user || {},
+      cartItems,
+    },
+  };
+};
