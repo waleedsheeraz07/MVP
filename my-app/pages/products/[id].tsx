@@ -71,7 +71,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
   return (
     <>
-      <AdminHeader title="Admin Panel" titleHref="/admin" />
+      <AdminHeader title="Products" titleHref="/products" />
 
       <div className="bg-[#fdf8f3] min-h-screen font-sans">
 {/* Back Arrow (sticky, top-left of viewport, above header) */}
@@ -184,22 +184,23 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
           )}
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <button
-              disabled={isAddToCartDisabled()}
-              className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
-                isAddToCartDisabled()
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#4CAF50] text-white hover:bg-[#43a047]"
-              }`}
-            >
-              Add to Cart
-            </button>
-            <button className="flex-1 py-3 px-4 bg-[#ff7043] text-white text-lg rounded-lg hover:bg-[#f4511e] transition">
-              Add to Wishlist
-            </button>
-          </div>
+    {/* Buttons */}
+<div className="flex flex-col sm:flex-row gap-4 mt-8">
+  <button
+    disabled={isAddToCartDisabled()}
+    className={`flex-1 py-3 px-4 text-lg rounded-lg transition 
+      ${isAddToCartDisabled()
+        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+        : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25]"
+      }`}
+  >
+    Add to Cart
+  </button>
+  <button className="flex-1 py-3 px-4 text-lg rounded-lg transition
+      bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] border border-[#5a4436]">
+    Add to Wishlist
+  </button>
+</div>
         </div>
 
         <style jsx>{`
