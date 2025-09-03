@@ -1,9 +1,13 @@
+// pages/api/seller/update-item-status.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
+import { ItemStatus, OrderStatus } from "@prisma/client";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type ResponseData = { success: true; orderStatus: OrderStatus } | { error: string };
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -14,12 +18,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { itemId, status } = req.body;
 
-  if (!["SHIPPED", "DELIVERED"].includes(status)) {
+  // Validate status
+  const validStatuses: ItemStatus[] = [ItemStatus.SHIPPED, ItemStatus.DELIVERED];
+  if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: "Invalid status" });
   }
 
   try {
-    // Only allow seller to update their own order item
+    // Ensure the seller owns this item
     const orderItem = await prisma.orderItem.findUnique({
       where: { id: itemId },
       select: { sellerId: true, orderId: true },
@@ -35,20 +41,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: { status },
     });
 
-    // --- Auto-sync parent order status ---
+    // Fetch all items in the order to auto-sync parent order status
     const items = await prisma.orderItem.findMany({
       where: { orderId: orderItem.orderId },
       select: { status: true },
     });
 
-    let newOrderStatus: string = "PENDING";
+    let newOrderStatus: OrderStatus;
 
-    if (items.every((i) => i.status === "CANCELLED")) newOrderStatus = "CANCELLED";
-    else if (items.every((i) => i.status === "DELIVERED")) newOrderStatus = "DELIVERED";
-    else if (items.every((i) => i.status === "SHIPPED")) newOrderStatus = "SHIPPED";
-    else if (items.every((i) => i.status === "CONFIRMED")) newOrderStatus = "CONFIRMED";
-    else if (items.some((i) => i.status === "CANCELLED")) newOrderStatus = "CANCELLED";
-    else newOrderStatus = "PENDING"; // default
+    if (items.every(i => i.status === ItemStatus.CANCELLED)) newOrderStatus = OrderStatus.CANCELLED;
+    else if (items.every(i => i.status === ItemStatus.DELIVERED)) newOrderStatus = OrderStatus.DELIVERED;
+    else if (items.every(i => i.status === ItemStatus.SHIPPED)) newOrderStatus = OrderStatus.SHIPPED;
+    else if (items.every(i => i.status === ItemStatus.CONFIRMED)) newOrderStatus = OrderStatus.CONFIRMED;
+    else if (items.some(i => i.status === ItemStatus.CANCELLED)) newOrderStatus = OrderStatus.CANCELLED;
+    else newOrderStatus = OrderStatus.PENDING;
 
     await prisma.order.update({
       where: { id: orderItem.orderId },
