@@ -2,8 +2,8 @@
 import { prisma } from "../../lib/prisma";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
-import AdminHeader from '../../components/header'
-      
+import { useState, useRef, useEffect } from "react";
+
 interface ProductDetailProps {
   product: {
     id: string;
@@ -18,20 +18,47 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product }: ProductDetailProps) {
   const validSizes = product.sizes.filter((s) => s && s.trim() !== "");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Track scroll position to update active dot
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const width = container.clientWidth;
+      const index = Math.round(scrollLeft / width);
+      setActiveIndex(index);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-<>
-<AdminHeader title="Admin Panel" titleHref="/admin" />
-      
     <div className="bg-[#fdf8f3] min-h-screen font-sans">
       {/* Image Slider full width */}
-      <div className="w-full overflow-x-auto whitespace-nowrap scrollbar-hide">
+      <div className="relative w-full overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory" ref={scrollRef}>
         {product.images.map((img, idx) => (
           <img
             key={idx}
             src={img}
             alt={`${product.title} ${idx}`}
-            className="inline-block w-full md:w-[600px] h-[400px] object-cover mr-2"
+            className="inline-block w-full h-[400px] object-cover snap-center"
+          />
+        ))}
+      </div>
+
+      {/* Dots indicator */}
+      <div className="flex justify-center mt-3 gap-2">
+        {product.images.map((_, i) => (
+          <span
+            key={i}
+            className={`h-2 w-2 rounded-full transition-all duration-300 ${
+              i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400"
+            }`}
           />
         ))}
       </div>
@@ -106,7 +133,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         }
       `}</style>
     </div>
-</>
   );
 }
 
