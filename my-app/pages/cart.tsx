@@ -4,7 +4,7 @@ import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
 import AdminHeader from "../components/header";
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface CartItem {
   id: string;
@@ -32,27 +32,27 @@ interface CartPageProps {
 }
 
 export default function CartPage({ cartItems: initialCartItems, session }: CartPageProps) {
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const [cart, setCart] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
 
-  const total = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
-    [cartItems]
-  );
+  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  // Live stock refresh every 5 seconds
+  // Live stock refresh & auto-adjust quantity
   useEffect(() => {
     if (!session?.user?.id) return;
+
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/api/useritem/cart-refresh");
         if (!res.ok) return;
+
         const latestCart: CartItem[] = await res.json();
 
-        setCartItems((prev) =>
+        setCart((prev) =>
           prev.map((item) => {
             const updated = latestCart.find((i) => i.id === item.id);
-            if (!updated) return item; // keep if not found
+            if (!updated) return item;
+
             const newQty = Math.min(item.quantity, updated.product.quantity);
             return { ...item, quantity: newQty, product: { ...item.product, quantity: updated.product.quantity } };
           })
@@ -67,23 +67,21 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
 
   if (!session?.user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <p className="text-xl mb-4">You need to log in to view your cart.</p>
-        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg">
+        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition">
           Sign In
         </Link>
       </div>
     );
   }
 
-  // Optimistic quantity update
   const handleQuantityChange = async (itemId: string, newQty: number) => {
-    const item = cartItems.find((i) => i.id === itemId);
+    const item = cart.find((i) => i.id === itemId);
     if (!item || newQty < 1 || newQty > item.product.quantity) return;
 
-    setCartItems((prev) =>
-      prev.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i))
-    );
+    // Optimistic UI update
+    setCart((prev) => prev.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i)));
     setLoadingIds((prev) => [...prev, itemId]);
 
     try {
@@ -92,14 +90,9 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, quantity: newQty }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update quantity");
-      }
+      if (!res.ok) throw new Error("Failed to update quantity");
     } catch {
       alert("Failed to update quantity");
-      // revert back
-      setCartItems((prev) => [...prev]);
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
@@ -107,7 +100,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
 
   const handleRemoveItem = async (itemId: string) => {
     setLoadingIds((prev) => [...prev, itemId]);
-    setCartItems((prev) => prev.filter((i) => i.id !== itemId));
+    setCart((prev) => prev.filter((i) => i.id !== itemId));
 
     try {
       const res = await fetch("/api/useritem/remove", {
@@ -118,8 +111,6 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       if (!res.ok) throw new Error("Failed to remove item");
     } catch {
       alert("Failed to remove item");
-      // revert back
-      setCartItems((prev) => [...prev, cartItems.find(i => i.id === itemId)!]);
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
@@ -132,26 +123,30 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   return (
     <>
       <AdminHeader title="Cart" titleHref="/cart" />
-      <div className="max-w-5xl mx-auto p-6 min-h-screen">
+      <div className="max-w-6xl mx-auto p-6 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
-        {cartItems.length === 0 ? (
+        {cart.length === 0 ? (
           <p>
-            Your cart is empty. <Link href="/products" className="text-[#5a4436]">Continue shopping</Link>.
+            Your cart is empty. <Link href="/products" className="text-[#5a4436] hover:underline">Continue shopping</Link>.
           </p>
         ) : (
           <div className="space-y-6">
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between border p-4 rounded-lg gap-4">
-                <img src={item.product.images[0]} alt={item.product.title} className="w-24 h-24 object-cover rounded-lg" />
-                <div className="flex-1">
-                  <h2 className="font-semibold">{item.product.title}</h2>
-                  {item.color && <p>Color: {item.color}</p>}
-                  {item.size && <p>Size: {item.size}</p>}
-                  <p>Price: ${item.product.price.toFixed(2)}</p>
-                  <p>Stock: {item.product.quantity}</p>
+            {cart.map((item) => (
+              <div key={item.id} className="flex flex-col sm:flex-row items-center sm:items-start border rounded-lg p-4 gap-4 shadow hover:shadow-lg transition-all">
+                <img
+                  src={item.product.images[0]}
+                  alt={item.product.title}
+                  className="w-28 h-28 sm:w-32 sm:h-32 object-cover rounded-lg flex-shrink-0"
+                />
+                <div className="flex-1 w-full">
+                  <h2 className="font-semibold text-lg">{item.product.title}</h2>
+                  {item.color && <p className="text-sm">Color: {item.color}</p>}
+                  {item.size && <p className="text-sm">Size: {item.size}</p>}
+                  <p className="text-sm">Price: ${item.product.price.toFixed(2)}</p>
+                  <p className="text-sm">Stock: {item.product.quantity}</p>
                 </div>
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex gap-1 items-center">
+                <div className="flex flex-col items-center gap-2 mt-2 sm:mt-0">
+                  <div className="flex gap-2 items-center">
                     <button
                       disabled={loadingIds.includes(item.id) || item.quantity <= 1}
                       onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
@@ -159,7 +154,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                     >
                       -
                     </button>
-                    <span className="px-2">{item.quantity}</span>
+                    <span className="px-3 font-medium">{item.quantity}</span>
                     <button
                       disabled={loadingIds.includes(item.id) || item.quantity >= item.product.quantity}
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
@@ -182,11 +177,11 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                 </div>
               </div>
             ))}
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 border-t pt-4">
               <span className="text-xl font-semibold">Total: ${total.toFixed(2)}</span>
               <button
                 onClick={handleCheckout}
-                className="px-6 py-3 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition"
+                className="mt-3 sm:mt-0 px-6 py-3 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition-all"
               >
                 Checkout
               </button>
