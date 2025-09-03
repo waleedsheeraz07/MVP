@@ -172,56 +172,54 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
             </svg>
           </button>
 
-          {/* Clickable area */}
+          {/* Product Image clickable */}
           <div
-            onClick={() => router.push(`/product/${item.product.id}`)}
-            className="flex flex-1 flex-row items-center gap-2 cursor-pointer min-w-0
-                       transform transition-transform duration-150 active:scale-105 active:shadow-lg"
+            onClick={() => router.push(`/products/${item.product.id}`)}
+            className="cursor-pointer flex-shrink-0 transform transition-transform duration-150 active:scale-105 active:shadow-lg"
           >
-            {/* Product Image */}
             <img
               src={item.product.images[0]}
               alt={item.product.title}
-              className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg flex-shrink-0"
+              className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg"
             />
+          </div>
 
-            {/* Info */}
-            <div className="flex-1 flex flex-col justify-between min-w-0">
-              <h2 className="font-semibold text-sm sm:text-base text-[#3e2f25] truncate">
-                {item.product.title}
-              </h2>
-              <div className="flex flex-wrap gap-1 text-xs text-gray-600 mt-0.5">
-                {item.color && <span>Color: {item.color}</span>}
-                {item.size && <span>Size: {item.size}</span>}
-              </div>
+          {/* Info & Quantity (not clickable) */}
+          <div className="flex-1 flex flex-col justify-between min-w-0 ml-2">
+            <h2 className="font-semibold text-sm sm:text-base text-[#3e2f25] truncate">
+              {item.product.title}
+            </h2>
+            <div className="flex flex-wrap gap-1 text-xs text-gray-600 mt-0.5">
+              {item.color && <span>Color: {item.color}</span>}
+              {item.size && <span>Size: {item.size}</span>}
+            </div>
 
-              {/* Quantity section */}
-              <div className="flex items-center gap-1 mt-1 sm:mt-2">
-                <button
-                  disabled={loadingIds.includes(item.id) || item.quantity <= 1}
-                  onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                  className="px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded transition duration-150 active:scale-95 text-sm"
-                >
-                  -
-                </button>
-                <span
-                  className="px-2 font-medium text-center min-w-[20px] text-sm"
-                  key={item.quantity}
-                >
-                  {item.quantity}
-                </span>
-                <button
-                  disabled={loadingIds.includes(item.id) || item.quantity >= item.product.quantity}
-                  onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                  className={`px-2 py-0.5 rounded transition duration-150 active:scale-95 text-sm ${
-                    item.quantity >= item.product.quantity
-                      ? "bg-gray-300 cursor-not-allowed text-gray-400"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                >
-                  +
-                </button>
-              </div>
+            {/* Quantity section */}
+            <div className="flex items-center gap-1 mt-1 sm:mt-2">
+              <button
+                disabled={loadingIds.includes(item.id) || item.quantity <= 1}
+                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                className="px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded transition duration-150 active:scale-95 text-sm"
+              >
+                -
+              </button>
+              <span
+                className="px-2 font-medium text-center min-w-[20px] text-sm"
+                key={item.quantity}
+              >
+                {item.quantity}
+              </span>
+              <button
+                disabled={loadingIds.includes(item.id) || item.quantity >= item.product.quantity}
+                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                className={`px-2 py-0.5 rounded transition duration-150 active:scale-95 text-sm ${
+                  item.quantity >= item.product.quantity
+                    ? "bg-gray-300 cursor-not-allowed text-gray-400"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                +
+              </button>
             </div>
           </div>
 
