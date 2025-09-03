@@ -44,7 +44,7 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
   const [form, setForm] = useState<UserInfo>({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
-    phone: user.phone || "",
+    phone: user.phoneNumber || "", // map phoneNumber → phone
     address1: user.address1 || "",
     address2: user.address2 || "",
     state: user.state || "",
@@ -164,7 +164,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     select: {
       firstName: true,
       lastName: true,
-      phone: true,
+      phoneNumber: true, // correct field name
       address1: true,
       address2: true,
       state: true,
