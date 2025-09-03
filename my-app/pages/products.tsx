@@ -79,7 +79,7 @@ export default function ProductsPage({ products }: ProductsPageProps) {
 import AdminHeader from "../components/header";
 
 <>
-      <AdminHeader title="Home" titleHref="/" />
+      <AdminHeader title="Products" titleHref="/products" />
       
 <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
   <div className="max-w-6xl mx-auto">
