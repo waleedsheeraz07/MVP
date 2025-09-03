@@ -185,25 +185,22 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           )}
 
 {/* Buttons */}
-<div className="flex flex-col sm:flex-row gap-4 mt-8">
-  <button
-    disabled={isAddToCartDisabled()}
-    className={`flex-1 py-3 px-4 text-lg rounded-lg transition 
-      transform duration-200 ease-in-out
-      ${isAddToCartDisabled()
-        ? "bg-gray-300 cursor-not-allowed text-gray-500"
-        : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"
-      }`}
-  >
-    Add to Cart
-  </button>
-  <button className="flex-1 py-3 px-4 text-lg rounded-lg transition
-      transform duration-200 ease-in-out
-      bg-[#3e2f25] text-[#fdf8f3] border border-[#5a4436] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105">
-    Add to Wishlist
-  </button>
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <button
+              disabled={isAddToCartDisabled()}
+              className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
+                isAddToCartDisabled()
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-[#5a4436] text-white hover:bg-[#3e2f25]"
+              }`}
+            >
+              Add to Cart
+            </button>
+            <button className="flex-1 py-3 px-4 bg-[#ff7043] text-white text-lg rounded-lg hover:bg-[#f4511e] transition">
+              Add to Wishlist
+            </button>
+          </div>
 </div>
-        </div>
 
         <style jsx>{`
           .scrollbar-hide::-webkit-scrollbar {
