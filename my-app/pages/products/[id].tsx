@@ -48,25 +48,29 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       {/* Image Slider */}
       <div className="relative w-full">
         {/* Back Arrow (sticky inside slider) */}
-        <Link
-          href="/products"
-          className="absolute top-4 left-4 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-        </Link>
+{/* Back Arrow (fixed, premium style with blur) */}
+<Link
+  href="/products"
+  className="fixed top-4 left-4 z-50 
+             bg-black/40 hover:bg-black/60 
+             text-white p-2 rounded-full 
+             backdrop-blur-sm transition"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-6 h-6"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 19.5L8.25 12l7.5-7.5"
+    />
+  </svg>
+</Link>
 
         {/* Image carousel */}
         <div
