@@ -4,7 +4,16 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import AdminHeader from "../../components/header";
+import { useRouter } from "next/router"
+import { GetServerSidePropsContext } from "next"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../api/auth/[...nextauth]"
 
+// --- SERVER SIDE FETCH ---
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions)
+
+ 
 interface ProductDetailProps {
   product: {
     id: string;
@@ -68,6 +77,52 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     if (product.colors.length > 1 && !selectedColor) return true;
     return false; // enabled otherwise
   };
+
+// Inside ProductDetail component, before return
+const [loading, setLoading] = useState(false);
+
+const handleAddItem = async (status: "cart" | "wishlist") => {
+  if (!session?.user?.id) {
+    alert("You need to log in first");
+    return;
+  }
+
+  if (status === "cart" && isAddToCartDisabled()) return;
+
+  setLoading(true);
+
+  try {
+    const res = await fetch("/api/useritem/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: session.user.id,
+        productId: product.id,
+        color: selectedColor,
+        size: selectedSize,
+        quantity: 1,
+        status,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Failed to add item");
+
+    // Success feedback
+    alert(
+      status === "cart"
+        ? "Product added to cart!"
+        : "Product added to wishlist!"
+    );
+  } catch (err: any) {
+    alert(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
@@ -185,21 +240,28 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           )}
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <button
-              disabled={isAddToCartDisabled()}
-              className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
-                isAddToCartDisabled()
-                  ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                  : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"
-              }`}
-            >
-              Add to Cart
-            </button>
-            <button className="flex-1 py-3 px-4 bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105 text-lg rounded-lg hotransition">
-              Add to Wishlist
-            </button>
-          </div>
+<div className="flex flex-col sm:flex-row gap-4 mt-8">
+  <button
+    disabled={isAddToCartDisabled() || loading}
+    onClick={() => handleAddItem("cart")}
+    className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
+      isAddToCartDisabled() || loading
+        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+        : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"
+    }`}
+  >
+    {loading ? "Adding..." : "Add to Cart"}
+  </button>
+
+  <button
+    disabled={loading}
+    onClick={() => handleAddItem("wishlist")}
+    className="flex-1 py-3 px-4 bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105 text-lg rounded-lg transition"
+  >
+    {loading ? "Adding..." : "Add to Wishlist"}
+  </button>
+</div>
+          
 </div>
 
         <style jsx>{`
