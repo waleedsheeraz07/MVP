@@ -38,13 +38,12 @@ interface CheckoutProps {
 
 export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
   const router = useRouter();
-  
   const [step, setStep] = useState<1 | 2>(1);
 
   const [form, setForm] = useState<UserInfo>({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
-    phone: user.phoneNumber || "", // map phoneNumber → phone
+    phoneNumber: user.phoneNumber || "", // ✅ correct field
     address1: user.address1 || "",
     address2: user.address2 || "",
     state: user.state || "",
@@ -58,13 +57,20 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleNext = () => {
-    const requiredFields = ["firstName", "phone", "address1", "state", "country", "postalCode"];
+    const requiredFields: (keyof UserInfo)[] = [
+      "firstName",
+      "phoneNumber",
+      "address1",
+      "state",
+      "country",
+      "postalCode",
+    ];
     for (const field of requiredFields) {
-      if (!form[field as keyof UserInfo]) {
+      if (!form[field]) {
         alert("Please fill in all required fields");
         return;
       }
@@ -79,7 +85,7 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           address: combinedAddress,
-          phone: form.phone,
+          phoneNumber: form.phoneNumber,
           name: `${form.firstName} ${form.lastName || ""}`,
           payment: paymentMethod,
         }),
@@ -98,16 +104,67 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Shipping Address</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input name="firstName" placeholder="First Name" value={form.firstName} onChange={handleInputChange} className="border p-2 rounded" />
-            <input name="lastName" placeholder="Last Name" value={form.lastName} onChange={handleInputChange} className="border p-2 rounded" />
-            <input name="phone" placeholder="Phone" value={form.phone} onChange={handleInputChange} className="border p-2 rounded sm:col-span-2" />
-            <input name="address1" placeholder="Address Line 1" value={form.address1} onChange={handleInputChange} className="border p-2 rounded sm:col-span-2" />
-            <input name="address2" placeholder="Address Line 2" value={form.address2} onChange={handleInputChange} className="border p-2 rounded sm:col-span-2" />
-            <input name="state" placeholder="State" value={form.state} onChange={handleInputChange} className="border p-2 rounded" />
-            <input name="country" placeholder="Country" value={form.country} onChange={handleInputChange} className="border p-2 rounded" />
-            <input name="postalCode" placeholder="Postal Code" value={form.postalCode} onChange={handleInputChange} className="border p-2 rounded" />
+            <input
+              name="firstName"
+              placeholder="First Name"
+              value={form.firstName}
+              onChange={handleInputChange}
+              className="border p-2 rounded"
+            />
+            <input
+              name="lastName"
+              placeholder="Last Name"
+              value={form.lastName}
+              onChange={handleInputChange}
+              className="border p-2 rounded"
+            />
+            <input
+              name="phoneNumber"
+              placeholder="Phone"
+              value={form.phoneNumber || ""}
+              onChange={handleInputChange}
+              className="border p-2 rounded sm:col-span-2"
+            />
+            <input
+              name="address1"
+              placeholder="Address Line 1"
+              value={form.address1}
+              onChange={handleInputChange}
+              className="border p-2 rounded sm:col-span-2"
+            />
+            <input
+              name="address2"
+              placeholder="Address Line 2"
+              value={form.address2 || ""}
+              onChange={handleInputChange}
+              className="border p-2 rounded sm:col-span-2"
+            />
+            <input
+              name="state"
+              placeholder="State"
+              value={form.state || ""}
+              onChange={handleInputChange}
+              className="border p-2 rounded"
+            />
+            <input
+              name="country"
+              placeholder="Country"
+              value={form.country || ""}
+              onChange={handleInputChange}
+              className="border p-2 rounded"
+            />
+            <input
+              name="postalCode"
+              placeholder="Postal Code"
+              value={form.postalCode || ""}
+              onChange={handleInputChange}
+              className="border p-2 rounded"
+            />
           </div>
-          <button onClick={handleNext} className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition">
+          <button
+            onClick={handleNext}
+            className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition"
+          >
             Next
           </button>
         </div>
@@ -118,15 +175,26 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
           <h1 className="text-2xl font-bold">Review & Payment</h1>
 
           <div className="border p-2 rounded space-y-1">
-            <p><strong>Name:</strong> {form.firstName} {form.lastName}</p>
-            <p><strong>Phone:</strong> {form.phone}</p>
-            <p><strong>Address:</strong> {combinedAddress}</p>
+            <p>
+              <strong>Name:</strong> {form.firstName} {form.lastName}
+            </p>
+            <p>
+              <strong>Phone:</strong> {form.phoneNumber}
+            </p>
+            <p>
+              <strong>Address:</strong> {combinedAddress}
+            </p>
           </div>
 
           <div className="space-y-2">
-            {cartItems.map(item => (
-              <div key={item.id} className="flex justify-between items-center border p-2 rounded">
-                <p>{item.product.title} x {item.quantity}</p>
+            {cartItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex justify-between items-center border p-2 rounded"
+              >
+                <p>
+                  {item.product.title} x {item.quantity}
+                </p>
                 <p>${(item.product.price * item.quantity).toFixed(2)}</p>
               </div>
             ))}
@@ -134,12 +202,21 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
 
           <div className="space-y-2 mt-2">
             <label className="flex items-center gap-2">
-              <input type="radio" name="payment" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} />
+              <input
+                type="radio"
+                name="payment"
+                value="COD"
+                checked={paymentMethod === "COD"}
+                onChange={() => setPaymentMethod("COD")}
+              />
               Cash on Delivery
             </label>
           </div>
 
-          <button onClick={handlePlaceOrder} className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full">
+          <button
+            onClick={handlePlaceOrder}
+            className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full"
+          >
             Place Order
           </button>
         </div>
@@ -148,7 +225,7 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
   );
 }
 
-// Server-side props
+// ✅ Server-side props
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
@@ -158,13 +235,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  // Fetch user info from DB
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
       firstName: true,
       lastName: true,
-      phoneNumber: true, // correct field name
+      phoneNumber: true, // ✅ correct field
       address1: true,
       address2: true,
       state: true,
@@ -173,13 +249,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  // Fetch cart items from DB
   const userItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "cart" },
     include: { product: true },
   });
 
-  const cartItems: CartItem[] = userItems.map(i => ({
+  const cartItems: CartItem[] = userItems.map((i) => ({
     id: i.id,
     quantity: i.quantity,
     color: i.color,
