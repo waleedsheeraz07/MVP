@@ -43,12 +43,11 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
   const handleUpdateStatus = async (itemId: string, newStatus: string) => {
     try {
       setUpdatingId(itemId);
-      const res = await fetch(`/api/seller/update-item-status`, {
+      const res = await fetch("/api/seller/update-item-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, status: newStatus }),
       });
-
       if (!res.ok) throw new Error("Failed to update status");
       window.location.reload();
     } catch (err) {
@@ -58,7 +57,7 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
     }
   };
 
-  if (orders.length === 0) {
+  if (!orders.length) {
     return (
       <div className="max-w-5xl mx-auto p-4 min-h-screen">
         <h1 className="text-2xl font-bold mb-4">Orders for My Products</h1>
@@ -77,6 +76,7 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
             key={order.id}
             className="border rounded p-4 shadow-sm bg-white space-y-4"
           >
+            {/* Order Header */}
             <div className="flex justify-between items-center">
               <h2 className="font-semibold">
                 Order #{order.id.slice(0, 8).toUpperCase()}
@@ -86,6 +86,7 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
               </span>
             </div>
 
+            {/* Buyer Info */}
             <div className="text-sm space-y-1">
               <p>
                 <strong>Payment:</strong> {order.payment}
@@ -99,6 +100,7 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
               </p>
             </div>
 
+            {/* Order Items */}
             <div className="space-y-2">
               {order.items.map((item) => (
                 <div
@@ -116,15 +118,11 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
                     <div>
                       <p className="font-medium">{item.product.title}</p>
                       <p className="text-sm text-gray-600">
-                        Size: {item.size || "N/A"} | Color:{" "}
-                        {item.color || "N/A"}
+                        Size: {item.size || "N/A"} | Color: {item.color || "N/A"}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        Qty: {item.quantity}
-                      </p>
+                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                       <p className="text-sm">
-                        Status:{" "}
-                        <span className="font-semibold">{item.status}</span>
+                        Status: <span className="font-semibold">{item.status}</span>
                       </p>
                     </div>
                   </div>
@@ -157,10 +155,9 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
               ))}
             </div>
 
-            <div className="flex justify-between items-center">
-              <div className="font-bold">
-                Seller Total: ${order.total.toFixed(2)}
-              </div>
+            {/* Totals */}
+            <div className="flex justify-between items-center mt-2">
+              <div className="font-bold">Seller Total: ${order.total.toFixed(2)}</div>
             </div>
           </div>
         ))}
@@ -169,7 +166,7 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
   );
 }
 
-// ✅ Server-side fetch now pulls item.status
+// --- Server-side fetch ---
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
@@ -185,9 +182,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       order: { include: { user: true } },
       product: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { order: { createdAt: "desc" } }, // Sort by order createdAt
   });
 
+  // Group by order
   const orderMap: Record<string, SellerOrder> = {};
   for (const item of orderItems) {
     if (!orderMap[item.orderId]) {
@@ -219,7 +217,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     orderMap[item.orderId].total += item.price * item.quantity;
   }
 
-  const orders = Object.values(orderMap);
-
-  return { props: { orders } };
+  return { props: { orders: Object.values(orderMap) } };
 };
