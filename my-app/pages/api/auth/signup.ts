@@ -16,6 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     email,
     dob,
     gender,
+    phoneNumber,
     address1,
     address2,
     state,
@@ -52,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         email: email.trim(),
         dob: dob ? new Date(dob) : null,
         gender: gender || null,
+        phoneNumber: phoneNumber.trim(), // added
         password: hashedPassword,
         address1: address1?.trim() || null,
         address2: address2?.trim() || null,
