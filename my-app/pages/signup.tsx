@@ -31,6 +31,11 @@ export default function SignupPage() {
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
+const validatePhoneNumber = (phone: string) => {
+  // Validates international format: +countrycode followed by digits
+  return /^\+\d{1,4}\d{6,14}$/.test(phone);
+};
+
   const handleNext = () => {
     setError("");
 
@@ -38,8 +43,8 @@ export default function SignupPage() {
       if (!firstName.trim()) return setError("First name is required");
       if (!email.trim()) return setError("Email is required");
       if (!validateEmail(email)) return setError("Enter a valid email address");
-      if (!phone.trim()) return setError("Phone number is required");
-    }
+      if (phone && !validatePhoneNumber(phone)) return setError("Enter a valid phone number with country code (e.g., +96512345678)");
+  }
 
     if (step === 2) {
       if (!password || !confirmPassword) return setError("Both password fields are required");
@@ -121,14 +126,19 @@ export default function SignupPage() {
               className="input"
             />
             <input
-              type="tel"
-              placeholder="Phone Number *"
-              name="tel"
-              autoComplete="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              className="input"
-            />
+  type="tel"
+  placeholder="Phone Number (Optional, include country code)"
+  name="tel"
+  autoComplete="tel"
+  value={phone}
+  onChange={e => setPhone(e.target.value)}
+  className="input"
+/>
+{phone && !validatePhoneNumber(phone) && (
+  <p className="text-gray-500 text-sm mt-1">
+    Format example: +96512345678
+  </p>
+)}
             <div className="relative">
               <input
                 type="date"
