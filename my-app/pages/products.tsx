@@ -76,8 +76,6 @@ export default function ProductsPage({ products }: ProductsPageProps) {
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
 
   return (
-import AdminHeader from "../components/header";
-
 <>
       <AdminHeader title="Products" titleHref="/products" />
       
