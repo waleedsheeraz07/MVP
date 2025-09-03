@@ -4,7 +4,7 @@ import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
 import AdminHeader from "../components/header";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 interface CartItem {
   id: string;
@@ -35,11 +35,35 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
 
-  // Hooks must be called unconditionally
   const total = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
     [cartItems]
   );
+
+  // Live stock refresh every 5 seconds
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/useritem/cart-refresh");
+        if (!res.ok) return;
+        const latestCart: CartItem[] = await res.json();
+
+        setCartItems((prev) =>
+          prev.map((item) => {
+            const updated = latestCart.find((i) => i.id === item.id);
+            if (!updated) return item; // keep if not found
+            const newQty = Math.min(item.quantity, updated.product.quantity);
+            return { ...item, quantity: newQty, product: { ...item.product, quantity: updated.product.quantity } };
+          })
+        );
+      } catch {
+        // fail silently
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [session?.user?.id]);
 
   if (!session?.user) {
     return (
@@ -52,33 +76,30 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     );
   }
 
+  // Optimistic quantity update
   const handleQuantityChange = async (itemId: string, newQty: number) => {
     const item = cartItems.find((i) => i.id === itemId);
-    if (!item) return;
+    if (!item || newQty < 1 || newQty > item.product.quantity) return;
 
-    if (newQty < 1 || newQty > item.product.quantity) return;
-
+    setCartItems((prev) =>
+      prev.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i))
+    );
     setLoadingIds((prev) => [...prev, itemId]);
+
     try {
       const res = await fetch("/api/useritem/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, quantity: newQty }),
       });
-
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to update quantity");
       }
-
-      const updatedItem = await res.json();
-      setCartItems((prev) =>
-        prev.map((i) =>
-          i.id === itemId ? { ...i, quantity: updatedItem.quantity } : i
-        )
-      );
     } catch {
       alert("Failed to update quantity");
+      // revert back
+      setCartItems((prev) => [...prev]);
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
@@ -86,6 +107,8 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
 
   const handleRemoveItem = async (itemId: string) => {
     setLoadingIds((prev) => [...prev, itemId]);
+    setCartItems((prev) => prev.filter((i) => i.id !== itemId));
+
     try {
       const res = await fetch("/api/useritem/remove", {
         method: "POST",
@@ -93,9 +116,10 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         body: JSON.stringify({ itemId }),
       });
       if (!res.ok) throw new Error("Failed to remove item");
-      setCartItems((prev) => prev.filter((i) => i.id !== itemId));
     } catch {
       alert("Failed to remove item");
+      // revert back
+      setCartItems((prev) => [...prev, cartItems.find(i => i.id === itemId)!]);
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
@@ -131,15 +155,19 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                     <button
                       disabled={loadingIds.includes(item.id) || item.quantity <= 1}
                       onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      className="px-2 py-1 bg-gray-200 rounded"
+                      className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all duration-150"
                     >
                       -
                     </button>
-                    <span>{item.quantity}</span>
+                    <span className="px-2">{item.quantity}</span>
                     <button
                       disabled={loadingIds.includes(item.id) || item.quantity >= item.product.quantity}
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      className={`px-2 py-1 rounded ${item.quantity >= item.product.quantity ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200"}`}
+                      className={`px-3 py-1 rounded-lg transition-all duration-150 ${
+                        item.quantity >= item.product.quantity
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-gray-200 hover:bg-gray-300"
+                      }`}
                     >
                       +
                     </button>
@@ -147,7 +175,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                   <button
                     disabled={loadingIds.includes(item.id)}
                     onClick={() => handleRemoveItem(item.id)}
-                    className="text-red-500 text-sm mt-1"
+                    className="text-red-500 text-sm mt-1 hover:underline"
                   >
                     Remove
                   </button>
@@ -188,7 +216,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ...i,
         product: {
           ...i.product,
-          quantity: i.product.quantity ?? 99,
+          quantity: i.product.quantity ?? 0,
         },
       })),
       session,
