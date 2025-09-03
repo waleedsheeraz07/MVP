@@ -151,7 +151,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       {cart.map((item) => (
         <div
           key={item.id}
-          className="flex flex-col sm:flex-row items-start sm:items-center bg-white rounded-xl shadow-md p-4 gap-4 hover:shadow-lg transition-all"
+          className="flex flex-row items-center bg-white rounded-xl shadow-md p-4 gap-4 hover:shadow-lg transition-all w-full"
         >
           {/* Product Image */}
           <img
@@ -161,7 +161,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
           />
 
           {/* Product Info */}
-          <div className="flex-1 w-full flex flex-col justify-between relative">
+          <div className="flex-1 flex flex-col justify-between relative min-w-0">
             {/* Remove button at top right */}
             <button
               onClick={() => handleRemoveItem(item.id)}
@@ -177,11 +177,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                 stroke="currentColor"
                 strokeWidth={2}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
@@ -191,13 +187,13 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
             </h2>
 
             {/* Color & Size */}
-            <div className="flex gap-2 mt-1 text-sm text-gray-600">
+            <div className="flex flex-wrap gap-2 mt-1 text-sm text-gray-600">
               {item.color && <span>Color: {item.color}</span>}
               {item.size && <span>Size: {item.size}</span>}
             </div>
 
             {/* Quantity selector */}
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-2">
               <button
                 disabled={loadingIds.includes(item.id) || item.quantity <= 1}
                 onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
@@ -226,7 +222,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
           </div>
 
           {/* Price */}
-          <div className="mt-3 sm:mt-0 sm:ml-4 text-lg font-semibold text-[#3e2f25]">
+          <div className="ml-4 flex-shrink-0 text-lg font-semibold text-[#3e2f25]">
             ${item.product.price.toFixed(2)}
           </div>
         </div>
