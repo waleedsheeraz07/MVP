@@ -170,57 +170,77 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
         </div>
       )}
 
-      {step === 2 && (
-        <div className="space-y-4">
-          <h1 className="text-2xl font-bold">Review & Payment</h1>
+ {step === 2 && (
+  <div className="space-y-4">
+    <h1 className="text-2xl font-bold">Review & Payment</h1>
 
-          <div className="border p-2 rounded space-y-1">
-            <p>
-              <strong>Name:</strong> {form.firstName} {form.lastName}
-            </p>
-            <p>
-              <strong>Phone:</strong> {form.phoneNumber}
-            </p>
-            <p>
-              <strong>Address:</strong> {combinedAddress}
-            </p>
+    <div className="border p-2 rounded space-y-1">
+      <p>
+        <strong>Name:</strong> {form.firstName} {form.lastName}
+      </p>
+      <p>
+        <strong>Phone:</strong> {form.phoneNumber}
+      </p>
+      <p>
+        <strong>Address:</strong> {combinedAddress}
+      </p>
+    </div>
+
+    {/* ✅ Detailed Cart Items */}
+    <div className="space-y-4">
+      {cartItems.map((item) => (
+        <div
+          key={item.id}
+          className="flex items-center border rounded p-2 gap-4"
+        >
+          {/* Image */}
+          <div className="w-20 h-20 flex-shrink-0">
+            <img
+              src={item.product.images[0]}
+              alt={item.product.title}
+              className="w-full h-full object-cover rounded"
+            />
           </div>
 
-          <div className="space-y-2">
-            {cartItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between items-center border p-2 rounded"
-              >
-                <p>
-                  {item.product.title} x {item.quantity}
-                </p>
-                <p>${(item.product.price * item.quantity).toFixed(2)}</p>
-              </div>
-            ))}
+          {/* Product Details */}
+          <div className="flex-1">
+            <h2 className="font-semibold">{item.product.title}</h2>
+            <p className="text-sm text-gray-600">
+              Size: {item.size || "N/A"} | Color: {item.color || "N/A"}
+            </p>
+            <p className="text-sm">Qty: {item.quantity}</p>
           </div>
 
-          <div className="space-y-2 mt-2">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="payment"
-                value="COD"
-                checked={paymentMethod === "COD"}
-                onChange={() => setPaymentMethod("COD")}
-              />
-              Cash on Delivery
-            </label>
+          {/* Price */}
+          <div className="text-right font-semibold">
+            ${(item.product.price * item.quantity).toFixed(2)}
           </div>
-
-          <button
-            onClick={handlePlaceOrder}
-            className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full"
-          >
-            Place Order
-          </button>
         </div>
-      )}
+      ))}
+    </div>
+
+    {/* Payment Options */}
+    <div className="space-y-2 mt-2">
+      <label className="flex items-center gap-2">
+        <input
+          type="radio"
+          name="payment"
+          value="COD"
+          checked={paymentMethod === "COD"}
+          onChange={() => setPaymentMethod("COD")}
+        />
+        Cash on Delivery
+      </label>
+    </div>
+
+    <button
+      onClick={handlePlaceOrder}
+      className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full"
+    >
+      Place Order
+    </button>
+  </div>
+)}
     </div>
   );
 }
