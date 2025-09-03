@@ -105,3 +105,56 @@ model UserItem {
   @@index([userId])
   @@index([productId])
 }
+
+model Order {
+  id          String       @id @default(cuid())
+  user        User         @relation(fields: [userId], references: [id])
+  userId      String
+  status      OrderStatus  @default(PENDING)
+  payment     PaymentType  @default(COD)
+  total       Float
+  address     String
+  phone       String
+  note        String? 
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  seller    User     @relation(fields: [sellerId], references: [id])
+  sellerId  String
+
+  quantity  Int
+  price     Float     // snapshot at purchase time
+  color     String?
+  size      String?
+  status    ItemStatus @default(PENDING)
+}
+
+enum OrderStatus {
+  PENDING     // placed but not confirmed
+  CONFIRMED   // confirmed by seller/admin
+  SHIPPED     // shipped out
+  DELIVERED   // completed
+  CANCELLED   // cancelled
+}
+
+enum ItemStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentType {
+  COD   // cash on delivery
+  CARD  // (future use)
+}
