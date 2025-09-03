@@ -11,33 +11,29 @@ interface ProductDetailProps {
     price: number;
     images: string[];
     colors: string[];
-    sizes: string[];
+    sizes: (string | null)[];
   };
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
+  // Filter sizes to remove null/empty values
+  const validSizes = product.sizes.filter((s) => s && s.trim() !== "");
+
   return (
     <div className="min-h-screen bg-[#fdf8f3] font-sans p-4">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6">
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Image Gallery */}
-          <div className="flex flex-col gap-3">
-            <img
-              src={product.images[0]}
-              alt={product.title}
-              className="w-full h-[400px] object-cover rounded-xl"
-            />
-            <div className="flex gap-2 overflow-x-auto">
-              {product.images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`${product.title} ${idx}`}
-                  className="w-24 h-24 object-cover rounded-md border cursor-pointer hover:opacity-80 transition"
-                />
-              ))}
-            </div>
+          {/* Image Slider */}
+          <div className="overflow-x-auto whitespace-nowrap scrollbar-hide rounded-xl border">
+            {product.images.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`${product.title} ${idx}`}
+                className="inline-block w-full md:w-[400px] h-[400px] object-cover mr-2 rounded-xl"
+              />
+            ))}
           </div>
 
           {/* Product Info */}
@@ -72,12 +68,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               </div>
             )}
 
-            {/* Sizes */}
-            {product.sizes.length > 0 && (
+            {/* Sizes (only if valid) */}
+            {validSizes.length > 0 && (
               <div>
                 <p className="font-semibold mb-1">Available Sizes:</p>
                 <div className="flex gap-2 flex-wrap">
-                  {product.sizes.map((s, i) => (
+                  {validSizes.map((s, i) => (
                     <span
                       key={i}
                       className="px-3 py-1 rounded-full border bg-gray-100 text-sm text-gray-700"
@@ -90,9 +86,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             )}
 
             {/* Actions */}
-            <div className="flex gap-4 mt-4">
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <button className="flex-1 py-2 px-4 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43a047] transition">
                 Add to Cart
+              </button>
+              <button className="flex-1 py-2 px-4 bg-[#ff7043] text-white rounded-lg hover:bg-[#f4511e] transition">
+                Add to Wishlist
               </button>
               <Link
                 href="/products"
@@ -124,7 +123,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: "blocking", // build new pages if a new product is added
+    fallback: "blocking",
   };
 };
 
@@ -148,6 +147,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         updatedAt: product.updatedAt.toISOString(),
       },
     },
-    revalidate: 60, // rebuild page every 60 seconds if needed
+    revalidate: 60,
   };
 };
