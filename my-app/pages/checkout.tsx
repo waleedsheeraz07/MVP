@@ -186,14 +186,13 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
       </p>
     </div>
 
-    {/* ✅ Detailed Cart Items */}
+    {/* ✅ Cart Items */}
     <div className="space-y-4">
       {cartItems.map((item) => (
         <div
           key={item.id}
           className="flex items-center border rounded p-2 gap-4"
         >
-          {/* Image */}
           <div className="w-20 h-20 flex-shrink-0">
             <img
               src={item.product.images[0]}
@@ -202,7 +201,6 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
             />
           </div>
 
-          {/* Product Details */}
           <div className="flex-1">
             <h2 className="font-semibold">{item.product.title}</h2>
             <p className="text-sm text-gray-600">
@@ -211,7 +209,6 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
             <p className="text-sm">Qty: {item.quantity}</p>
           </div>
 
-          {/* Price */}
           <div className="text-right font-semibold">
             ${(item.product.price * item.quantity).toFixed(2)}
           </div>
@@ -219,7 +216,21 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
       ))}
     </div>
 
-    {/* Payment Options */}
+    {/* ✅ Summary */}
+    <div className="border-t pt-3 text-right">
+      <p>
+        <strong>Total Products:</strong>{" "}
+        {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+      </p>
+      <p className="text-lg font-bold">
+        <strong>Total Amount:</strong> $
+        {cartItems
+          .reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+          .toFixed(2)}
+      </p>
+    </div>
+
+    {/* ✅ Payment Options */}
     <div className="space-y-2 mt-2">
       <label className="flex items-center gap-2">
         <input
@@ -231,14 +242,33 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
         />
         Cash on Delivery
       </label>
+      <label className="flex items-center gap-2">
+        <input
+          type="radio"
+          name="payment"
+          value="CARD"
+          checked={paymentMethod === "CARD"}
+          onChange={() => setPaymentMethod("CARD")}
+        />
+        Card (Mock)
+      </label>
     </div>
 
-    <button
-      onClick={handlePlaceOrder}
-      className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full"
-    >
-      Place Order
-    </button>
+    {/* ✅ Navigation Buttons */}
+    <div className="flex gap-2 mt-4">
+      <button
+        onClick={() => setStep(1)}
+        className="flex-1 px-4 py-2 border rounded hover:bg-gray-100 transition"
+      >
+        Back
+      </button>
+      <button
+        onClick={handlePlaceOrder}
+        className="flex-1 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition"
+      >
+        Place Order
+      </button>
+    </div>
   </div>
 )}
     </div>
