@@ -24,7 +24,7 @@ export default function ProductsPage({ products }: ProductsPageProps) {
   const [search, setSearch] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>("alpha");
+  const [sortBy, setSortBy] = useState<SortOption>("relevance");
   const [priceRange, setPriceRange] = useState<[number, number]>(() => {
     const prices = products.map(p => p.price);
     return [Math.min(...prices), Math.max(...prices)];
