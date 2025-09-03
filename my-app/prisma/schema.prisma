@@ -23,6 +23,8 @@ model User {
   dob       DateTime?
   gender    String?
 
+	phoneNumber String?   // added phone number field
+
   address1   String?
   address2   String?
   state      String?
