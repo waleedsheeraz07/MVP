@@ -39,51 +39,10 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   // Total price updates live
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  // Live stock refresh & auto-adjust quantity
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch("/api/useritem/cart-refresh");
-        if (!res.ok) return;
-
-        const latestCart: CartItem[] = await res.json();
-
-        setCart((prev) =>
-          prev.map((item) => {
-            const updated = latestCart.find((i) => i.id === item.id);
-            if (!updated) return item;
-
-            // Reduce quantity if stock drops below current quantity
-            const newQty = Math.min(item.quantity, updated.product.quantity);
-            return { ...item, quantity: newQty, product: { ...item.product, quantity: updated.product.quantity } };
-          })
-        );
-      } catch {
-        // fail silently
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [session?.user?.id]);
-
-  if (!session?.user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <p className="text-xl mb-4">You need to log in to view your cart.</p>
-        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition">
-          Sign In
-        </Link>
-      </div>
-    );
-  }
-
   const handleQuantityChange = async (itemId: string, newQty: number) => {
     const item = cart.find((i) => i.id === itemId);
     if (!item || newQty < 1 || newQty > item.product.quantity) return;
 
-    // Optimistic UI update
     setCart((prev) => prev.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i)));
     setLoadingIds((prev) => [...prev, itemId]);
 
@@ -122,6 +81,57 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   const handleCheckout = () => {
     alert(`Proceeding to checkout. Total: $${total.toFixed(2)}`);
   };
+
+  // Live stock refresh & auto-adjust quantity
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const refreshCart = async () => {
+      try {
+        const res = await fetch("/api/useritem/cart-refresh");
+        if (!res.ok) return;
+
+        const latestCart: CartItem[] = await res.json();
+
+        for (const item of cart) {
+          const updated = latestCart.find((i) => i.id === item.id);
+          if (!updated) continue;
+
+          // If current quantity > stock, reduce it and call handleQuantityChange
+          if (item.quantity > updated.product.quantity) {
+            await handleQuantityChange(item.id, updated.product.quantity);
+          }
+
+          // Update stock visually
+          setCart((prev) =>
+            prev.map((i) =>
+              i.id === item.id ? { ...i, product: { ...i.product, quantity: updated.product.quantity } } : i
+            )
+          );
+        }
+      } catch {
+        // fail silently
+      }
+    };
+
+    // Initial check
+    refreshCart();
+
+    const interval = setInterval(refreshCart, 5000);
+
+    return () => clearInterval(interval);
+  }, [session?.user?.id, cart]);
+
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <p className="text-xl mb-4">You need to log in to view your cart.</p>
+        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition">
+          Sign In
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <>
