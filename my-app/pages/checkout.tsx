@@ -23,7 +23,7 @@ interface CartItem {
 interface UserInfo {
   firstName: string;
   lastName?: string;
-  phone?: string;
+  phoneNumber?: string;
   address1?: string;
   address2?: string;
   state?: string;
