@@ -5,7 +5,7 @@ import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
 import AdminHeader from "../components/header";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface CartItem {
   id: string;
@@ -14,7 +14,7 @@ interface CartItem {
     title: string;
     price: number;
     images: string[];
-    quantity: number;
+    quantity: number; // this is the stock
   };
   color: string | null;
   size: string | null;
@@ -51,23 +51,35 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     const item = cartItems.find((i) => i.id === itemId);
     if (!item) return;
 
-    // Enforce max stock
-    if (newQty < 1 || newQty > item.product.stock) return;
+    // Enforce max stock using product.quantity
+    if (newQty < 1 || newQty > item.product.quantity) return;
 
     setLoadingIds((prev) => [...prev, itemId]);
+
     try {
       const res = await fetch("/api/useritem/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, quantity: newQty }),
       });
-      if (!res.ok) throw new Error("Failed to update quantity");
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to update quantity");
+      }
+
+      const updatedItem = await res.json();
 
       setCartItems((prev) =>
-        prev.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i))
+        prev.map((i) =>
+          i.id === itemId
+            ? { ...i, quantity: updatedItem.quantity } // updated quantity
+            : i
+        )
       );
-    } catch (err) {
-      alert("Failed to update quantity");
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message);
+      else alert("An unexpected error occurred");
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
     }
@@ -81,6 +93,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId }),
       });
+
       if (!res.ok) throw new Error("Failed to remove item");
 
       setCartItems((prev) => prev.filter((i) => i.id !== itemId));
@@ -91,7 +104,15 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     }
   };
 
-  const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const total = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [cartItems]
+  );
+
+  const handleCheckout = () => {
+    alert(`Proceeding to checkout. Total: $${total.toFixed(2)}`);
+    // Here you would redirect to a payment page or trigger checkout API
+  };
 
   return (
     <>
@@ -100,7 +121,9 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       <div className="max-w-5xl mx-auto p-6 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
         {cartItems.length === 0 ? (
-          <p>Your cart is empty. <Link href="/products" className="text-[#5a4436]">Continue shopping</Link>.</p>
+          <p>
+            Your cart is empty. <Link href="/products" className="text-[#5a4436]">Continue shopping</Link>.
+          </p>
         ) : (
           <div className="space-y-6">
             {cartItems.map((item) => (
@@ -111,7 +134,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                   {item.color && <p>Color: {item.color}</p>}
                   {item.size && <p>Size: {item.size}</p>}
                   <p>Price: ${item.product.price.toFixed(2)}</p>
-                  <p>Stock: {item.product.stock}</p>
+                  <p>Stock: {item.product.quantity}</p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex gap-1 items-center">
@@ -124,9 +147,9 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                     </button>
                     <span>{item.quantity}</span>
                     <button
-                      disabled={loadingIds.includes(item.id) || item.quantity >= item.product.stock}
+                      disabled={loadingIds.includes(item.id) || item.quantity >= item.product.quantity}
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      className="px-2 py-1 bg-gray-200 rounded"
+                      className={`px-2 py-1 rounded ${item.quantity >= item.product.quantity ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200"}`}
                     >
                       +
                     </button>
@@ -141,8 +164,14 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                 </div>
               </div>
             ))}
-            <div className="text-right mt-4 text-xl font-semibold">
-              Total: ${total.toFixed(2)}
+            <div className="flex justify-between items-center mt-4">
+              <span className="text-xl font-semibold">Total: ${total.toFixed(2)}</span>
+              <button
+                onClick={handleCheckout}
+                className="px-6 py-3 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition"
+              >
+                Checkout
+              </button>
             </div>
           </div>
         )}
@@ -169,7 +198,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ...i,
         product: {
           ...i.product,
-          quantity: i.product.quantity ?? 99, // default max stock if missing
+          quantity: i.product.quantity ?? 99, // fallback stock
         },
       })),
       session,
