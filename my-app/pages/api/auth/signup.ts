@@ -34,6 +34,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "First name, email, and password are required" });
   }
 
+  // Optional phone number validation
+  let validPhone: string | null = null;
+  if (phoneNumber?.trim()) {
+    const phone = phoneNumber.trim();
+    const phoneRegex = /^\+\d{1,4}\d{6,14}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ error: "Phone number must include country code, e.g., +96512345678" });
+    }
+    validPhone = phone;
+  }
+
   try {
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -53,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         email: email.trim(),
         dob: dob ? new Date(dob) : null,
         gender: gender || null,
-        phoneNumber: phoneNumber.trim(), // added
+        phoneNumber: validPhone, // optional
         password: hashedPassword,
         address1: address1?.trim() || null,
         address2: address2?.trim() || null,
