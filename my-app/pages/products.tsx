@@ -143,10 +143,10 @@ export default function ProductsPage({ products }: ProductsPageProps) {
     {filteredProducts.length === 0 ? (
       <p className="text-center text-[#3e2f25]">No products found.</p>
     ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredProducts.map(product => (
           <Link key={product.id} href={`/products/${product.id}`} className="block">
-            <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition">
+            <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
               {product.images[0] && (
                 <img
                   src={product.images[0]}
@@ -154,9 +154,9 @@ export default function ProductsPage({ products }: ProductsPageProps) {
                   className="w-full h-48 object-cover"
                 />
               )}
-              <div className="p-3">
+              <div className="p-3 flex-grow flex flex-col justify-between">
                 <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
-                <p className="mt-1 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
+                <p className="mt-2 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
               </div>
             </div>
           </Link>
