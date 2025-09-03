@@ -1,5 +1,7 @@
+// pages/products/[id].tsx
 import { prisma } from "../../lib/prisma";
 import { GetStaticPaths, GetStaticProps } from "next";
+import Link from "next/link";
 
 interface ProductDetailProps {
   product: {
@@ -15,29 +17,99 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product }: ProductDetailProps) {
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>{product.title}</h1>
-      <p style={{ fontWeight: "bold" }}>${product.price.toFixed(2)}</p>
+    <div className="min-h-screen bg-[#fdf8f3] font-sans p-4">
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6">
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Image Gallery */}
+          <div className="flex flex-col gap-3">
+            <img
+              src={product.images[0]}
+              alt={product.title}
+              className="w-full h-[400px] object-cover rounded-xl"
+            />
+            <div className="flex gap-2 overflow-x-auto">
+              {product.images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`${product.title} ${idx}`}
+                  className="w-24 h-24 object-cover rounded-md border cursor-pointer hover:opacity-80 transition"
+                />
+              ))}
+            </div>
+          </div>
 
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", margin: "1rem 0" }}>
-        {product.images.map((img, idx) => (
-          <img key={idx} src={img} alt={`${product.title} ${idx}`} style={{ width: "300px", height: "300px", objectFit: "cover", borderRadius: "8px" }} />
-        ))}
+          {/* Product Info */}
+          <div className="flex flex-col gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25]">
+              {product.title}
+            </h1>
+            <p className="text-xl font-semibold text-[#5a4436]">
+              ${product.price.toFixed(2)}
+            </p>
+
+            {product.description && (
+              <p className="text-gray-700 leading-relaxed">
+                {product.description}
+              </p>
+            )}
+
+            {/* Colors */}
+            {product.colors.length > 0 && (
+              <div>
+                <p className="font-semibold mb-1">Available Colors:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {product.colors.map((c, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 rounded-full border bg-gray-100 text-sm text-gray-700"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sizes */}
+            {product.sizes.length > 0 && (
+              <div>
+                <p className="font-semibold mb-1">Available Sizes:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {product.sizes.map((s, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 rounded-full border bg-gray-100 text-sm text-gray-700"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-4 mt-4">
+              <button className="flex-1 py-2 px-4 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43a047] transition">
+                Add to Cart
+              </button>
+              <Link
+                href="/products"
+                className="flex-1 py-2 px-4 bg-gray-200 text-gray-800 text-center rounded-lg hover:bg-gray-300 transition"
+              >
+                Back to Products
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {product.description && <p>{product.description}</p>}
-
-      {product.colors.length > 0 && (
-        <p>
-          <strong>Colors:</strong> {product.colors.join(", ")}
-        </p>
-      )}
-
-      {product.sizes.length > 0 && (
-        <p>
-          <strong>Sizes:</strong> {product.sizes.join(", ")}
-        </p>
-      )}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
