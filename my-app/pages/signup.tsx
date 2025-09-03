@@ -63,7 +63,7 @@ export default function SignupPage() {
           firstName,
           lastName,
           email,
-          phone,
+          phoneNumber: phone,
           dob,
           gender,
           address1,
