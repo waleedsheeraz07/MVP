@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session?.user?.id) return res.status(401).json({ error: "Unauthorized" });
 
   if (req.method === "POST") {
-    const { address, phone, name, payment } = req.body;
+    const { address, phoneNumber, name, payment } = req.body;
 
     try {
       // Fetch user's cart
@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           userId: session.user.id,
           address,
-          phone,
+          phoneNumber,
           total,
           payment: payment,
           status: "PENDING",
