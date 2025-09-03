@@ -60,6 +60,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setActiveIndex(index);
   };
 
+  // Determine if Add to Cart should be disabled
+  const isAddToCartDisabled = () => {
+    // If multiple sizes exist and none selected, disable
+    if (validSizes.length > 1 && !selectedSize) return true;
+    // If multiple colors exist and none selected, disable
+    if (product.colors.length > 1 && !selectedColor) return true;
+    return false; // enabled otherwise
+  };
+
   return (
     <>
       <AdminHeader title="Admin Panel" titleHref="/admin" />
@@ -178,7 +187,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <button className="flex-1 py-3 px-4 bg-[#4CAF50] text-white text-lg rounded-lg hover:bg-[#43a047] transition">
+            <button
+              disabled={isAddToCartDisabled()}
+              className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
+                isAddToCartDisabled()
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#4CAF50] text-white hover:bg-[#43a047]"
+              }`}
+            >
               Add to Cart
             </button>
             <button className="flex-1 py-3 px-4 bg-[#ff7043] text-white text-lg rounded-lg hover:bg-[#f4511e] transition">
