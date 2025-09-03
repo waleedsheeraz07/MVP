@@ -15,6 +15,7 @@ interface WishlistItem {
     title: string;
     price: number;
     images: string[];
+    quantity: number; // stock
   };
   color: string | null;
   size: string | null;
@@ -51,6 +52,25 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
       alert("Failed to remove item");
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== itemId));
+    }
+  };
+
+  const handleMoveToCart = async (item: WishlistItem) => {
+    setLoadingIds((prev) => [...prev, item.id]);
+    setWishlist((prev) => prev.filter((i) => i.id !== item.id));
+
+    try {
+      // API call to add item to cart
+      const res = await fetch("/api/useritem/move-to-cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId: item.id }),
+      });
+      if (!res.ok) throw new Error("Failed to move to cart");
+    } catch {
+      alert("Failed to move item to cart");
+    } finally {
+      setLoadingIds((prev) => prev.filter((id) => id !== item.id));
     }
   };
 
@@ -129,9 +149,18 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
                   </div>
                 </div>
 
-                {/* Price */}
-                <div className="flex-shrink-0 text-sm sm:text-base font-semibold text-[#3e2f25] ml-2">
-                  ${item.product.price.toFixed(2)}
+                {/* Price & Move to Cart */}
+                <div className="flex flex-col items-end ml-2 gap-1">
+                  <div className="text-sm sm:text-base font-semibold text-[#3e2f25]">
+                    ${item.product.price.toFixed(2)}
+                  </div>
+                  <button
+                    onClick={() => handleMoveToCart(item)}
+                    disabled={loadingIds.includes(item.id)}
+                    className="px-2 py-1 bg-[#5a4436] text-white rounded-lg text-xs sm:text-sm hover:bg-[#3e2f25] transition-all duration-150 active:scale-95"
+                  >
+                    Move to Cart
+                  </button>
                 </div>
               </div>
             ))}
@@ -158,7 +187,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       wishlistItems: wishlistItems.map((i) => ({
         ...i,
-        product: { ...i.product },
+        product: { ...i.product, quantity: i.product.quantity ?? 0 },
       })),
       session,
     },
