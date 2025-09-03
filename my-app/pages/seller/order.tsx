@@ -1,7 +1,9 @@
+// /pages/seller/orders.tsx
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { prisma } from "../../lib/prisma";
+import { useState } from "react";
 
 interface ProductItem {
   id: string;
@@ -16,13 +18,13 @@ interface SellerOrderItem {
   price: number;
   color?: string | null;
   size?: string | null;
+  status: string;
   product: ProductItem;
 }
 
 interface SellerOrder {
   id: string;
   createdAt: string;
-  status: string;
   payment: string;
   address: string;
   buyerName: string;
@@ -36,6 +38,26 @@ interface SellerOrdersPageProps {
 }
 
 export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const handleUpdateStatus = async (itemId: string, newStatus: string) => {
+    try {
+      setUpdatingId(itemId);
+      const res = await fetch(`/api/seller/update-item-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId, status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+      window.location.reload();
+    } catch (err) {
+      alert((err as Error).message || "Something went wrong");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   if (orders.length === 0) {
     return (
       <div className="max-w-5xl mx-auto p-4 min-h-screen">
@@ -65,9 +87,6 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
             </div>
 
             <div className="text-sm space-y-1">
-              <p>
-                <strong>Status:</strong> {order.status}
-              </p>
               <p>
                 <strong>Payment:</strong> {order.payment}
               </p>
@@ -103,17 +122,45 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
                       <p className="text-sm text-gray-600">
                         Qty: {item.quantity}
                       </p>
+                      <p className="text-sm">
+                        Status:{" "}
+                        <span className="font-semibold">{item.status}</span>
+                      </p>
                     </div>
                   </div>
-                  <p className="font-semibold">
-                    ${(item.price * item.quantity).toFixed(2)}
-                  </p>
+                  <div className="flex flex-col items-end gap-2">
+                    <p className="font-semibold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                    <div className="flex gap-2">
+                      {item.status === "PENDING" && (
+                        <button
+                          onClick={() => handleUpdateStatus(item.id, "SHIPPED")}
+                          disabled={updatingId === item.id}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {updatingId === item.id ? "Updating..." : "Mark Shipped"}
+                        </button>
+                      )}
+                      {item.status === "SHIPPED" && (
+                        <button
+                          onClick={() => handleUpdateStatus(item.id, "DELIVERED")}
+                          disabled={updatingId === item.id}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {updatingId === item.id ? "Updating..." : "Mark Delivered"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex justify-end font-bold">
-              Seller Total: ${order.total.toFixed(2)}
+            <div className="flex justify-between items-center">
+              <div className="font-bold">
+                Seller Total: ${order.total.toFixed(2)}
+              </div>
             </div>
           </div>
         ))}
@@ -122,7 +169,7 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
   );
 }
 
-// ✅ Server-side fetching
+// ✅ Server-side fetch now pulls item.status
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
@@ -132,26 +179,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  // Fetch orders where this seller has items
   const orderItems = await prisma.orderItem.findMany({
     where: { sellerId: session.user.id },
     include: {
-      order: {
-        include: { user: true },
-      },
+      order: { include: { user: true } },
       product: true,
     },
     orderBy: { createdAt: "desc" },
   });
 
-  // Group by order
   const orderMap: Record<string, SellerOrder> = {};
   for (const item of orderItems) {
     if (!orderMap[item.orderId]) {
       orderMap[item.orderId] = {
         id: item.orderId,
         createdAt: item.order.createdAt.toISOString(),
-        status: item.order.status,
         payment: item.order.payment,
         address: item.order.address || "",
         buyerName: `${item.order.user.firstName} ${item.order.user.lastName || ""}`,
@@ -166,6 +208,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       price: item.price,
       color: item.color,
       size: item.size,
+      status: item.status,
       product: {
         id: item.product.id,
         title: item.product.title,
