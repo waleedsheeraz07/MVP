@@ -12,7 +12,7 @@ import { authOptions } from "../api/auth/[...nextauth]"
 // --- SERVER SIDE FETCH ---
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions)
-
+}
  
 interface ProductDetailProps {
   product: {
