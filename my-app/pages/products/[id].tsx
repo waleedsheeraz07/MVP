@@ -2,7 +2,8 @@
 import { prisma } from "../../lib/prisma";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
-
+import AdminHeader from '../../components/header'
+      
 interface ProductDetailProps {
   product: {
     id: string;
@@ -19,6 +20,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const validSizes = product.sizes.filter((s) => s && s.trim() !== "");
 
   return (
+<>
+<AdminHeader title="Admin Panel" titleHref="/admin" />
+      
     <div className="bg-[#fdf8f3] min-h-screen font-sans">
       {/* Image Slider full width */}
       <div className="w-full overflow-x-auto whitespace-nowrap scrollbar-hide">
@@ -102,6 +106,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         }
       `}</style>
     </div>
+</>
   );
 }
 
