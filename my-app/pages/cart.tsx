@@ -211,7 +211,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { props: { cartItems: [], session } };
   }
 
-  let cartItems = await prisma.userItem.findMany({
+  const cartItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "cart" },
     include: { product: true },
   });
