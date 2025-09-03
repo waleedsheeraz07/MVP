@@ -10,6 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "POST") {
     const { address, phoneNumber, name, payment } = req.body;
 
+    if (!phoneNumber) {
+      return res.status(400).json({ error: "Phone number is required" });
+    }
+
     try {
       // Fetch user's cart
       const cartItems = await prisma.userItem.findMany({
@@ -20,16 +24,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!cartItems.length) return res.status(400).json({ error: "Cart is empty" });
 
       // Calculate total
-      const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+      const total = cartItems.reduce(
+        (sum, item) => sum + item.product.price * item.quantity,
+        0
+      );
 
       // Create order
       const order = await prisma.order.create({
         data: {
           userId: session.user.id,
           address,
-          phoneNumber,
+          phoneNumber, // ✅ updated
           total,
-          payment: payment,
+          payment,
           status: "PENDING",
           items: {
             create: cartItems.map((item) => ({
