@@ -21,7 +21,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Track scroll to highlight correct dot
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
@@ -35,7 +34,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Scroll to selected image when dot clicked
   const handleDotClick = (index: number) => {
     const container = scrollRef.current;
     if (!container) return;
@@ -47,16 +45,30 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
   return (
     <div className="bg-[#fdf8f3] min-h-screen font-sans">
-      {/* Image Slider full width */}
+      {/* Image Slider */}
       <div className="relative w-full">
-        {/* Back Arrow */}
+        {/* Back Arrow (sticky inside slider) */}
         <Link
           href="/products"
-          className="absolute top-3 left-3 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition"
+          className="absolute top-4 left-4 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition"
         >
-          ←
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5L8.25 12l7.5-7.5"
+            />
+          </svg>
         </Link>
 
+        {/* Image carousel */}
         <div
           className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory"
           ref={scrollRef}
@@ -72,7 +84,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         </div>
       </div>
 
-      {/* Dots indicator (clickable) */}
+      {/* Dots indicator */}
       <div className="flex justify-center mt-3 gap-2">
         {product.images.map((_, i) => (
           <button
@@ -85,7 +97,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         ))}
       </div>
 
-      {/* Product Info Section */}
+      {/* Product Info */}
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">
           {product.title}
@@ -132,7 +144,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <button className="flex-1 py-3 px-4 bg-[#4CAF50] text-white text-lg rounded-lg hover:bg-[#43a047] transition">
             Add to Cart
@@ -140,12 +152,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           <button className="flex-1 py-3 px-4 bg-[#ff7043] text-white text-lg rounded-lg hover:bg-[#f4511e] transition">
             Add to Wishlist
           </button>
-          <Link
-            href="/products"
-            className="flex-1 py-3 px-4 bg-gray-200 text-gray-800 text-lg text-center rounded-lg hover:bg-gray-300 transition"
-          >
-            Back to Products
-          </Link>
         </div>
       </div>
 
@@ -172,7 +178,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-// Fetch product data at build time
+// Fetch product data
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const id = params?.id as string;
 
