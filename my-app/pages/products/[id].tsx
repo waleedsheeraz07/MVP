@@ -48,18 +48,28 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   return (
     <div className="bg-[#fdf8f3] min-h-screen font-sans">
       {/* Image Slider full width */}
-      <div
-        className="relative w-full overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory"
-        ref={scrollRef}
-      >
-        {product.images.map((img, idx) => (
-          <img
-            key={idx}
-            src={img}
-            alt={`${product.title} ${idx}`}
-            className="inline-block w-full h-[400px] object-cover snap-center"
-          />
-        ))}
+      <div className="relative w-full">
+        {/* Back Arrow */}
+        <Link
+          href="/products"
+          className="absolute top-3 left-3 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition"
+        >
+          ←
+        </Link>
+
+        <div
+          className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory"
+          ref={scrollRef}
+        >
+          {product.images.map((img, idx) => (
+            <img
+              key={idx}
+              src={img}
+              alt={`${product.title} ${idx}`}
+              className="inline-block w-full h-[400px] object-cover snap-center"
+            />
+          ))}
+        </div>
       </div>
 
       {/* Dots indicator (clickable) */}
