@@ -1,29 +1,45 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 
+interface ProductItem {
+  id: string;
+  title: string;
+  price: number;
+  images: string[];
+}
+
+interface CartItem {
+  id: string;
+  quantity: number;
+  color?: string | null;
+  size?: string | null;
+  product: ProductItem;
+}
+
+interface UserInfo {
+  firstName: string;
+  lastName?: string;
+  phone?: string;
+  address1?: string;
+  address2?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+}
+
 interface CheckoutProps {
-  user: {
-    firstName: string;
-    lastName?: string;
-    phone?: string;
-    address1?: string;
-    address2?: string;
-    state?: string;
-    country?: string;
-    postalCode?: string;
-  };
-  cartItems: any[]; // fetched server-side or via API
+  user: UserInfo;
+  cartItems: CartItem[];
 }
 
 export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
   const router = useRouter();
   
-  // Step state: 1 = address, 2 = review + payment
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<1 | 2>(1);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<UserInfo>({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     phone: user.phone || "",
@@ -34,20 +50,22 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
     postalCode: user.postalCode || "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("COD"); // default
+  const [paymentMethod, setPaymentMethod] = useState<"COD">("COD");
 
-  // Combine address fields into one string for Order
   const combinedAddress = `${form.address1}${form.address2 ? ", " + form.address2 : ""}, ${form.state}, ${form.country}, ${form.postalCode}`;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleNext = () => {
-    // Validate required fields
-    if (!form.firstName || !form.phone || !form.address1 || !form.state || !form.country || !form.postalCode) {
-      alert("Please fill in all required fields");
-      return;
+    const requiredFields = ["firstName", "phone", "address1", "state", "country", "postalCode"];
+    for (const field of requiredFields) {
+      if (!form[field as keyof UserInfo]) {
+        alert("Please fill in all required fields");
+        return;
+      }
     }
     setStep(2);
   };
@@ -67,8 +85,8 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
       if (!res.ok) throw new Error("Failed to place order");
       const data = await res.json();
       router.push(`/order-success/${data.orderId}`);
-    } catch (err: any) {
-      alert(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      alert((err as Error).message || "Something went wrong");
     }
   };
 
@@ -78,67 +96,16 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Shipping Address</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input
-              name="firstName"
-              placeholder="First Name"
-              value={form.firstName}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="lastName"
-              placeholder="Last Name"
-              value={form.lastName}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="phone"
-              placeholder="Phone"
-              value={form.phone}
-              onChange={handleInputChange}
-              className="border p-2 rounded sm:col-span-2"
-            />
-            <input
-              name="address1"
-              placeholder="Address Line 1"
-              value={form.address1}
-              onChange={handleInputChange}
-              className="border p-2 rounded sm:col-span-2"
-            />
-            <input
-              name="address2"
-              placeholder="Address Line 2"
-              value={form.address2}
-              onChange={handleInputChange}
-              className="border p-2 rounded sm:col-span-2"
-            />
-            <input
-              name="state"
-              placeholder="State"
-              value={form.state}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="country"
-              placeholder="Country"
-              value={form.country}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="postalCode"
-              placeholder="Postal Code"
-              value={form.postalCode}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
+            <input name="firstName" placeholder="First Name" value={form.firstName} onChange={handleInputChange} className="border p-2 rounded" />
+            <input name="lastName" placeholder="Last Name" value={form.lastName} onChange={handleInputChange} className="border p-2 rounded" />
+            <input name="phone" placeholder="Phone" value={form.phone} onChange={handleInputChange} className="border p-2 rounded sm:col-span-2" />
+            <input name="address1" placeholder="Address Line 1" value={form.address1} onChange={handleInputChange} className="border p-2 rounded sm:col-span-2" />
+            <input name="address2" placeholder="Address Line 2" value={form.address2} onChange={handleInputChange} className="border p-2 rounded sm:col-span-2" />
+            <input name="state" placeholder="State" value={form.state} onChange={handleInputChange} className="border p-2 rounded" />
+            <input name="country" placeholder="Country" value={form.country} onChange={handleInputChange} className="border p-2 rounded" />
+            <input name="postalCode" placeholder="Postal Code" value={form.postalCode} onChange={handleInputChange} className="border p-2 rounded" />
           </div>
-          <button
-            onClick={handleNext}
-            className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition"
-          >
+          <button onClick={handleNext} className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition">
             Next
           </button>
         </div>
@@ -148,16 +115,14 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Review & Payment</h1>
 
-          {/* Shipping info */}
           <div className="border p-2 rounded space-y-1">
             <p><strong>Name:</strong> {form.firstName} {form.lastName}</p>
             <p><strong>Phone:</strong> {form.phone}</p>
             <p><strong>Address:</strong> {combinedAddress}</p>
           </div>
 
-          {/* Cart items */}
           <div className="space-y-2">
-            {cartItems.map((item) => (
+            {cartItems.map(item => (
               <div key={item.id} className="flex justify-between items-center border p-2 rounded">
                 <p>{item.product.title} x {item.quantity}</p>
                 <p>${(item.product.price * item.quantity).toFixed(2)}</p>
@@ -165,25 +130,14 @@ export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
             ))}
           </div>
 
-          {/* Payment method */}
           <div className="space-y-2 mt-2">
             <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="payment"
-                value="COD"
-                checked={paymentMethod === "COD"}
-                onChange={() => setPaymentMethod("COD")}
-              />
+              <input type="radio" name="payment" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} />
               Cash on Delivery
             </label>
-            {/* future: CARD option */}
           </div>
 
-          <button
-            onClick={handlePlaceOrder}
-            className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full"
-          >
+          <button onClick={handlePlaceOrder} className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition w-full">
             Place Order
           </button>
         </div>
