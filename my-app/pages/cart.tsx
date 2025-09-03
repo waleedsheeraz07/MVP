@@ -134,59 +134,67 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   return (
     <>
       <AdminHeader title="Cart" titleHref="/cart" />
-<div className="max-w-5xl mx-auto p-4 sm:p-6 min-h-screen">
-  <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center sm:text-left text-[#3e2f25]">
+<div className="max-w-4xl mx-auto p-4 min-h-screen">
+  <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center sm:text-left text-[#3e2f25]">
     Your Cart
   </h1>
 
   {cart.length === 0 ? (
-    <p className="text-center text-gray-700 text-lg">
+    <p className="text-center text-gray-700 text-base sm:text-lg">
       Your cart is empty.{" "}
       <Link href="/products" className="text-[#5a4436] hover:underline font-semibold">
         Continue shopping
       </Link>.
     </p>
   ) : (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3 sm:space-y-4">
       {cart.map((item) => (
         <div
           key={item.id}
-          className="flex flex-col sm:flex-row items-center sm:items-start border rounded-2xl p-4 sm:p-6 gap-4 bg-white shadow-md hover:shadow-lg transition-all duration-200"
+          className="flex flex-col sm:flex-row items-center sm:items-start border rounded-xl p-3 sm:p-4 gap-3 sm:gap-4 bg-white shadow hover:shadow-lg transition-all duration-200"
         >
+          {/* Product Image */}
           <img
             src={item.product.images[0]}
             alt={item.product.title}
-            className="w-28 h-28 sm:w-36 sm:h-36 object-cover rounded-xl flex-shrink-0"
+            className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-lg flex-shrink-0"
           />
 
+          {/* Product Details */}
           <div className="flex-1 w-full flex flex-col justify-between">
-            <div>
-              <h2 className="font-semibold text-lg sm:text-xl text-[#3e2f25]">
+            <div className="overflow-hidden">
+              <h2 className="font-semibold text-base sm:text-lg text-[#3e2f25] truncate">
                 {item.product.title}
               </h2>
-              {item.color && <p className="text-sm text-gray-600 mt-1">Color: {item.color}</p>}
-              {item.size && <p className="text-sm text-gray-600 mt-1">Size: {item.size}</p>}
+              {item.color && <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Color: {item.color}</p>}
+              {item.size && <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Size: {item.size}</p>}
               <p className="text-sm text-gray-700 mt-1 font-medium">
-                Price: ${item.product.price.toFixed(2)}
+                ${item.product.price.toFixed(2)}
               </p>
-              <p className="text-sm text-gray-500 mt-1">Stock: {item.product.quantity}</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Stock: {item.product.quantity}</p>
             </div>
 
-            <div className="mt-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+            {/* Quantity & Remove */}
+            <div className="mt-2 flex items-center gap-2 sm:gap-4">
               {/* Quantity controls */}
-              <div className="flex items-center gap-2 border rounded-lg overflow-hidden">
+              <div className="flex items-center border rounded-lg overflow-hidden">
                 <button
                   disabled={loadingIds.includes(item.id) || item.quantity <= 1}
                   onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 transition duration-150"
+                  className="px-2 sm:px-3 py-1 bg-gray-100 hover:bg-gray-200 transition duration-150 active:scale-95"
                 >
                   -
                 </button>
-                <span className="px-3 font-medium">{item.quantity}</span>
+                <span
+                  className="px-3 font-medium text-center min-w-[24px] animate-pulse"
+                  key={item.quantity} // triggers re-animation when quantity changes
+                >
+                  {item.quantity}
+                </span>
                 <button
                   disabled={loadingIds.includes(item.id) || item.quantity >= item.product.quantity}
                   onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                  className={`px-3 py-1 transition duration-150 ${
+                  className={`px-2 sm:px-3 py-1 transition duration-150 active:scale-95 ${
                     item.quantity >= item.product.quantity
                       ? "bg-gray-200 cursor-not-allowed text-gray-400"
                       : "bg-gray-100 hover:bg-gray-200"
@@ -196,11 +204,11 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
                 </button>
               </div>
 
-              {/* Remove button */}
+              {/* Remove */}
               <button
                 disabled={loadingIds.includes(item.id)}
                 onClick={() => handleRemoveItem(item.id)}
-                className="text-red-500 text-sm hover:underline mt-2 sm:mt-0"
+                className="text-red-500 text-xs sm:text-sm hover:underline active:scale-95"
               >
                 Remove
               </button>
@@ -210,13 +218,13 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       ))}
 
       {/* Total & Checkout */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 border-t pt-4 bg-white p-4 rounded-xl shadow-md">
-        <span className="text-xl sm:text-2xl font-semibold text-[#3e2f25]">
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-4 border-t pt-3 bg-white p-3 sm:p-4 rounded-xl shadow-md">
+        <span className="text-lg sm:text-xl font-semibold text-[#3e2f25]">
           Total: ${total.toFixed(2)}
         </span>
         <button
           onClick={handleCheckout}
-          className="mt-3 sm:mt-0 px-6 py-3 bg-[#5a4436] text-white rounded-xl font-semibold hover:bg-[#3e2f25] transition-all duration-200"
+          className="mt-2 sm:mt-0 px-5 py-2 sm:px-6 sm:py-3 bg-[#5a4436] text-white rounded-xl font-semibold hover:bg-[#3e2f25] transition-all duration-200 active:scale-95"
         >
           Checkout
         </button>
