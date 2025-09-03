@@ -21,15 +21,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Track scroll position to update active dot
+  // Track scroll to highlight correct dot
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
 
     const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
-      const width = container.clientWidth;
-      const index = Math.round(scrollLeft / width);
+      const index = Math.round(container.scrollLeft / container.clientWidth);
       setActiveIndex(index);
     };
 
@@ -37,10 +35,23 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Scroll to selected image when dot clicked
+  const handleDotClick = (index: number) => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const scrollTo = index * container.clientWidth;
+    container.scrollTo({ left: scrollTo, behavior: "smooth" });
+    setActiveIndex(index);
+  };
+
   return (
     <div className="bg-[#fdf8f3] min-h-screen font-sans">
       {/* Image Slider full width */}
-      <div className="relative w-full overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory" ref={scrollRef}>
+      <div
+        className="relative w-full overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory"
+        ref={scrollRef}
+      >
         {product.images.map((img, idx) => (
           <img
             key={idx}
@@ -51,13 +62,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         ))}
       </div>
 
-      {/* Dots indicator */}
+      {/* Dots indicator (clickable) */}
       <div className="flex justify-center mt-3 gap-2">
         {product.images.map((_, i) => (
-          <span
+          <button
             key={i}
-            className={`h-2 w-2 rounded-full transition-all duration-300 ${
-              i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400"
+            onClick={() => handleDotClick(i)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"
             }`}
           />
         ))}
