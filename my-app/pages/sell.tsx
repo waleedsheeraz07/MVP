@@ -6,7 +6,8 @@ import { GetServerSidePropsContext } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "./api/auth/[...nextauth]"
 import { prisma } from "../lib/prisma" // adjust path
-
+import Layout from "../components/header"; // collapsible sidebar layout
+    
 // --- SERVER SIDE FETCH ---
  export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
@@ -236,6 +237,8 @@ const router = useRouter()
   ]
 
   return (
+<Layout categories={categories} user={user}>
+ 
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
       <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
@@ -405,5 +408,6 @@ const router = useRouter()
         }
       `}</style>
     </div>
+</Layout>
   )
 }
