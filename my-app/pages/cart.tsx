@@ -44,7 +44,7 @@ interface CartPageProps {
     };
   } | null;
   categories: Category[];
-  user: User | null;
+  user?: User | null;  // <-- allow undefined too
 }
 
 
