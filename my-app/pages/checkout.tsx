@@ -114,75 +114,87 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
  <Layout categories={categories} user={user}>
      
     <div className="max-w-3xl mx-auto p-4 min-h-screen">
-      {step === 1 && (
-        <div className="space-y-4">
-          <h1 className="text-2xl font-bold">Shipping Address</h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input
-              name="firstName"
-              placeholder="First Name"
-              value={form.firstName}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="lastName"
-              placeholder="Last Name"
-              value={form.lastName}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="phoneNumber"
-              placeholder="Phone"
-              value={form.phoneNumber || ""}
-              onChange={handleInputChange}
-              className="border p-2 rounded sm:col-span-2"
-            />
-            <input
-              name="address1"
-              placeholder="Address Line 1"
-              value={form.address1}
-              onChange={handleInputChange}
-              className="border p-2 rounded sm:col-span-2"
-            />
-            <input
-              name="address2"
-              placeholder="Address Line 2"
-              value={form.address2 || ""}
-              onChange={handleInputChange}
-              className="border p-2 rounded sm:col-span-2"
-            />
-            <input
-              name="state"
-              placeholder="State"
-              value={form.state || ""}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="country"
-              placeholder="Country"
-              value={form.country || ""}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-            <input
-              name="postalCode"
-              placeholder="Postal Code"
-              value={form.postalCode || ""}
-              onChange={handleInputChange}
-              className="border p-2 rounded"
-            />
-          </div>
-          <button
-            onClick={handleNext}
-            className="mt-4 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition"
-          >
-            Next
-          </button>
-        </div>
-      )}
+ {step === 1 && (
+  <div className="space-y-4">
+    <h1 className="text-2xl font-bold">Shipping Address</h1>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <input
+        name="firstName"
+        placeholder="First Name"
+        value={form.firstName}
+        onChange={handleInputChange}
+        className="border p-2 rounded focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="lastName"
+        placeholder="Last Name"
+        value={form.lastName}
+        onChange={handleInputChange}
+        className="border p-2 rounded focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="phoneNumber"
+        placeholder="Phone"
+        value={form.phoneNumber || ""}
+        onChange={handleInputChange}
+        className="border p-2 rounded sm:col-span-2 focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="address1"
+        placeholder="Address Line 1"
+        value={form.address1}
+        onChange={handleInputChange}
+        className="border p-2 rounded sm:col-span-2 focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="address2"
+        placeholder="Address Line 2"
+        value={form.address2 || ""}
+        onChange={handleInputChange}
+        className="border p-2 rounded sm:col-span-2 focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="state"
+        placeholder="State"
+        value={form.state || ""}
+        onChange={handleInputChange}
+        className="border p-2 rounded focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="country"
+        placeholder="Country"
+        value={form.country || ""}
+        onChange={handleInputChange}
+        className="border p-2 rounded focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+      <input
+        name="postalCode"
+        placeholder="Postal Code"
+        value={form.postalCode || ""}
+        onChange={handleInputChange}
+        className="border p-2 rounded focus:ring-2 focus:ring-[#5a4436] outline-none"
+      />
+    </div>
+
+    <div className="flex justify-between mt-4">
+      {/* Back button */}
+      <button
+        onClick={() => router.push("/cart")}
+        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 hover:text-gray-900 transition-all duration-150 active:scale-95"
+      >
+        Back
+      </button>
+
+      {/* Next button */}
+      <button
+        onClick={handleNext}
+        className="px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition-all duration-150 active:scale-95"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+)}
 
  {step === 2 && (
   <div className="space-y-4">
@@ -269,20 +281,23 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
     </div>
 
     {/* ✅ Navigation Buttons */}
-    <div className="flex gap-2 mt-4">
-      <button
-        onClick={() => setStep(1)}
-        className="flex-1 px-4 py-2 border rounded hover:bg-gray-100 transition"
-      >
-        Back
-      </button>
-      <button
-        onClick={handlePlaceOrder}
-        className="flex-1 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition"
-      >
-        Place Order
-      </button>
-    </div>
+ <div className="flex gap-2 mt-4">
+  {/* Back button */}
+  <button
+    onClick={() => setStep(1)}
+    className="flex-1 px-4 py-2 border rounded text-gray-800 hover:bg-gray-200 hover:text-gray-900 transition-all duration-150 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-400"
+  >
+    Back
+  </button>
+
+  {/* Place Order button */}
+  <button
+    onClick={handlePlaceOrder}
+    className="flex-1 px-4 py-2 bg-[#5a4436] text-white rounded hover:bg-[#3e2f25] transition-all duration-150 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#5a4436]"
+  >
+    Place Order
+  </button>
+</div>
   </div>
 )}
     </div>
