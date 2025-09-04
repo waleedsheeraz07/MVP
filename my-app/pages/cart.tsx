@@ -5,6 +5,9 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useCart } from "../context/CartContext";
+
+ 
 
 interface CartItem {
   id: string;
@@ -35,6 +38,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   const [cart, setCart] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
+  const { refreshCart } = useCart();
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
@@ -51,6 +55,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, quantity: newQty }),
       });
+      refreshCart(); 
       if (!res.ok) throw new Error("Failed to update quantity");
     } catch {
       alert("Failed to update quantity");
@@ -69,6 +74,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId }),
       });
+      refreshCart(); 
       if (!res.ok) throw new Error("Failed to remove item");
     } catch {
       alert("Failed to remove item");
