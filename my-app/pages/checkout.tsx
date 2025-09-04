@@ -52,6 +52,7 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
   const [step, setStep] = useState<1 | 2>(1);
 
   const [form, setForm] = useState<UserInfo>({
+    id: user.id,
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     phoneNumber: user.phoneNumber || "", // ✅ correct field
