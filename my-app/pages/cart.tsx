@@ -39,20 +39,12 @@ interface CartPageProps {
   session: {
     user?: {
       id: string;
-      name?: string;
-      email?: string;
+      name?: string | null;
+      email?: string | null;
     };
   } | null;
-  categories: {
-    id: string;
-    title: string;
-    order: number;
-    parentId: string | null;
-  }[];
-  user: {
-    id: string;
-    name: string;
-  } | null;
+  categories: Category[];
+  user: User | null;
 }
 
 
