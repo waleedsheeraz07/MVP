@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { useCart } from "../context/CartContext";
 import Layout from "../components/header";
 
-interface CartItem {
+ interface CartItem {
   id: string;
   product: {
     id: string;
@@ -36,21 +36,12 @@ interface User {
 
 interface CartPageProps {
   cartItems: CartItem[];
-  session: {
-    user?: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-    };
-  } | null;
   categories: Category[];
-  user?: User | null;  // <-- allow undefined too
+  user: User;  // ✅ consistent with ProductsPage
 }
 
-
-
-export default function CartPage({ cartItems: initialCartItems, session, categories, user }: CartPageProps) {
-  const [cart, setCart] = useState<CartItem[]>(initialCartItems);
+export default function CartPage({ cartItems: initialCartItems, categories, user }: CartPageProps) {
+const [cart, setCart] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
   const { refreshCart, setUserId } = useCart();
@@ -259,7 +250,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session?.user?.id) {
-    return { props: { cartItems: [], session: null, categories: [], user: null } };
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
   // Fetch cart items
@@ -280,7 +271,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ...i,
         product: { ...i.product, quantity: i.product.quantity ?? 0 },
       })),
-      session,
       categories,
       user: {
         id: session.user.id,
