@@ -3,7 +3,6 @@ import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
-import AdminHeader from "../components/header";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -87,7 +86,6 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
 
   return (
     <>
-      <AdminHeader title="Wishlist" titleHref="/wishlist" />
       <div className="max-w-4xl mx-auto p-2 min-h-screen">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
           Your Wishlist
