@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "./api/auth/[...nextauth]";
-import { prisma } from "../lib/prisma";
+import { authOptions } from "../api/auth/[...nextauth]";
+import prisma from "../../lib/prisma";
 
 interface ProfilePageProps {
   user: {
@@ -23,6 +24,36 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ user }: ProfilePageProps) {
+  const [form, setForm] = useState({ ...user });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch("/api/profile/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update profile");
+      setMessage("Profile updated successfully!");
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fdf8f3] p-4">
       <div className="max-w-4xl mx-auto">
@@ -30,7 +61,14 @@ export default function ProfilePage({ user }: ProfilePageProps) {
           My Profile
         </h1>
 
-        <div className="bg-[#fffdfb] shadow-md rounded-2xl p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-[#fffdfb] shadow-md rounded-2xl p-6 space-y-6"
+        >
+          {message && (
+            <p className="text-center text-sm font-medium text-[#5a4436]">{message}</p>
+          )}
+
           {/* Personal Info */}
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-[#3e2f25] border-b pb-2">
@@ -38,28 +76,70 @@ export default function ProfilePage({ user }: ProfilePageProps) {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-gray-600 font-medium">First Name</p>
-                <p className="text-[#3e2f25]">{user.firstName || "-"}</p>
+                <label className="text-gray-600 font-medium">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  className="input"
+                  required
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Last Name</p>
-                <p className="text-[#3e2f25]">{user.lastName || "-"}</p>
+                <label className="text-gray-600 font-medium">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={form.lastName || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Email</p>
-                <p className="text-[#3e2f25]">{user.email}</p>
+                <label className="text-gray-600 font-medium">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="input"
+                  required
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Phone Number</p>
-                <p className="text-[#3e2f25]">{user.phoneNumber || "-"}</p>
+                <label className="text-gray-600 font-medium">Phone Number</label>
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={form.phoneNumber || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Date of Birth</p>
-                <p className="text-[#3e2f25]">{user.dob ? new Date(user.dob).toLocaleDateString() : "-"}</p>
+                <label className="text-gray-600 font-medium">Date of Birth</label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={form.dob?.slice(0, 10) || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Gender</p>
-                <p className="text-[#3e2f25]">{user.gender || "-"}</p>
+                <label className="text-gray-600 font-medium">Gender</label>
+                <select
+                  name="gender"
+                  value={form.gender || ""}
+                  onChange={handleChange}
+                  className="input"
+                >
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
             </div>
           </section>
@@ -71,36 +151,86 @@ export default function ProfilePage({ user }: ProfilePageProps) {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-gray-600 font-medium">Address 1</p>
-                <p className="text-[#3e2f25]">{user.address1 || "-"}</p>
+                <label className="text-gray-600 font-medium">Address 1</label>
+                <input
+                  type="text"
+                  name="address1"
+                  value={form.address1 || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Address 2</p>
-                <p className="text-[#3e2f25]">{user.address2 || "-"}</p>
+                <label className="text-gray-600 font-medium">Address 2</label>
+                <input
+                  type="text"
+                  name="address2"
+                  value={form.address2 || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">State</p>
-                <p className="text-[#3e2f25]">{user.state || "-"}</p>
+                <label className="text-gray-600 font-medium">State</label>
+                <input
+                  type="text"
+                  name="state"
+                  value={form.state || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Country</p>
-                <p className="text-[#3e2f25]">{user.country || "-"}</p>
+                <label className="text-gray-600 font-medium">Country</label>
+                <input
+                  type="text"
+                  name="country"
+                  value={form.country || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Postal Code</p>
-                <p className="text-[#3e2f25]">{user.postalCode || "-"}</p>
+                <label className="text-gray-600 font-medium">Postal Code</label>
+                <input
+                  type="text"
+                  name="postalCode"
+                  value={form.postalCode || ""}
+                  onChange={handleChange}
+                  className="input"
+                />
               </div>
             </div>
           </section>
 
-          {/* Edit Button */}
+          {/* Save Button */}
           <div className="flex justify-end">
-            <button className="px-6 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition">
-              Edit Profile
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
+            >
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
-        </div>
+        </form>
       </div>
+
+      <style jsx>{`
+        .input {
+          width: 100%;
+          padding: 0.5rem 0.75rem;
+          border-radius: 0.75rem;
+          border: 1px solid #ccc;
+          background-color: #fff;
+          color: #3e2f25;
+        }
+        .input:focus {
+          outline: none;
+          border-color: #5a4436;
+          box-shadow: 0 0 0 2px rgba(93, 67, 47, 0.2);
+        }
+      `}</style>
     </div>
   );
 }
