@@ -45,7 +45,7 @@ interface CartPageProps {
   } | null;
 }
 
-export default function CartPage({ cartItems: initialCartItems, session }: CartPageProps) {
+export default function CartPage({ cartItems: initialCartItems, session, categories, user }: CartPageProps) {
   const [cart, setCart] = useState<CartItem[]>(initialCartItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
