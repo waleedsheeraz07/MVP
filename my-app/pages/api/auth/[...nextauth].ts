@@ -23,6 +23,7 @@ export const authOptions: AuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
+
         if (!user) {
           throw new Error("Invalid email or password");
         }
@@ -34,7 +35,7 @@ export const authOptions: AuthOptions = {
 
         return {
           id: user.id,
-          name: user.email.split("@")[0],
+          name: `${user.firstName} ${user.lastName}`, // <-- fetch full name here
           email: user.email,
           role: user.role,
         };
@@ -57,7 +58,7 @@ export const authOptions: AuthOptions = {
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.name = token.name as string;
+        session.user.name = token.name as string; // <-- full name in session
       }
       return session;
     },
