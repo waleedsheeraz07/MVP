@@ -33,9 +33,11 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid email or password");
         }
 
+        // Build a safe name
+        const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
         return {
           id: user.id,
-          name: `${user.firstName} ${user.lastName}`, // <-- fetch full name here
+          name: name || user.email.split("@")[0], // fallback to email if no name
           email: user.email,
           role: user.role,
         };
@@ -58,7 +60,7 @@ export const authOptions: AuthOptions = {
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.name = token.name as string; // <-- full name in session
+        session.user.name = token.name as string; // full name or fallback
       }
       return session;
     },
