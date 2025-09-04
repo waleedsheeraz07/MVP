@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 interface Category {
   id: string;
@@ -96,6 +97,16 @@ export default function Layout({ children, categories, user }: LayoutProps) {
                   My Profile
                 </Link>
               </li>
+              {user && (
+                <li>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className="hover:text-black w-full text-left"
+                  >
+                    Sign Out
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
