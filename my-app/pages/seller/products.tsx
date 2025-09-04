@@ -101,7 +101,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
       <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25]">
         My Products
       </h1>
-      <Link href="/sell">
+      <Link href="/seller/sell">
         <button className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition-all duration-150 active:scale-95">
           Add New Product
         </button>
