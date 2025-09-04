@@ -48,8 +48,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   return (
 <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
   {/* Header */}
-<header className="bg-[#fffdfb] border-b shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
-  {/* Left: Hamburger */}
+<header className="bg-[#fffdfb] border-b shadow-sm p-4 flex items-center justify-between sticky top-0 z-10 relative">
+  {/* Hamburger */}
   <button
     onClick={() => setIsOpen(true)}
     className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none"
@@ -66,18 +66,18 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     </svg>
   </button>
 
-  {/* Center: Website Icon */}
+  {/* Centered Logo */}
   <div className="absolute left-1/2 transform -translate-x-1/2">
     <Link href="/">
       <img
-        src="../Public/Logo.PNG" // replace with your website icon path
+        src="/logo.png"
         alt="Website Logo"
         className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
       />
     </Link>
   </div>
 
-  {/* Right: Cart */}
+  {/* Cart Icon */}
   <Link
     href="/cart"
     className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl"
