@@ -125,15 +125,11 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
     }
   };
 
-  const handleCheckout = () => {
-    alert(`Proceeding to checkout. Total: $${total.toFixed(2)}`);
-  };
-
   return (
     <Layout categories={categories} user={user}>
       <div className="max-w-4xl mx-auto p-2 min-h-screen">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
-          Your Cart 🛒
+          Your Cart
         </h1>
 
         {cart.length === 0 ? (
@@ -212,12 +208,12 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
               <span className="text-lg sm:text-xl font-semibold text-[#3e2f25]">
                 Total: ${total.toFixed(2)}
               </span>
-              <button
-                onClick={handleCheckout}
-                className="mt-2 sm:mt-0 px-5 py-2 bg-[#5a4436] text-white rounded-xl font-semibold hover:bg-[#3e2f25] transition-all duration-200 active:scale-95 text-sm sm:text-base"
-              >
-                Checkout
-              </button>
+              <Link
+  href="/checkout"
+  className="mt-2 sm:mt-0 inline-block px-5 py-2 bg-[#5a4436] text-white rounded-xl font-semibold hover:bg-[#3e2f25] transition-all duration-200 active:scale-95 text-sm sm:text-base text-center"
+>
+  Checkout
+</Link>
             </div>
           </div>
         )}
