@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, ReactNode, useState, useCallback } from "react";
 
 interface CartContextType {
   cartCount: number;
   setCartCount: (count: number) => void;
-  refreshCart: () => void;
+  refreshCart: (userId?: string) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -13,19 +13,15 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartCount, setCartCount] = useState(0);
 
-  // Fetch cart count from API
-  const refreshCart = async () => {
+  const refreshCart = useCallback(async (userId?: string) => {
+    if (!userId) return;
     try {
-      const res = await fetch("/api/cart/count");
+      const res = await fetch(`/api/cart/count?userId=${userId}`);
       const data = await res.json();
       setCartCount(data.count || 0);
     } catch (err) {
       console.error("Failed to fetch cart count:", err);
     }
-  };
-
-  useEffect(() => {
-    refreshCart();
   }, []);
 
   return (
@@ -37,8 +33,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
+  if (!context) throw new Error("useCart must be used within a CartProvider");
   return context;
 };
