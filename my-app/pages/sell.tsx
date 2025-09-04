@@ -6,49 +6,70 @@ import { GetServerSidePropsContext } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "./api/auth/[...nextauth]"
 import { prisma } from "../lib/prisma" // adjust path
+import Layout from "../components/header"; // collapsible sidebar layout
 
 // --- SERVER SIDE FETCH ---
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions)
+ interface CategoryRaw {
+  _id: string;
+  title: string;
+  parent?: { _id: string; title: string };
+  order?: number;
+}
 
-  if (!session) {
-    return { redirect: { destination: "/login", permanent: false } }
+interface CategoryNode extends CategoryRaw {
+  children: CategoryNode[];
+}
+
+interface User {
+  id: string;
+  name?: string | null;
+}
+
+interface SellProductPageProps {
+  categories: CategoryRaw[];
+  user: User;
+  session: any;
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session?.user?.id) {
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
-  // fetch categories with parent for tree building
+  // fetch categories for tree building
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
     orderBy: { order: "asc" },
-  })
+  });
 
   // map to frontend format
-  const mapped = categories.map(cat => ({
+  const mappedCategories: CategoryRaw[] = categories.map((cat) => ({
     _id: cat.id,
     title: cat.title,
     order: cat.order,
     parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
-  }))
+  }));
 
-  return { props: { session, categories: mapped } }
+  // fetch user info
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, name: true },
+  });
+
+  return {
+    props: {
+      session,
+      user: user || { id: session.user.id, name: session.user.name || "Guest" },
+      categories: mappedCategories,
+    },
+  };
 }
 
-// --- TYPES ---
-interface CategoryRaw {
-  _id: string
-  title: string
-  parent?: { _id: string; title: string }
-  order?: number
-}
-interface CategoryNode extends CategoryRaw {
-  children: CategoryNode[]
-}
-
-interface SellProductPageProps {
-  categories: CategoryRaw[]
-}
-
-export default function SellProductPage({ categories }: SellProductPageProps) {
-  const router = useRouter()
+export default function SellProductPage({ categories, user, session }: SellProductPageProps) {
+  // your component logic here
+const router = useRouter()
 
   // FORM STATES
   const [title, setTitle] = useState("")
@@ -131,6 +152,7 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
     const isExpanded = expandedCategories.has(node._id)
 
     return (
+    
       <div>
         <div className="flex items-center gap-2 mb-1">
           {node.children.length > 0 && (
@@ -221,6 +243,8 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
   ]
 
   return (
+<Layout categories={categories} user={user}>
+ 
 <div className="min-h-screen flex justify-center items-start bg-[#fdf8f3] p-4 pt-8 font-sans">
   <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
     <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#3e2f25]">
@@ -398,5 +422,6 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
     }
   `}</style>
 </div>
+</Layout>
   )
 }
