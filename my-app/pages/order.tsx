@@ -2,6 +2,7 @@ import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
+import Layout from "../components/header";
 
 interface ProductItem {
   id: string;
@@ -30,9 +31,24 @@ interface Order {
   total: number;
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
+interface User {
+  id: string;
+  name?: string | null;
+}
+
 interface OrdersPageProps {
   orders: Order[];
+  categories: Category[];
+  user: User;
 }
+
 
 // ✅ Badge component for item statuses
 function StatusBadge({ status }: { status: string }) {
@@ -55,8 +71,8 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default function OrdersPage({ orders }: OrdersPageProps) {
-  if (orders.length === 0) {
+ export default function OrdersPage({ orders, categories, user }: OrdersPageProps) {
+if (orders.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-4 min-h-screen">
         <h1 className="text-2xl font-bold mb-4">My Orders</h1>
@@ -66,6 +82,8 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
   }
 
   return (
+<Layout categories={categories} user={user}>
+      
     <div className="max-w-4xl mx-auto p-4 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">My Orders</h1>
 
@@ -140,32 +158,27 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
         ))}
       </div>
     </div>
+</Layout>
   );
 }
 
 // ✅ Server-side fetching
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session?.user?.id) {
-    return {
-      redirect: { destination: "/auth/signin", permanent: false },
-    };
+    return { redirect: { destination: "/auth/signin", permanent: false } };
   }
 
-  const orders = await prisma.order.findMany({
+  const ordersData = await prisma.order.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
     include: {
-      items: {
-        include: {
-          product: true,
-        },
-      },
+      items: { include: { product: true } },
     },
   });
 
-  const formattedOrders: Order[] = orders.map((o) => ({
+  const formattedOrders: Order[] = ordersData.map((o) => ({
     id: o.id,
     createdAt: o.createdAt.toISOString(),
     status: o.status,
@@ -188,5 +201,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })),
   }));
 
-  return { props: { orders: formattedOrders } };
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
+  });
+
+  return {
+    props: {
+      orders: formattedOrders,
+      categories,
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Guest",
+      },
+    },
+  };
 };
