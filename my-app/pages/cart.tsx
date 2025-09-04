@@ -154,6 +154,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   }
 
   return (
+<Layout categories={categories} user={user}>
     <div className="max-w-4xl mx-auto p-2 min-h-screen">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
         Your Cart
@@ -245,6 +246,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         </div>
       )}
     </div>
+</Layout>
   );
 }
 
