@@ -8,46 +8,69 @@ import { authOptions } from "./api/auth/[...nextauth]"
 import { prisma } from "../lib/prisma" // adjust path
 
 // --- SERVER SIDE FETCH ---
+interface CategoryRaw {
+  _id: string;
+  title: string;
+  parent?: { _id: string; title: string };
+  order?: number;
+}
+interface CategoryNode extends CategoryRaw {
+  children: CategoryNode[];
+}
+
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
+interface User {
+  id: string;
+  name?: string | null;
+}
+
+interface SellProductPageProps {
+  categories: CategoryRaw[];   // original
+  categories2: Category[];     // new, untouched version for Layout
+  user: User;                  // new
+}
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions)
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
-    return { redirect: { destination: "/login", permanent: false } }
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
   // fetch categories with parent for tree building
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
     orderBy: { order: "asc" },
-  })
+  });
 
-  // map to frontend format
+  // map to frontend format (original)
   const mapped = categories.map(cat => ({
     _id: cat.id,
     title: cat.title,
     order: cat.order,
     parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
-  }))
+  }));
 
-  return { props: { session, categories: mapped } }
+  return {
+    props: {
+      session,
+      categories: mapped,   // keep existing
+      categories2: categories, // new plain format
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Guest",
+      },
+    },
+  };
 }
 
-// --- TYPES ---
-interface CategoryRaw {
-  _id: string
-  title: string
-  parent?: { _id: string; title: string }
-  order?: number
-}
-interface CategoryNode extends CategoryRaw {
-  children: CategoryNode[]
-}
-
-interface SellProductPageProps {
-  categories: CategoryRaw[]
-}
-
-export default function SellProductPage({ categories }: SellProductPageProps) {
+export default function SellProductPage({ categories, categories2, user }: SellProductPageProps) {
   const router = useRouter()
 
   // FORM STATES
