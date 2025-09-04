@@ -29,6 +29,11 @@ interface Category {
   parentId?: string | null;
 }
 
+interface User {
+  id: string;
+  name?: string | null;
+}
+
 interface CartPageProps {
   cartItems: CartItem[];
   session: {
