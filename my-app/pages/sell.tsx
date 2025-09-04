@@ -6,7 +6,8 @@ import { GetServerSidePropsContext } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "./api/auth/[...nextauth]"
 import { prisma } from "../lib/prisma" // adjust path
-
+import Layout from "../components/header";
+    
 // --- SERVER SIDE FETCH ---
 interface CategoryRaw {
   _id: string;
@@ -244,6 +245,8 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   ]
 
   return (
+<Layout categories={categories2} user={user}>
+
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
       <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
@@ -413,5 +416,6 @@ export default function SellProductPage({ categories, categories2, user }: SellP
         }
       `}</style>
     </div>
+</Layout>
   )
 }
