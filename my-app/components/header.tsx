@@ -91,8 +91,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   {/* Sidebar Overlay */}
   {isOpen && (
     <div
-      className="fixed inset-0 bg-black bg-opacity-40 z-40"
-      onClick={() => setIsOpen(false)}
+      className="fixed inset-0 bg-[#fdf8f3] bg-opacity-70 z-40 backdrop-blur-sm"
+       onClick={() => setIsOpen(false)}
     />
   )}
 
