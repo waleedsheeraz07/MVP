@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
 
-interface WishlistItem {
+ interface WishlistItem {
   id: string;
   product: {
     id: string;
@@ -20,19 +20,27 @@ interface WishlistItem {
   size: string | null;
 }
 
-interface WishlistPageProps {
-  wishlistItems: WishlistItem[];
-  session: {
-    user?: {
-      id: string;
-      name?: string;
-      email?: string;
-    };
-  } | null;
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
 }
 
-export default function WishlistPage({ wishlistItems: initialItems, session }: WishlistPageProps) {
-  const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
+interface User {
+  id: string;
+  name?: string | null;
+}
+
+interface WishlistPageProps {
+  wishlistItems: WishlistItem[];
+  categories: Category[];
+  user: User;
+}
+
+export default function WishlistPage({ wishlistItems: initialItems, categories, user }: WishlistPageProps) {
+  // Your component logic here, using initialItems, categories, user
+const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
 
@@ -172,13 +180,21 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
 // Server-side fetch
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
+
   if (!session?.user?.id) {
-    return { props: { wishlistItems: [], session } };
+    return { redirect: { destination: "/auth/signin", permanent: false } };
   }
 
+  // Fetch wishlist items
   const wishlistItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "wishlist" },
     include: { product: true },
+  });
+
+  // Fetch categories
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
   });
 
   return {
@@ -187,7 +203,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ...i,
         product: { ...i.product, quantity: i.product.quantity ?? 0 },
       })),
-      session,
+      categories,
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Guest",
+      },
     },
   };
 }
