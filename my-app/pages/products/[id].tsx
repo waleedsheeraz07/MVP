@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
+import { useCart } from "../../context/CartContext";
 
 interface ProductDetailProps {
   product: {
@@ -29,6 +30,7 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
   const validSizes = product.sizes.filter((s) => s && s.trim() !== "");
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { refreshCart } = useCart();
 
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -90,6 +92,7 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
           status,
         }),
       });
+      refreshCart(); 
 
       const data: { error?: string } = await res.json();
 
