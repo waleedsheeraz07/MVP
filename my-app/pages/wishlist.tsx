@@ -6,7 +6,7 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import Layout from "../components/Layout"; // ✅ use your global Layout
+import Layout from "../components/header"; // ✅ use your global Layout
 
 interface WishlistItem {
   id: string;
