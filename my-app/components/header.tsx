@@ -21,7 +21,7 @@ interface LayoutProps {
 export default function Layout({ children, categories, user }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-  const { cartCount, refreshCart } = useCart();
+  const { cartCount, refreshCart, setUserId } = useCart();
 
   // Build hierarchical categories
   const topCategories = categories.filter(c => !c.parentId);
@@ -37,12 +37,13 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Fetch cart count on mount or when user changes
+  // Initialize cart count for logged-in user
   useEffect(() => {
     if (user?.id) {
-      refreshCart(user.id); // Pass userId to refresh cart count
+      setUserId(user.id);
+      refreshCart();
     }
-  }, [user?.id, refreshCart]);
+  }, [user?.id, setUserId, refreshCart]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -97,7 +98,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           </button>
         </div>
 
-        {/* Sidebar Nav (scrollable) */}
+        {/* Sidebar Nav */}
         <nav className="p-4 space-y-6 overflow-y-auto flex-1">
           {/* My Account */}
           <div>
@@ -194,7 +195,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           </div>
         </nav>
 
-        {/* Sticky Sign Out Button */}
+        {/* Sign Out Button */}
         {user && (
           <div className="p-4 border-t">
             <button
