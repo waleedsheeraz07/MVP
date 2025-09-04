@@ -40,7 +40,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  // Initialize cart context for this user
+  // Initialize CartContext
   useEffect(() => {
     if (session?.user?.id) {
       setUserId(session.user.id);
@@ -48,7 +48,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     }
   }, [session?.user?.id, setUserId, refreshCart]);
 
-  // Fetch latest cart and adjust stock if needed
+  // Fetch latest cart from server
   const fetchLatestCart = useCallback(async () => {
     if (!session?.user?.id) return;
     try {
@@ -56,30 +56,13 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       if (!res.ok) return;
       const latestCart: CartItem[] = await res.json();
 
-      // Automatically adjust quantities exceeding stock
-      const adjustedCart = await Promise.all(
-        latestCart.map(async (item) => {
-          if (item.quantity > item.product.quantity) {
-            try {
-              await fetch("/api/useritem/update", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ itemId: item.id, quantity: item.product.quantity }),
-              });
-              item.quantity = item.product.quantity;
-            } catch {}
-          }
-          return item;
-        })
-      );
-
-      setCart(adjustedCart);
+      setCart(latestCart); // directly replace cart with latest
     } catch (err) {
       console.error("Failed to fetch latest cart", err);
     }
   }, [session?.user?.id]);
 
-  // Listen for cross-tab cart updates
+  // Cross-tab listener: updates cart immediately when another tab changes cart
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "cartUpdate") {
@@ -89,12 +72,8 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     };
     window.addEventListener("storage", handleStorage);
 
-    // Also periodically refresh stock every 5s for real-time adjustment
-    const interval = setInterval(fetchLatestCart, 5000);
-
     return () => {
       window.removeEventListener("storage", handleStorage);
-      clearInterval(interval);
     };
   }, [fetchLatestCart, refreshCart]);
 
@@ -113,7 +92,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       });
       if (!res.ok) throw new Error("Failed to update quantity");
 
-      localStorage.setItem("cartUpdate", Date.now().toString());
+      localStorage.setItem("cartUpdate", Date.now().toString()); // notify other tabs
       refreshCart();
     } catch {
       alert("Failed to update quantity");
@@ -134,7 +113,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       });
       if (!res.ok) throw new Error("Failed to remove item");
 
-      localStorage.setItem("cartUpdate", Date.now().toString());
+      localStorage.setItem("cartUpdate", Date.now().toString()); // notify other tabs
       refreshCart();
     } catch {
       alert("Failed to remove item");
@@ -267,17 +246,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     where: { userId: session.user.id, status: "cart" },
     include: { product: true },
   });
-
-  // enforce quantity <= stock
-  for (const item of cartItems) {
-    if (item.quantity > item.product.quantity) {
-      await prisma.userItem.update({
-        where: { id: item.id },
-        data: { quantity: item.product.quantity },
-      });
-      item.quantity = item.product.quantity;
-    }
-  }
 
   return {
     props: {
