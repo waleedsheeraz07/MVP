@@ -73,6 +73,8 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
         body: JSON.stringify({ itemId: item.id }),
       });
       if (!res.ok) throw new Error("Failed to move to cart");
+      localStorage.setItem("cartUpdate", Date.now().toString());
+      refreshCart();
     } catch {
       alert("Failed to move item to cart");
     } finally {
