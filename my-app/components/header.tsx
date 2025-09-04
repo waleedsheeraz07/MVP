@@ -46,181 +46,191 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   }, [user?.id, setUserId, refreshCart]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
-        {/* Hamburger */}
-        <button
-          onClick={() => setIsOpen(true)}
-          className="text-gray-700 hover:text-black focus:outline-none"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-7 h-7"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        {/* Cart Icon with Emoji */}
-<Link href="/cart" className="relative inline-block text-gray-700 hover:text-black transition-colors text-2xl sm:text-3xl">
-  <span role="img" aria-label="cart" className="transition-transform duration-200 hover:scale-110">
-    🛒
-  </span>
-
-  {/* Animated Cart Count Badge */}
-  {cartCount > 0 && (
-    <span className="absolute -top-2 -right-2 bg-gradient-to-tr from-red-500 to-pink-500 text-white rounded-full px-2 text-xs sm:text-sm font-bold shadow-lg animate-bounce">
-      {cartCount}
-    </span>
-  )}
-</Link>
-      </header>
-
-      {/* Sidebar Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-40 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 w-72 h-full bg-white shadow-lg transform transition-transform duration-300 z-50 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } flex flex-col`}
+<div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
+  {/* Header */}
+  <header className="bg-[#fffdfb] border-b shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
+    {/* Hamburger */}
+    <button
+      onClick={() => setIsOpen(true)}
+      className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="currentColor"
+        className="w-7 h-7"
       >
-        {/* Sidebar Header */}
-        <div className="p-4 flex justify-between items-center border-b">
-          <div>
-            <p className="font-bold text-lg">{user?.name || "Guest"}</p>
-            <p className="text-sm text-gray-500">Welcome back</p>
-          </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="text-gray-600 hover:text-black text-xl font-bold"
-          >
-            ✕
-          </button>
-        </div>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
 
-        {/* Sidebar Nav */}
-        <nav className="p-4 space-y-6 overflow-y-auto flex-1">
-          {/* My Account */}
-          <div>
-            <h3 className="text-gray-700 font-semibold mb-2">👤 My Account</h3>
-            <ul className="space-y-1 pl-3 text-gray-600">
-              <li>
-                <Link href="/profile" className="hover:text-black">
-                  My Profile
-                </Link>
-              </li>
-            </ul>
-          </div>
+    {/* Cart Icon */}
+    <Link
+      href="/cart"
+      className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl"
+    >
+      <span
+        role="img"
+        aria-label="cart"
+        className="transition-transform duration-200 hover:scale-110"
+      >
+        🛒
+      </span>
 
-          {/* Seller */}
-          <div>
-            <h3 className="text-gray-700 font-semibold mb-2">📦 Seller</h3>
-            <ul className="space-y-1 pl-3 text-gray-600">
-              <li>
-                <Link href="/seller/products" className="hover:text-black">
-                  My Products
-                </Link>
-              </li>
-              <li>
-                <Link href="/seller/order" className="hover:text-black">
-                  My Orders
-                </Link>
-              </li>
-            </ul>
-          </div>
+      {/* Animated Cart Count Badge */}
+      {cartCount > 0 && (
+        <span className="absolute -top-2 -right-2 bg-gradient-to-tr from-[#b58b5a] to-[#d4b996] text-[#fffdfb] rounded-full px-2 text-xs sm:text-sm font-bold shadow-lg animate-bounce">
+          {cartCount}
+        </span>
+      )}
+    </Link>
+  </header>
 
-          {/* Buyer */}
-          <div>
-            <h3 className="text-gray-700 font-semibold mb-2">🛒 Buyer</h3>
-            <ul className="space-y-1 pl-3 text-gray-600">
-              <li>
-                <Link href="/order" className="hover:text-black">
-                  My Orders
-                </Link>
-              </li>
-              <li>
-                <Link href="/cart" className="hover:text-black flex items-center gap-1">
-                  My Cart
-                  {cartCount > 0 && (
-                    <span className="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-              </li>
-              <li>
-                <Link href="/wishlist" className="hover:text-black">
-                  My Wishlist
-                </Link>
-              </li>
-            </ul>
-          </div>
+  {/* Sidebar Overlay */}
+  {isOpen && (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-40 z-40"
+      onClick={() => setIsOpen(false)}
+    />
+  )}
 
-          {/* Products */}
-          <div>
-            <h3 className="text-gray-700 font-semibold mb-2">🛍️ Products</h3>
-            <ul className="space-y-1 pl-3 text-gray-600">
-              <li>
-                <Link href="/products" className="hover:text-black">
-                  All Products
-                </Link>
-              </li>
-
-              {topCategories.map(top => (
-                <li key={top.id} className="space-y-1">
-                  <button
-                    onClick={() => toggleCategory(top.id)}
-                    className="flex justify-between w-full font-medium text-gray-700 hover:text-black focus:outline-none"
-                  >
-                    <span>{top.title}</span>
-                    <span>{expandedCategories[top.id] ? "▾" : "▸"}</span>
-                  </button>
-                  {expandedCategories[top.id] && subCategoriesMap[top.id] && (
-                    <ul className="pl-4 space-y-1 text-gray-500">
-                      {subCategoriesMap[top.id].map(sub => (
-                        <li key={sub.id}>
-                          <Link
-                            href={`/products/category/${sub.id}`}
-                            className="hover:text-black"
-                          >
-                            {sub.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
-
-        {/* Sign Out Button */}
-        {user && (
-          <div className="p-4 border-t">
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full text-left text-red-600 font-medium hover:text-red-800"
-            >
-              Sign Out
-            </button>
-          </div>
-        )}
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1">{children}</main>
+  {/* Sidebar */}
+  <aside
+    className={`fixed top-0 left-0 w-72 h-full bg-[#fffdfb] shadow-lg transform transition-transform duration-300 z-50 ${
+      isOpen ? "translate-x-0" : "-translate-x-full"
+    } flex flex-col`}
+  >
+    {/* Sidebar Header */}
+    <div className="p-4 flex justify-between items-center border-b bg-[#f9f4ec]">
+      <div>
+        <p className="font-bold text-lg text-[#3e2f25]">{user?.name || "Guest"}</p>
+        <p className="text-sm text-gray-600">Welcome back</p>
+      </div>
+      <button
+        onClick={() => setIsOpen(false)}
+        className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold"
+      >
+        ✕
+      </button>
     </div>
+
+    {/* Sidebar Nav */}
+    <nav className="p-4 space-y-6 overflow-y-auto flex-1">
+      {/* My Account */}
+      <div>
+        <h3 className="text-[#3e2f25] font-semibold mb-2">👤 My Account</h3>
+        <ul className="space-y-1 pl-3 text-gray-600">
+          <li>
+            <Link href="/profile" className="hover:text-[#5a4436] transition-colors">
+              My Profile
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Seller */}
+      <div>
+        <h3 className="text-[#3e2f25] font-semibold mb-2">📦 Seller</h3>
+        <ul className="space-y-1 pl-3 text-gray-600">
+          <li>
+            <Link href="/seller/products" className="hover:text-[#5a4436] transition-colors">
+              My Products
+            </Link>
+          </li>
+          <li>
+            <Link href="/seller/order" className="hover:text-[#5a4436] transition-colors">
+              My Orders
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Buyer */}
+      <div>
+        <h3 className="text-[#3e2f25] font-semibold mb-2">🛒 Buyer</h3>
+        <ul className="space-y-1 pl-3 text-gray-600">
+          <li>
+            <Link href="/order" className="hover:text-[#5a4436] transition-colors">
+              My Orders
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/cart"
+              className="hover:text-[#5a4436] transition-colors flex items-center gap-1"
+            >
+              My Cart
+              {cartCount > 0 && (
+                <span className="ml-1 bg-[#b58b5a] text-[#fffdfb] rounded-full px-2 text-xs">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </li>
+          <li>
+            <Link href="/wishlist" className="hover:text-[#5a4436] transition-colors">
+              My Wishlist
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Products */}
+      <div>
+        <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
+        <ul className="space-y-1 pl-3 text-gray-600">
+          <li>
+            <Link href="/products" className="hover:text-[#5a4436] transition-colors">
+              All Products
+            </Link>
+          </li>
+
+          {topCategories.map((top) => (
+            <li key={top.id} className="space-y-1">
+              <button
+                onClick={() => toggleCategory(top.id)}
+                className="flex justify-between w-full font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none"
+              >
+                <span>{top.title}</span>
+                <span>{expandedCategories[top.id] ? "▾" : "▸"}</span>
+              </button>
+              {expandedCategories[top.id] && subCategoriesMap[top.id] && (
+                <ul className="pl-4 space-y-1 text-gray-600">
+                  {subCategoriesMap[top.id].map((sub) => (
+                    <li key={sub.id}>
+                      <Link
+                        href={`/products/category/${sub.id}`}
+                        className="hover:text-[#5a4436] transition-colors"
+                      >
+                        {sub.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+
+    {/* Sign Out Button */}
+    {user && (
+      <div className="p-4 border-t bg-[#f9f4ec]">
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition"
+        >
+          Sign Out
+        </button>
+      </div>
+    )}
+  </aside>
+
+  {/* Main Content */}
+  <main className="flex-1">{children}</main>
+</div>
   );
 }
