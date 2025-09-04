@@ -66,28 +66,19 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           </svg>
         </button>
 
-        {/* Cart Icon */}
-        <Link href="/cart" className="relative text-gray-700 hover:text-black">
-             <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-      className="w-7 h-7 text-gray-700 hover:text-black transition-colors"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 8h16l-2-8M9 21a1 1 0 11-2 0 1 1 0 012 0zm10 0a1 1 0 11-2 0 1 1 0 012 0z"
-      />
-    </svg>
-          {cartCount > 0 && (
-            <span className="absolute -top-1 -right-2 bg-red-500 text-white rounded-full px-2 text-xs">
-              {cartCount}
-            </span>
-          )}
-        </Link>
+        {/* Cart Icon with Emoji */}
+<Link href="/cart" className="relative inline-block text-gray-700 hover:text-black transition-colors text-2xl sm:text-3xl">
+  <span role="img" aria-label="cart" className="transition-transform duration-200 hover:scale-110">
+    🛒
+  </span>
+
+  {/* Animated Cart Count Badge */}
+  {cartCount > 0 && (
+    <span className="absolute -top-2 -right-2 bg-gradient-to-tr from-red-500 to-pink-500 text-white rounded-full px-2 text-xs sm:text-sm font-bold shadow-lg animate-bounce">
+      {cartCount}
+    </span>
+  )}
+</Link>
       </header>
 
       {/* Sidebar Overlay */}
