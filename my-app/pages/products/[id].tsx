@@ -2,7 +2,6 @@
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import AdminHeader from "../../components/header";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
@@ -107,7 +106,6 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
 
   return (
     <>
-      <AdminHeader title="Products" titleHref="/products" />
       <div className="bg-[#fdf8f3] min-h-screen font-sans">
         <Link href="/products" className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
