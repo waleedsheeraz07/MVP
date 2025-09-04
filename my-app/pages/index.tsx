@@ -1,3 +1,30 @@
+import Head from 'next/head'
+import Link from 'next/link'
+import { prisma } from '../lib/prisma'
+
+interface Product {
+  id: string
+  title: string
+  description?: string
+  price: number
+  images: string[]
+}
+
+interface Props {
+  products: Product[]
+}
+
+export default function Home({ products }: Props) {
+  const featuredProducts = products.slice(0, 2) // only 1-2 items
+
+  return (
+    <>
+      <Head>
+        <title>Vintage Marketplace</title>
+        <meta name="description" content="Buy and sell authentic vintage items" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
 <main className="min-h-screen bg-[#fdf8f3] text-[#3e2f25] font-sans">
 
   {/* Hero Section */}
@@ -99,3 +126,24 @@
   </footer>
 
 </main>
+    </>
+  )
+}
+
+// ---------------- Server Side ----------------
+export async function getServerSideProps() {
+  const products = await prisma.product.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      price: true,
+      images: true,
+    },
+  })
+
+  return {
+    props: { products },
+  }
+}
