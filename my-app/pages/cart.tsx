@@ -208,12 +208,18 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
               <span className="text-lg sm:text-xl font-semibold text-[#3e2f25]">
                 Total: ${total.toFixed(2)}
               </span>
-              <Link
-  href="/checkout"
-  className="mt-2 sm:mt-0 inline-block px-5 py-2 bg-[#5a4436] text-white rounded-xl font-semibold hover:bg-[#3e2f25] transition-all duration-200 active:scale-95 text-sm sm:text-base text-center"
+              <button
+  onClick={() => router.push("/checkout")}
+  disabled={cart.length === 0}
+  className={`mt-2 sm:mt-0 px-5 py-2 rounded-xl font-semibold text-sm sm:text-base
+    transition-all duration-200 active:scale-95
+    ${cart.length === 0
+      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+      : "bg-[#5a4436] text-white hover:bg-[#3e2f25]"}
+  `}
 >
   Checkout
-</Link>
+</button>
             </div>
           </div>
         )}
