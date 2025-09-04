@@ -3,7 +3,9 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { GetServerSidePropsContext } from "next";
 import { useState, useMemo, ChangeEvent } from "react";
-import Layout from "../components/header";
+import Layout from "../components/header"; // your collapsible sidebar Layout
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]";
 
 interface Product {
   id: string;
@@ -25,11 +27,12 @@ interface Category {
 interface ProductsPageProps {
   products: Product[];
   categories: Category[];
+  userName: string;
 }
 
 type SortOption = "alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance";
 
-export default function ProductsPage({ products, categories }: ProductsPageProps) {
+export default function ProductsPage({ products, categories, userName }: ProductsPageProps) {
   const [search, setSearch] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -85,7 +88,7 @@ export default function ProductsPage({ products, categories }: ProductsPageProps
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
 
   return (
-    <Layout categories={categories}>
+    <Layout categories={categories} user={{ name: userName }}>
       <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">All Products</h1>
@@ -196,6 +199,12 @@ export default function ProductsPage({ products, categories }: ProductsPageProps
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -213,6 +222,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         updatedAt: p.updatedAt.toISOString(),
       })),
       categories,
+      userName: session.user.name || "Guest",
     },
   };
 }
