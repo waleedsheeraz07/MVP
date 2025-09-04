@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "./api/auth/[...nextauth]"
 import { prisma } from "../lib/prisma" // adjust path
 import Layout from "../components/header"; // collapsible sidebar layout
+import { Session } from "next-auth";
 
 // --- SERVER SIDE FETCH ---
  interface CategoryRaw {
@@ -28,7 +29,7 @@ interface User {
 interface SellProductPageProps {
   categories: CategoryRaw[];
   user: User;
-  session: any;
+  session: session;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
