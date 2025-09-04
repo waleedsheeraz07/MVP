@@ -93,6 +93,7 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
         }),
       });
       refreshCart(); 
+      localStorage.setItem("cartUpdate", Date.now().toString());
 
       const data: { error?: string } = await res.json();
 
