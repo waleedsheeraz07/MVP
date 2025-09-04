@@ -5,15 +5,17 @@ import { createContext, useContext, ReactNode, useState, useCallback } from "rea
 interface CartContextType {
   cartCount: number;
   setCartCount: (count: number) => void;
-  refreshCart: (userId?: string) => Promise<void>;
+  refreshCart: () => Promise<void>; // no parameters
+  setUserId: (id: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartCount, setCartCount] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const refreshCart = useCallback(async (userId?: string) => {
+  const refreshCart = useCallback(async () => {
     if (!userId) return;
     try {
       const res = await fetch(`/api/cart/count?userId=${userId}`);
@@ -22,10 +24,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to fetch cart count:", err);
     }
-  }, []);
+  }, [userId]);
 
   return (
-    <CartContext.Provider value={{ cartCount, setCartCount, refreshCart }}>
+    <CartContext.Provider value={{ cartCount, setCartCount, refreshCart, setUserId }}>
       {children}
     </CartContext.Provider>
   );
