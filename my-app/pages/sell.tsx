@@ -8,18 +8,18 @@ import { authOptions } from "./api/auth/[...nextauth]"
 import { prisma } from "../lib/prisma" // adjust path
 
 // --- SERVER SIDE FETCH ---
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions)
+ export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (!session) {
-    return { redirect: { destination: "/login", permanent: false } }
+  if (!session?.user?.id) {
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
   // fetch categories with parent for tree building
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
     orderBy: { order: "asc" },
-  })
+  });
 
   // map to frontend format
   const mapped = categories.map(cat => ({
@@ -27,28 +27,43 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     title: cat.title,
     order: cat.order,
     parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
-  }))
+  }));
 
-  return { props: { session, categories: mapped } }
+  return {
+    props: {
+      session,
+      categories: mapped,
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Guest",
+      },
+    },
+  };
 }
 
 // --- TYPES ---
 interface CategoryRaw {
-  _id: string
-  title: string
-  parent?: { _id: string; title: string }
-  order?: number
+  _id: string;
+  title: string;
+  parent?: { _id: string; title: string };
+  order?: number;
 }
 interface CategoryNode extends CategoryRaw {
-  children: CategoryNode[]
+  children: CategoryNode[];
+}
+
+interface User {
+  id: string;
+  name?: string | null;
 }
 
 interface SellProductPageProps {
-  categories: CategoryRaw[]
+  categories: CategoryRaw[];
+  user: User;
 }
 
-export default function SellProductPage({ categories }: SellProductPageProps) {
-  const router = useRouter()
+export default function SellProductPage({ categories, user }: SellProductPageProps) {
+const router = useRouter()
 
   // FORM STATES
   const [title, setTitle] = useState("")
