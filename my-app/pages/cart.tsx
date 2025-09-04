@@ -18,7 +18,7 @@ interface CartItem {
   };
   color: string | null;
   size: string | null;
-  quantity: number;
+  quantity: number; // quantity in cart
 }
 
 interface CartPageProps {
@@ -48,20 +48,38 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     }
   }, [session?.user?.id, setUserId, refreshCart]);
 
-  // Update cart from server
+  // Fetch latest cart and adjust stock if needed
   const fetchLatestCart = useCallback(async () => {
     if (!session?.user?.id) return;
     try {
       const res = await fetch("/api/useritem/cart-refresh");
       if (!res.ok) return;
       const latestCart: CartItem[] = await res.json();
-      setCart(latestCart);
+
+      // Automatically adjust quantities exceeding stock
+      const adjustedCart = await Promise.all(
+        latestCart.map(async (item) => {
+          if (item.quantity > item.product.quantity) {
+            try {
+              await fetch("/api/useritem/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ itemId: item.id, quantity: item.product.quantity }),
+              });
+              item.quantity = item.product.quantity;
+            } catch {}
+          }
+          return item;
+        })
+      );
+
+      setCart(adjustedCart);
     } catch (err) {
       console.error("Failed to fetch latest cart", err);
     }
   }, [session?.user?.id]);
 
-  // Listen for localStorage cartUpdate event (cross-tab)
+  // Listen for cross-tab cart updates
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "cartUpdate") {
@@ -70,7 +88,14 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       }
     };
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+
+    // Also periodically refresh stock every 5s for real-time adjustment
+    const interval = setInterval(fetchLatestCart, 5000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      clearInterval(interval);
+    };
   }, [fetchLatestCart, refreshCart]);
 
   const handleQuantityChange = async (itemId: string, newQty: number) => {
@@ -88,7 +113,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       });
       if (!res.ok) throw new Error("Failed to update quantity");
 
-      localStorage.setItem("cartUpdate", Date.now().toString()); // trigger cross-tab refresh
+      localStorage.setItem("cartUpdate", Date.now().toString());
       refreshCart();
     } catch {
       alert("Failed to update quantity");
@@ -126,7 +151,10 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <p className="text-xl mb-4">You need to log in to view your cart.</p>
-        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition">
+        <Link
+          href="/auth/signin"
+          className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition"
+        >
           Sign In
         </Link>
       </div>
