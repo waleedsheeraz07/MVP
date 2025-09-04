@@ -94,111 +94,125 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
 
   return (
     <Layout categories={categories} user={user}>
-      <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">All Products</h1>
+  <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
+  <div className="max-w-6xl mx-auto">
+    {/* Page Heading */}
+    <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">
+      All Products
+    </h1>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-3 mb-6 items-center">
-            <input
-              type="text"
-              placeholder="Search by title..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="input flex-grow min-w-[150px]"
-            />
+    {/* Filters Section */}
+    <div className="flex flex-wrap gap-3 mb-6 items-center bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+      <input
+        type="text"
+        placeholder="Search by title..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
+      />
 
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as SortOption)}
-              className="input"
-            >
-              <option value="alpha">A → Z</option>
-              <option value="alphaDesc">Z → A</option>
-              <option value="priceAsc">Price ↑</option>
-              <option value="priceDesc">Price ↓</option>
-              <option value="relevance">Relevance</option>
-            </select>
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value as SortOption)}
+        className="input bg-white text-[#3e2f25]"
+      >
+        <option value="alpha">A → Z</option>
+        <option value="alphaDesc">Z → A</option>
+        <option value="priceAsc">Price ↑</option>
+        <option value="priceDesc">Price ↓</option>
+        <option value="relevance">Relevance</option>
+      </select>
 
-            <div className="flex gap-2 items-center">
-              <input
-                type="number"
-                value={priceRange[0]}
-                min={0}
-                onChange={e => handlePriceChange(e, 0)}
-                className="input w-20"
-              />
-              -
-              <input
-                type="number"
-                value={priceRange[1]}
-                min={0}
-                onChange={e => handlePriceChange(e, 1)}
-                className="input w-20"
-              />
-            </div>
-
-            <select
-              multiple
-              value={selectedColors}
-              onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-              className="input flex-grow min-w-[100px]"
-            >
-              {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-
-            <select
-              multiple
-              value={selectedSizes}
-              onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
-              className="input flex-grow min-w-[100px]"
-            >
-              {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-
-          {/* Products Grid */}
-          {filteredProducts.length === 0 ? (
-            <p className="text-center text-[#3e2f25]">No products found.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.map(product => (
-                <Link key={product.id} href={`/products/${product.id}`} className="block">
-                  <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
-                    {product.images[0] && (
-                      <img
-                        src={product.images[0]}
-                        alt={product.title}
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <div className="p-3 flex-grow flex flex-col justify-between">
-                      <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
-                      <p className="mt-2 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <style jsx>{`
-          .input {
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.75rem;
-            border: 1px solid #ccc;
-            background-color: #fff;
-            color: #000;
-            transition: border 0.2s, box-shadow 0.2s;
-          }
-          .input:focus {
-            outline: none;
-            border-color: #3e2f25;
-            box-shadow: 0 0 0 2px rgba(62, 47, 37, 0.2);
-          }
-        `}</style>
+      <div className="flex gap-2 items-center">
+        <input
+          type="number"
+          value={priceRange[0]}
+          min={0}
+          onChange={(e) => handlePriceChange(e, 0)}
+          className="input w-20 bg-white text-[#3e2f25]"
+        />
+        <span className="text-[#3e2f25]">-</span>
+        <input
+          type="number"
+          value={priceRange[1]}
+          min={0}
+          onChange={(e) => handlePriceChange(e, 1)}
+          className="input w-20 bg-white text-[#3e2f25]"
+        />
       </div>
+
+      <select
+        multiple
+        value={selectedColors}
+        onChange={(e) =>
+          setSelectedColors(Array.from(e.target.selectedOptions, (o) => o.value))
+        }
+        className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]"
+      >
+        {allColors.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
+      </select>
+
+      <select
+        multiple
+        value={selectedSizes}
+        onChange={(e) =>
+          setSelectedSizes(Array.from(e.target.selectedOptions, (o) => o.value))
+        }
+        className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]"
+      >
+        {allSizes.map((s) => (
+          <option key={s} value={s}>
+            {s}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Products Grid */}
+    {filteredProducts.length === 0 ? (
+      <p className="text-center text-[#3e2f25] font-medium mt-6">No products found.</p>
+    ) : (
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredProducts.map((product) => (
+          <Link key={product.id} href={`/products/${product.id}`} className="block">
+            <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
+              {product.images[0] && (
+                <img
+                  src={product.images[0]}
+                  alt={product.title}
+                  className="w-full h-48 object-cover"
+                />
+              )}
+              <div className="p-4 flex-grow flex flex-col justify-between">
+                <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
+                <p className="mt-2 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    )}
+  </div>
+
+  {/* Custom input styles */}
+  <style jsx>{`
+    .input {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ccc;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #5a4436;
+      box-shadow: 0 0 0 2px rgba(90, 68, 54, 0.2);
+    }
+  `}</style>
+</div>
     </Layout>
   );
 }
