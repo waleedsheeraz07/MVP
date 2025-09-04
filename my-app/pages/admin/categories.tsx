@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import styles from '../../styles/admincat.module.css'
-import AdminHeader from '../../components/header'
 import {
   DndContext,
   closestCenter,
@@ -309,7 +308,6 @@ const handleCreate = async () => {
 
   return (
     <>
-      <AdminHeader title="Admin Panel" titleHref="/admin" />
       <div className={styles.container} ref={containerRef}>
         <h1 className={styles.pageTitle}>Categories</h1>
         {isProcessing && <div>Processing...</div>}
