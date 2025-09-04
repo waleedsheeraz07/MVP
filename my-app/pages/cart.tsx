@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { useCart } from "../context/CartContext";
+import Layout from "../components/header";
 
 interface CartItem {
   id: string;
