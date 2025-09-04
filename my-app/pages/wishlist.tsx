@@ -6,7 +6,8 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
-
+import Layout from "../components/header"; // collapsible sidebar layout
+    
  interface WishlistItem {
   id: string;
   product: {
@@ -94,6 +95,7 @@ const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
 
   return (
     <>
+<Layout categories={categories} user={user}>
       <div className="max-w-4xl mx-auto p-2 min-h-screen">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
           Your Wishlist
@@ -173,6 +175,7 @@ const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
           </div>
         )}
       </div>
+</Layout>
     </>
   );
 }
