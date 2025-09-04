@@ -7,8 +7,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useCart } from "../context/CartContext";
 
- 
-
 interface CartItem {
   id: string;
   product: {
@@ -75,6 +73,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
         body: JSON.stringify({ itemId }),
       });
       refreshCart(); 
+      localStorage.setItem("cartUpdate", Date.now().toString());
       if (!res.ok) throw new Error("Failed to remove item");
     } catch {
       alert("Failed to remove item");
