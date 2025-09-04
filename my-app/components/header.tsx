@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useCart } from "../context/CartContext";
+
 interface Category {
   id: string;
   title: string;
@@ -14,13 +15,13 @@ interface Category {
 interface LayoutProps {
   children: React.ReactNode;
   categories: Category[];
-  user?: { name?: string | null };
+  user?: { id: string; name?: string | null };
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-  const { cartCount } = useCart();
+  const { cartCount, refreshCart } = useCart();
 
   // Build hierarchical categories
   const topCategories = categories.filter(c => !c.parentId);
@@ -35,6 +36,13 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   const toggleCategory = (id: string) => {
     setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
   };
+
+  // Fetch cart count on mount or when user changes
+  useEffect(() => {
+    if (user?.id) {
+      refreshCart(user.id); // Pass userId to refresh cart count
+    }
+  }, [user?.id, refreshCart]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -129,16 +137,16 @@ export default function Layout({ children, categories, user }: LayoutProps) {
                   My Orders
                 </Link>
               </li>
-               <li>
-    <Link href="/cart" className="hover:text-black flex items-center gap-1">
-      My Cart
-      {cartCount > 0 && (
-        <span className="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">
-          {cartCount}
-        </span>
-      )}
-    </Link>
-  </li>
+              <li>
+                <Link href="/cart" className="hover:text-black flex items-center gap-1">
+                  My Cart
+                  {cartCount > 0 && (
+                    <span className="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+              </li>
               <li>
                 <Link href="/wishlist" className="hover:text-black">
                   My Wishlist
