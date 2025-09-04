@@ -133,7 +133,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
                 </Link>
               </li>
               <li>
-                <Link href="/seller/orders" className="hover:text-black">
+                <Link href="/seller/order" className="hover:text-black">
                   My Orders
                 </Link>
               </li>
