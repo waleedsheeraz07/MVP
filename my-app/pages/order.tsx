@@ -16,6 +16,7 @@ interface OrderItem {
   price: number;
   color?: string | null;
   size?: string | null;
+  status: string; // ✅ added
   product: ProductItem;
 }
 
@@ -64,7 +65,7 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
 
             <div className="text-sm space-y-1">
               <p>
-                <strong>Status:</strong> {order.status}
+                <strong>Order Status:</strong> {order.status}
               </p>
               <p>
                 <strong>Payment:</strong> {order.payment}
@@ -96,6 +97,9 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
                       </p>
                       <p className="text-sm text-gray-600">
                         Qty: {item.quantity}
+                      </p>
+                      <p className="text-sm text-blue-600 font-medium">
+                        Item Status: {item.status} {/* ✅ added */}
                       </p>
                     </div>
                   </div>
@@ -151,6 +155,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       price: i.price,
       color: i.color,
       size: i.size,
+      status: i.status, // ✅ added
       product: {
         id: i.product.id,
         title: i.product.title,
