@@ -6,16 +6,16 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import Layout from "../components/header"; // collapsible sidebar layout
-    
- interface WishlistItem {
+import Layout from "../components/header";
+
+interface WishlistItem {
   id: string;
   product: {
     id: string;
     title: string;
     price: number;
     images: string[];
-    quantity: number; // stock
+    quantity: number;
   };
   color: string | null;
   size: string | null;
@@ -40,8 +40,7 @@ interface WishlistPageProps {
 }
 
 export default function WishlistPage({ wishlistItems: initialItems, categories, user }: WishlistPageProps) {
-  // Your component logic here, using initialItems, categories, user
-const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
 
@@ -68,7 +67,6 @@ const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
     setWishlist((prev) => prev.filter((i) => i.id !== item.id));
 
     try {
-      // API call to add item to cart
       const res = await fetch("/api/useritem/move-to-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,20 +80,8 @@ const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
     }
   };
 
-  if (!session?.user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <p className="text-xl mb-4">You need to log in to view your wishlist.</p>
-        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition">
-          Sign In
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <>
-<Layout categories={categories} user={user}>
+    <Layout categories={categories} user={user}>
       <div className="max-w-4xl mx-auto p-2 min-h-screen">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
           Your Wishlist
@@ -122,16 +108,7 @@ const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
                   className="absolute top-1 right-1 text-gray-400 hover:text-red-500 transition-colors p-1 z-10"
                   title="Remove item"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 sm:h-5 sm:w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  ✕
                 </button>
 
                 {/* Product Image clickable */}
@@ -175,8 +152,7 @@ const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
           </div>
         )}
       </div>
-</Layout>
-    </>
+    </Layout>
   );
 }
 
