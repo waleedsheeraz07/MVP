@@ -7,7 +7,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Layout from "../components/header";
-
+import { useCart } from "../context/CartContext";
+  
 interface WishlistItem {
   id: string;
   product: {
@@ -43,6 +44,7 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
   const [wishlist, setWishlist] = useState<WishlistItem[]>(initialItems);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
+  const { refreshCart, setUserId } = useCart();
 
   const handleRemoveItem = async (itemId: string) => {
     setLoadingIds((prev) => [...prev, itemId]);
