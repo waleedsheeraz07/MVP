@@ -2,7 +2,7 @@ import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
-import prisma from "../lib/prisma";
+import { prisma } from "../lib/prisma";
 
 interface ProfilePageProps {
   user: {
