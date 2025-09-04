@@ -43,7 +43,19 @@ interface CartPageProps {
       email?: string;
     };
   } | null;
+  categories: {
+    id: string;
+    title: string;
+    order: number;
+    parentId: string | null;
+  }[];
+  user: {
+    id: string;
+    name: string;
+  } | null;
 }
+
+
 
 export default function CartPage({ cartItems: initialCartItems, session, categories, user }: CartPageProps) {
   const [cart, setCart] = useState<CartItem[]>(initialCartItems);
