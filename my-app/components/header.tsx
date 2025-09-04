@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-
+import { useCart } from "../context/CartContext";
 interface Category {
   id: string;
   title: string;
@@ -20,6 +20,7 @@ interface LayoutProps {
 export default function Layout({ children, categories, user }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const { cartCount } = useCart();
 
   // Build hierarchical categories
   const topCategories = categories.filter(c => !c.parentId);
@@ -128,11 +129,16 @@ export default function Layout({ children, categories, user }: LayoutProps) {
                   My Orders
                 </Link>
               </li>
-              <li>
-                <Link href="/cart" className="hover:text-black">
-                  My Cart
-                </Link>
-              </li>
+               <li>
+    <Link href="/cart" className="hover:text-black flex items-center gap-1">
+      My Cart
+      {cartCount > 0 && (
+        <span className="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">
+          {cartCount}
+        </span>
+      )}
+    </Link>
+  </li>
               <li>
                 <Link href="/wishlist" className="hover:text-black">
                   My Wishlist
