@@ -4,7 +4,7 @@ import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
 import { useState } from "react";
 import { useRouter } from "next/router";
-
+import Layout from "../components/header";
   
 interface ProductItem {
   id: string;
@@ -110,6 +110,8 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
   };
 
   return (
+ <Layout categories={categories} user={user}>
+     
     <div className="max-w-3xl mx-auto p-4 min-h-screen">
       {step === 1 && (
         <div className="space-y-4">
@@ -283,6 +285,7 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
   </div>
 )}
     </div>
+</Layout>
   );
 }
 
