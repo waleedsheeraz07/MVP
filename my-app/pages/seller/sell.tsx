@@ -4,9 +4,9 @@ import { useState, useMemo } from "react"
 import { useRouter } from "next/router"
 import { GetServerSidePropsContext } from "next"
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "./api/auth/[...nextauth]"
-import { prisma } from "../lib/prisma" // adjust path
-import Layout from "../components/header";
+import { authOptions } from "../api/auth/[...nextauth]"
+import { prisma } from "../../lib/prisma" // adjust path
+import Layout from "../../components/header";
     
 // --- SERVER SIDE FETCH ---
 interface CategoryRaw {
