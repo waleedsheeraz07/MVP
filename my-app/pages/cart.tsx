@@ -91,7 +91,7 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    const refreshCart = async () => {
+    const refreshCartcheck = async () => {
       try {
         const res = await fetch("/api/useritem/cart-refresh");
         if (!res.ok) return;
@@ -119,8 +119,8 @@ export default function CartPage({ cartItems: initialCartItems, session }: CartP
       }
     };
 
-    refreshCart();
-    const interval = setInterval(refreshCart, 5000);
+    refreshCartcheck();
+    const interval = setInterval(refreshCartcheck, 5000);
 
     return () => clearInterval(interval);
   }, [session?.user?.id, cart]);
