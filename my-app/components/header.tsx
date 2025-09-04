@@ -48,11 +48,11 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   return (
 <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
   {/* Header */}
-<header className="bg-[#fffdfb] border-b shadow-sm p-4 flex items-center justify-between sticky top-0 z-10 relative">
+<header className="bg-[#fffdfb] border-b shadow-sm flex items-center justify-between sticky top-0 z-10 relative px-4">
   {/* Hamburger */}
   <button
     onClick={() => setIsOpen(true)}
-    className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none"
+    className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none my-4"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +80,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   {/* Cart Icon */}
   <Link
     href="/cart"
-    className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl"
+    className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl my-4"
   >
     <span
       role="img"
