@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
 import Layout from "../components/header";
+import Link from "next/link";
 
 interface ProductItem {
   id: string;
@@ -78,9 +79,9 @@ export default function OrdersPage({ orders, categories, user }: OrdersPageProps
         {orders.length === 0 ? (
           <p className="text-center text-gray-700">
             You have not placed any orders yet.{" "}
-            <a href="/products" className="text-[#5a4436] hover:underline font-semibold">
-              Browse products
-            </a>
+            <Link href="/products" className="text-[#5a4436] hover:underline font-semibold">
+  Browse products
+</Link>
           </p>
         ) : (
           <div className="space-y-6">
