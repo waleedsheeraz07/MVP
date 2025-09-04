@@ -16,7 +16,7 @@ interface OrderItem {
   price: number;
   color?: string | null;
   size?: string | null;
-  status: string; // ✅ added
+  status: string;
   product: ProductItem;
 }
 
@@ -32,6 +32,27 @@ interface Order {
 
 interface OrdersPageProps {
   orders: Order[];
+}
+
+// ✅ Badge component for item statuses
+function StatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    PENDING: "bg-gray-200 text-gray-800",
+    CONFIRMED: "bg-blue-200 text-blue-800",
+    SHIPPED: "bg-yellow-200 text-yellow-800",
+    DELIVERED: "bg-green-200 text-green-800",
+    CANCELLED: "bg-red-200 text-red-800",
+  };
+
+  return (
+    <span
+      className={`px-2 py-1 rounded text-xs font-semibold ${
+        colors[status] || "bg-gray-200 text-gray-800"
+      }`}
+    >
+      {status}
+    </span>
+  );
 }
 
 export default function OrdersPage({ orders }: OrdersPageProps) {
@@ -65,7 +86,8 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
 
             <div className="text-sm space-y-1">
               <p>
-                <strong>Order Status:</strong> {order.status}
+                <strong>Order Status:</strong>{" "}
+                <StatusBadge status={order.status} />
               </p>
               <p>
                 <strong>Payment:</strong> {order.payment}
@@ -98,9 +120,10 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
                       <p className="text-sm text-gray-600">
                         Qty: {item.quantity}
                       </p>
-                      <p className="text-sm text-blue-600 font-medium">
-                        Item Status: {item.status} {/* ✅ added */}
-                      </p>
+                      <div className="mt-1">
+                        <StatusBadge status={item.status} />{" "}
+                        {/* ✅ item status badge */}
+                      </div>
                     </div>
                   </div>
                   <p className="font-semibold">
@@ -155,7 +178,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       price: i.price,
       color: i.color,
       size: i.size,
-      status: i.status, // ✅ added
+      status: i.status,
       product: {
         id: i.product.id,
         title: i.product.title,
