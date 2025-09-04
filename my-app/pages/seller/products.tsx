@@ -1,11 +1,11 @@
 // pages/myproducts.tsx
-import { prisma } from "../lib/prisma";
+import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "./api/auth/[...nextauth]";
+import { authOptions } from "../api/auth/[...nextauth]";
 import { GetServerSidePropsContext } from "next";
 import { useState, useMemo, ChangeEvent } from "react";
-import Layout from "../components/header";
+import Layout from "../../components/header";
 
 interface Product {
   id: string;
