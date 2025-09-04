@@ -163,12 +163,12 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
                           <p className="font-semibold text-[#3e2f25]">
                             ${(item.price * item.quantity).toFixed(2)}
                           </p>
-                          <div className="flex flex-wrap gap-2 mt-1">
+<div className="flex flex-wrap gap-2 mt-1">
   {item.status === "PENDING" && (
     <button
       onClick={() => handleUpdateStatus(item.id, "CONFIRMED")}
       disabled={updatingId === item.id}
-      className="px-2 py-1 text-xs sm:text-sm bg-[#d4b996] text-[#3e2f25] rounded hover:bg-[#c4a57e] disabled:opacity-50 transition"
+      className="px-3 py-1.5 text-sm sm:text-base bg-[#d4b996] text-[#3e2f25] rounded hover:bg-[#c4a57e] disabled:opacity-50 transition"
     >
       {updatingId === item.id ? "Updating..." : "Confirm"}
     </button>
@@ -177,7 +177,7 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
     <button
       onClick={() => handleUpdateStatus(item.id, "SHIPPED")}
       disabled={updatingId === item.id}
-      className="px-2 py-1 text-xs sm:text-sm bg-[#5a4436] text-[#fdf8f3] rounded hover:bg-[#3e2f25] disabled:opacity-50 transition"
+      className="px-3 py-1.5 text-sm sm:text-base bg-[#5a4436] text-[#fdf8f3] rounded hover:bg-[#3e2f25] disabled:opacity-50 transition"
     >
       {updatingId === item.id ? "Updating..." : "Ship"}
     </button>
@@ -186,7 +186,7 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
     <button
       onClick={() => handleUpdateStatus(item.id, "DELIVERED")}
       disabled={updatingId === item.id}
-      className="px-2 py-1 text-xs sm:text-sm bg-[#3e2f25] text-[#fdf8f3] rounded hover:bg-[#5a4436] disabled:opacity-50 transition"
+      className="px-3 py-1.5 text-sm sm:text-base bg-[#3e2f25] text-[#fdf8f3] rounded hover:bg-[#5a4436] disabled:opacity-50 transition"
     >
       {updatingId === item.id ? "Updating..." : "Deliver"}
     </button>
