@@ -47,11 +47,15 @@ export default function ProfilePage({ user }: ProfilePageProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
       setMessage("Profile updated successfully!");
-    } catch (err: any) {
-      setMessage(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setMessage(err.message);
+  } else {
+    setMessage("An unexpected error occurred");
+  }
+} finally {
+  setLoading(false);
+}
   };
 
   return (
