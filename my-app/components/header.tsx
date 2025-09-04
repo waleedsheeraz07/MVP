@@ -48,45 +48,56 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   return (
 <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
   {/* Header */}
-  <header className="bg-[#fffdfb] border-b shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
-    {/* Hamburger */}
-    <button
-      onClick={() => setIsOpen(true)}
-      className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none"
+<header className="bg-[#fffdfb] border-b shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+  {/* Left: Hamburger */}
+  <button
+    onClick={() => setIsOpen(true)}
+    className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="currentColor"
+      className="w-7 h-7"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="currentColor"
-        className="w-7 h-7"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-    </button>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
 
-    {/* Cart Icon */}
-    <Link
-      href="/cart"
-      className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl"
-    >
-      <span
-        role="img"
-        aria-label="cart"
-        className="transition-transform duration-200 hover:scale-110"
-      >
-        🛒
-      </span>
-
-      {/* Animated Cart Count Badge */}
-      {cartCount > 0 && (
-        <span className="absolute -top-2 -right-2 bg-gradient-to-tr from-[#b58b5a] to-[#d4b996] text-[#fffdfb] rounded-full px-2 text-xs sm:text-sm font-bold shadow-lg animate-bounce">
-          {cartCount}
-        </span>
-      )}
+  {/* Center: Website Icon */}
+  <div className="absolute left-1/2 transform -translate-x-1/2">
+    <Link href="/">
+      <img
+        src="/logo.png" // replace with your website icon path
+        alt="Website Logo"
+        className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+      />
     </Link>
-  </header>
+  </div>
+
+  {/* Right: Cart */}
+  <Link
+    href="/cart"
+    className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl"
+  >
+    <span
+      role="img"
+      aria-label="cart"
+      className="transition-transform duration-200 hover:scale-110"
+    >
+      🛒
+    </span>
+
+    {/* Animated Cart Count Badge */}
+    {cartCount > 0 && (
+      <span className="absolute -top-2 -right-2 bg-gradient-to-tr from-[#b58b5a] to-[#d4b996] text-[#fffdfb] rounded-full px-2 text-xs sm:text-sm font-bold shadow-lg animate-bounce">
+        {cartCount}
+      </span>
+    )}
+  </Link>
+</header>
 
   {/* Sidebar Overlay */}
   {isOpen && (
