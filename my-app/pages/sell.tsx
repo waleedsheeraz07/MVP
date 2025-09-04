@@ -9,40 +9,6 @@ import { prisma } from "../lib/prisma" // adjust path
 import Layout from "../components/header"; // collapsible sidebar layout
     
 // --- SERVER SIDE FETCH ---
- export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
-
-  if (!session?.user?.id) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
-  // fetch categories with parent for tree building
-  const categories = await prisma.category.findMany({
-    select: { id: true, title: true, order: true, parentId: true },
-    orderBy: { order: "asc" },
-  });
-
-  // map to frontend format
-  const mapped = categories.map(cat => ({
-    _id: cat.id,
-    title: cat.title,
-    order: cat.order,
-    parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
-  }));
-
-  return {
-    props: {
-      session,
-      categories: mapped,
-      user: {
-        id: session.user.id,
-        name: session.user.name || "Guest",
-      },
-    },
-  };
-}
-
-// --- TYPES ---
 interface CategoryRaw {
   _id: string;
   title: string;
@@ -53,17 +19,58 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[];
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
 interface User {
   id: string;
   name?: string | null;
 }
 
 interface SellProductPageProps {
-  categories: CategoryRaw[];
+  categories: Category[]; // for Layout
+  mappedCategories: CategoryRaw[]; // for your tree building
   user: User;
 }
 
-export default function SellProductPage({ categories, user }: SellProductPageProps) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session?.user?.id) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
+  });
+
+  // tree-mapped format
+  const mapped = categories.map(cat => ({
+    _id: cat.id,
+    title: cat.title,
+    order: cat.order,
+    parent: cat.parentId ? { _id: cat.parentId, title: "" } : undefined,
+  }));
+
+  return {
+    props: {
+      session,
+      categories,        // for Layout
+      mappedCategories: mapped, // for tree
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Guest",
+      },
+    },
+  };
+}
+
+export default function SellProductPage({ categories, mappedCategories, user }: SellProductPageProps) {
 const router = useRouter()
 
   // FORM STATES
