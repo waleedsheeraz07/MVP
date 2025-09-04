@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState, useCallback } from "react";
+import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from "react";
 
 interface CartContextType {
   cartCount: number;
   setCartCount: (count: number) => void;
-  refreshCart: () => Promise<void>; // no parameters
+  refreshCart: () => Promise<void>;
   setUserId: (id: string) => void;
 }
 
@@ -25,6 +25,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to fetch cart count:", err);
     }
   }, [userId]);
+
+  // Listen to cart changes from other tabs
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "cartUpdate") {
+        refreshCart();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [refreshCart]);
 
   return (
     <CartContext.Provider value={{ cartCount, setCartCount, refreshCart, setUserId }}>
