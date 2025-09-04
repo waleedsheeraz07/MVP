@@ -6,7 +6,6 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import Layout from "../components/header"; // ✅ use your global Layout
 
 interface WishlistItem {
   id: string;
@@ -60,6 +59,7 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
     setWishlist((prev) => prev.filter((i) => i.id !== item.id));
 
     try {
+      // API call to add item to cart
       const res = await fetch("/api/useritem/move-to-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,22 +75,17 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
 
   if (!session?.user) {
     return (
-      <Layout>
-        <div className="min-h-screen flex flex-col items-center justify-center p-4">
-          <p className="text-xl mb-4">You need to log in to view your wishlist.</p>
-          <Link
-            href="/auth/signin"
-            className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition"
-          >
-            Sign In
-          </Link>
-        </div>
-      </Layout>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <p className="text-xl mb-4">You need to log in to view your wishlist.</p>
+        <Link href="/auth/signin" className="px-4 py-2 bg-[#5a4436] text-white rounded-lg hover:bg-[#3e2f25] transition">
+          Sign In
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <>
       <div className="max-w-4xl mx-auto p-2 min-h-screen">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
           Your Wishlist
@@ -170,11 +165,11 @@ export default function WishlistPage({ wishlistItems: initialItems, session }: W
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }
 
-// ✅ Server-side fetch
+// Server-side fetch
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
   if (!session?.user?.id) {
