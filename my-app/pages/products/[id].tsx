@@ -5,7 +5,20 @@ import { useState, useRef, useEffect } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
+import Layout from "../../components/header"; // collapsible sidebar layout
 import { useCart } from "../../context/CartContext";
+
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
+interface User {
+  id: string;
+  name?: string | null;
+}
 
 interface ProductDetailProps {
   product: {
@@ -17,6 +30,8 @@ interface ProductDetailProps {
     colors: string[];
     sizes: (string | null)[];
   };
+  categories: Category[];
+  user: User;
   session: {
     user?: {
       id: string;
@@ -26,7 +41,7 @@ interface ProductDetailProps {
   } | null;
 }
 
-export default function ProductDetail({ product, session }: ProductDetailProps) {
+export default function ProductDetail({ product, categories, user, session }: ProductDetailProps) {
   const validSizes = product.sizes.filter((s) => s && s.trim() !== "");
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,11 +52,9 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (validSizes.length === 1 && product.colors.length === 0) {
-      setSelectedSize(validSizes[0]);
-    } else if (product.colors.length === 1 && validSizes.length === 0) {
-      setSelectedColor(product.colors[0]);
-    } else if (validSizes.length === 1 && product.colors.length === 1) {
+    if (validSizes.length === 1 && product.colors.length === 0) setSelectedSize(validSizes[0]);
+    else if (product.colors.length === 1 && validSizes.length === 0) setSelectedColor(product.colors[0]);
+    else if (validSizes.length === 1 && product.colors.length === 1) {
       setSelectedSize(validSizes[0]);
       setSelectedColor(product.colors[0]);
     }
@@ -50,10 +63,7 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-    const handleScroll = () => {
-      const index = Math.round(container.scrollLeft / container.clientWidth);
-      setActiveIndex(index);
-    };
+    const handleScroll = () => setActiveIndex(Math.round(container.scrollLeft / container.clientWidth));
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
@@ -109,14 +119,16 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
   };
 
   return (
-    <>
+    <Layout categories={categories} user={user}>
       <div className="bg-[#fdf8f3] min-h-screen font-sans">
+        {/* Back Button */}
         <Link href="/products" className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
         </Link>
 
+        {/* Image carousel */}
         <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory" ref={scrollRef}>
           {product.images.map((img, idx) => (
             <img key={idx} src={img} alt={`${product.title} ${idx}`} className="inline-block w-full h-[400px] object-cover snap-center" />
@@ -129,6 +141,7 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
           ))}
         </div>
 
+        {/* Product Info */}
         <div className="max-w-4xl mx-auto p-6">
           <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
           <p className="text-2xl font-semibold text-[#5a4436] mb-6">${product.price.toFixed(2)}</p>
@@ -171,23 +184,25 @@ export default function ProductDetail({ product, session }: ProductDetailProps) 
         </div>
 
         <style jsx>{`
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
         `}</style>
       </div>
-    </>
+    </Layout>
   );
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
-
   const { id } = context.params as { id: string };
 
   const product = await prisma.product.findUnique({ where: { id } });
-
   if (!product) return { notFound: true };
+
+  // Fetch categories for sidebar
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
+  });
 
   return {
     props: {
@@ -196,6 +211,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         createdAt: product.createdAt.toISOString(),
         updatedAt: product.updatedAt.toISOString(),
       },
+      categories,
+      user: session?.user
+        ? { id: session.user.id, name: session.user.name || "Guest" }
+        : { id: "", name: "Guest" },
       session,
     },
   };
