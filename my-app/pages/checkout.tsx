@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma";
 import { useState } from "react";
 import { useRouter } from "next/router";
 
+  
 interface ProductItem {
   id: string;
   title: string;
@@ -20,7 +21,16 @@ interface CartItem {
   product: ProductItem;
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
 interface UserInfo {
+  id: string;
+  name?: string | null;
   firstName: string;
   lastName?: string;
   phoneNumber?: string;
@@ -34,10 +44,11 @@ interface UserInfo {
 interface CheckoutProps {
   user: UserInfo;
   cartItems: CartItem[];
+  categories: Category[];
 }
 
-export default function CheckoutPage({ user, cartItems }: CheckoutProps) {
-  const router = useRouter();
+export default function CheckoutPage({ user, cartItems, categories }: CheckoutProps) {
+ const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
 
   const [form, setForm] = useState<UserInfo>({
@@ -285,12 +296,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const user = await prisma.user.findUnique({
+  // Fetch user info
+  const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
       firstName: true,
       lastName: true,
-      phoneNumber: true, // ✅ correct field
+      phoneNumber: true,
       address1: true,
       address2: true,
       state: true,
@@ -299,12 +311,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
+  // Fetch cart items
   const userItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "cart" },
     include: { product: true },
   });
 
-  const cartItems: CartItem[] = userItems.map((i) => ({
+  const cartItems: CartItem[] = userItems.map(i => ({
     id: i.id,
     quantity: i.quantity,
     color: i.color,
@@ -317,10 +330,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   }));
 
+  // Fetch categories
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
+  });
+
   return {
     props: {
-      user: user || {},
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Guest",
+        ...(dbUser || {}),
+      },
       cartItems,
+      categories,
     },
   };
 };
