@@ -145,7 +145,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             <h3 className="text-gray-700 font-semibold mb-2">🛒 Buyer</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
               <li>
-                <Link href="/orders" className="hover:text-black">
+                <Link href="/order" className="hover:text-black">
                   My Orders
                 </Link>
               </li>
