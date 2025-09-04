@@ -72,8 +72,9 @@ export default function Layout({ children, categories, user }: LayoutProps) {
       <aside
         className={`fixed top-0 left-0 w-72 h-full bg-white shadow-lg transform transition-transform duration-300 z-50 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } flex flex-col`}
       >
+        {/* Sidebar Header */}
         <div className="p-4 flex justify-between items-center border-b">
           <div>
             <p className="font-bold text-lg">{user?.name || "Guest"}</p>
@@ -87,7 +88,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           </button>
         </div>
 
-        <nav className="p-4 space-y-6 overflow-y-auto h-[calc(100%-4rem)]">
+        {/* Sidebar Nav (scrollable) */}
+        <nav className="p-4 space-y-6 overflow-y-auto flex-1">
           {/* My Account */}
           <div>
             <h3 className="text-gray-700 font-semibold mb-2">👤 My Account</h3>
@@ -97,16 +99,6 @@ export default function Layout({ children, categories, user }: LayoutProps) {
                   My Profile
                 </Link>
               </li>
-              {user && (
-                <li>
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
-                    className="hover:text-black w-full text-left"
-                  >
-                    Sign Out
-                  </button>
-                </li>
-              )}
             </ul>
           </div>
 
@@ -187,6 +179,18 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             </ul>
           </div>
         </nav>
+
+        {/* Sticky Sign Out Button */}
+        {user && (
+          <div className="p-4 border-t">
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="w-full text-left text-red-600 font-medium hover:text-red-800"
+            >
+              Sign Out
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* Main Content */}
