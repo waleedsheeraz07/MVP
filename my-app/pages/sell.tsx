@@ -221,174 +221,182 @@ export default function SellProductPage({ categories }: SellProductPageProps) {
   ]
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
-      <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-          Sell a Product
-        </h1>
+<div className="min-h-screen flex justify-center items-start bg-[#fdf8f3] p-4 pt-8 font-sans">
+  <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
+    <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#3e2f25]">
+      Sell a Product
+    </h1>
 
-        {error && (
-          <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">
-            {error}
-          </p>
-        )}
+    {error && (
+      <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">
+        {error}
+      </p>
+    )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="Title *"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required
-            className="input"
-          />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* Title & Description */}
+      <input
+        type="text"
+        placeholder="Title *"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        required
+        className="input"
+      />
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        className="input min-h-[100px]"
+      />
 
-          <textarea
-            placeholder="Description"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            className="input min-h-[100px]"
-          />
-
-          <div className="flex gap-4 flex-wrap">
-            <input
-              type="number"
-              placeholder="Price *"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              required
-              className="input flex-1"
-            />
-            <input
-              type="number"
-              placeholder="Quantity *"
-              value={quantity}
-              onChange={e => setQuantity(e.target.value)}
-              required
-              className="input flex-1"
-            />
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h3 className="mb-2 font-medium">Categories *</h3>
-            <div className="border p-3 rounded-lg max-h-64 overflow-y-auto bg-[#fffaf5]">
-              {categoryTree.map(node => (
-                <CategoryNodeItem key={node._id} node={node} />
-              ))}
-            </div>
-          </div>
-
-          {/* Condition */}
-          <select
-            value={condition}
-            onChange={e => setCondition(e.target.value)}
-            required
-            className="input"
-          >
-            <option value="">Select Condition *</option>
-            {["Untouched", "Excellent", "Good", "Fair", "Slightly Damaged", "Damaged", "Highly Damaged"].map(c => (
-              <option key={c} value={c.toLowerCase()}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          {/* Era */}
-          <div>
-            <select
-              value={era}
-              onChange={e => setEra(e.target.value)}
-              required
-              className="input"
-            >
-              <option value="">Select Era *</option>
-              {eraOptions.map(opt => (
-                <option key={opt} value={opt}>
-                  {opt === "before1900" ? "Before 1900" : opt}
-                </option>
-              ))}
-            </select>
-            {era === "before1900" && (
-              <input
-                type="number"
-                placeholder="Enter Year (before 1900)"
-                value={before1900}
-                onChange={e => setBefore1900(e.target.value)}
-                className="input mt-2"
-              />
-            )}
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <h3 className="mb-2 font-medium">Images</h3>
-            <label className="block w-full p-3 border border-dashed border-[#d4b996] rounded-lg text-center cursor-pointer bg-[#fffaf5] text-[#3e2f25] hover:bg-[#f8efe4] transition">
-              Upload Images
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={e => handleImageChange(e.target.files)}
-                className="hidden"
-              />
-            </label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {previews.map((url, idx) => (
-                <div key={idx} className="relative">
-                  <img
-                    src={url}
-                    alt={`Preview ${idx}`}
-                    className="w-24 h-24 object-cover rounded-lg border"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <input
-            type="text"
-            placeholder="Colors (comma separated)"
-            value={colors}
-            onChange={e => setColors(e.target.value)}
-            className="input"
-          />
-
-          <input
-            type="text"
-            placeholder="Sizes (comma separated)"
-            value={sizes}
-            onChange={e => setSizes(e.target.value)}
-            className="input"
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
-          >
-            {loading ? "Saving..." : "Create Product"}
-          </button>
-        </form>
+      {/* Price & Quantity */}
+      <div className="flex flex-wrap gap-4">
+        <input
+          type="number"
+          placeholder="Price *"
+          value={price}
+          onChange={e => setPrice(e.target.value)}
+          required
+          className="input flex-1"
+        />
+        <input
+          type="number"
+          placeholder="Quantity *"
+          value={quantity}
+          onChange={e => setQuantity(e.target.value)}
+          required
+          className="input flex-1"
+        />
       </div>
 
-      <style jsx>{`
-        .input {
-          padding: 0.75rem;
-          border-radius: 0.75rem;
-          border: 1px solid #ccc;
-          width: 100%;
-          background-color: #fff;
-          color: #000;
-        }
-      `}</style>
-    </div>
+      {/* Categories */}
+      <div>
+        <h3 className="mb-2 font-medium text-[#3e2f25]">Categories *</h3>
+        <div className="border p-3 rounded-lg max-h-64 overflow-y-auto bg-[#fffaf5]">
+          {categoryTree.map(node => (
+            <CategoryNodeItem key={node._id} node={node} />
+          ))}
+        </div>
+      </div>
+
+      {/* Condition */}
+      <select
+        value={condition}
+        onChange={e => setCondition(e.target.value)}
+        required
+        className="input"
+      >
+        <option value="">Select Condition *</option>
+        {["Untouched", "Excellent", "Good", "Fair", "Slightly Damaged", "Damaged", "Highly Damaged"].map(c => (
+          <option key={c} value={c.toLowerCase()}>
+            {c}
+          </option>
+        ))}
+      </select>
+
+      {/* Era */}
+      <div>
+        <select
+          value={era}
+          onChange={e => setEra(e.target.value)}
+          required
+          className="input"
+        >
+          <option value="">Select Era *</option>
+          {eraOptions.map(opt => (
+            <option key={opt} value={opt}>
+              {opt === "before1900" ? "Before 1900" : opt}
+            </option>
+          ))}
+        </select>
+        {era === "before1900" && (
+          <input
+            type="number"
+            placeholder="Enter Year (before 1900)"
+            value={before1900}
+            onChange={e => setBefore1900(e.target.value)}
+            className="input mt-2"
+          />
+        )}
+      </div>
+
+      {/* Image Upload */}
+      <div>
+        <h3 className="mb-2 font-medium text-[#3e2f25]">Images</h3>
+        <label className="block w-full p-3 border border-dashed border-[#d4b996] rounded-lg text-center cursor-pointer bg-[#fffaf5] text-[#3e2f25] hover:bg-[#f8efe4] transition-all duration-150">
+          Upload Images
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={e => handleImageChange(e.target.files)}
+            className="hidden"
+          />
+        </label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {previews.map((url, idx) => (
+            <div key={idx} className="relative w-24 h-24">
+              <img
+                src={url}
+                alt={`Preview ${idx}`}
+                className="w-full h-full object-cover rounded-lg border"
+              />
+              <button
+                type="button"
+                onClick={() => removeImage(idx)}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Colors & Sizes */}
+      <input
+        type="text"
+        placeholder="Colors (comma separated)"
+        value={colors}
+        onChange={e => setColors(e.target.value)}
+        className="input"
+      />
+      <input
+        type="text"
+        placeholder="Sizes (comma separated)"
+        value={sizes}
+        onChange={e => setSizes(e.target.value)}
+        className="input"
+      />
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition-all duration-150 active:scale-95"
+      >
+        {loading ? "Saving..." : "Create Product"}
+      </button>
+    </form>
+  </div>
+
+  <style jsx>{`
+    .input {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ccc;
+      width: 100%;
+      background-color: #fff;
+      color: #3e2f25;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #5a4436;
+      box-shadow: 0 0 0 2px rgba(90, 68, 54, 0.2);
+    }
+  `}</style>
+</div>
   )
 }
