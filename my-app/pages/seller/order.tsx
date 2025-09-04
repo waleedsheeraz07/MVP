@@ -4,7 +4,6 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { prisma } from "../../lib/prisma";
 import { useState } from "react";
-import { ItemStatus, OrderStatus } from "@prisma/client";
 
 interface ProductItem {
   id: string;
@@ -19,7 +18,7 @@ interface SellerOrderItem {
   price: number;
   color?: string | null;
   size?: string | null;
-  status: ItemStatus;
+  status: string;
   product: ProductItem;
 }
 
@@ -38,16 +37,11 @@ interface SellerOrdersPageProps {
   orders: SellerOrder[];
 }
 
-export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
+export default function SellerOrdersPage({ orders: initialOrders }: SellerOrdersPageProps) {
+  const [orders, setOrders] = useState<SellerOrder[]>(initialOrders);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const getNextStatus = (current: ItemStatus): ItemStatus | null => {
-    if (current === ItemStatus.PENDING) return ItemStatus.SHIPPED;
-    if (current === ItemStatus.SHIPPED) return ItemStatus.DELIVERED;
-    return null; // Delivered, Confirmed, or Cancelled cannot be updated by seller
-  };
-
-  const handleUpdateStatus = async (itemId: string, newStatus: ItemStatus) => {
+  const handleUpdateStatus = async (itemId: string, newStatus: string) => {
     try {
       setUpdatingId(itemId);
       const res = await fetch("/api/seller/update-item-status", {
@@ -56,7 +50,17 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
         body: JSON.stringify({ itemId, status: newStatus }),
       });
       if (!res.ok) throw new Error("Failed to update status");
-      window.location.reload();
+      const data = await res.json();
+
+      // Update local state without reload
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => ({
+          ...order,
+          items: order.items.map((item) =>
+            item.id === itemId ? { ...item, status: newStatus } : item
+          ),
+        }))
+      );
     } catch (err) {
       alert((err as Error).message || "Something went wrong");
     } finally {
@@ -78,8 +82,11 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
       <h1 className="text-2xl font-bold mb-6">Orders for My Products</h1>
 
       <div className="space-y-6">
-        {orders.map(order => (
-          <div key={order.id} className="border rounded p-4 shadow-sm bg-white space-y-4">
+        {orders.map((order) => (
+          <div
+            key={order.id}
+            className="border rounded p-4 shadow-sm bg-white space-y-4"
+          >
             {/* Order Header */}
             <div className="flex justify-between items-center">
               <h2 className="font-semibold">
@@ -92,59 +99,80 @@ export default function SellerOrdersPage({ orders }: SellerOrdersPageProps) {
 
             {/* Buyer Info */}
             <div className="text-sm space-y-1">
-              <p><strong>Payment:</strong> {order.payment}</p>
               <p>
-                <strong>Buyer:</strong> {order.buyerName} {order.buyerPhone ? `(${order.buyerPhone})` : ""}
+                <strong>Payment:</strong> {order.payment}
               </p>
-              <p><strong>Shipping Address:</strong> {order.address}</p>
+              <p>
+                <strong>Buyer:</strong> {order.buyerName}{" "}
+                {order.buyerPhone ? `(${order.buyerPhone})` : ""}
+              </p>
+              <p>
+                <strong>Shipping Address:</strong> {order.address}
+              </p>
             </div>
 
             {/* Order Items */}
             <div className="space-y-2">
-              {order.items.map(item => {
-                const nextStatus = getNextStatus(item.status);
-                return (
-                  <div key={item.id} className="flex items-center justify-between border p-2 rounded">
-                    <div className="flex items-center gap-3">
-                      {item.product.images?.[0] && (
-                        <img
-                          src={item.product.images[0]}
-                          alt={item.product.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{item.product.title}</p>
-                        <p className="text-sm text-gray-600">
-                          Size: {item.size || "N/A"} | Color: {item.color || "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                        <p className="text-sm">
-                          Status: <span className="font-semibold">{item.status}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      <p className="font-semibold">
-                        ${(item.price * item.quantity).toFixed(2)}
+              {order.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border p-2 rounded"
+                >
+                  <div className="flex items-center gap-3">
+                    {item.product.images?.[0] && (
+                      <img
+                        src={item.product.images[0]}
+                        alt={item.product.title}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    )}
+                    <div>
+                      <p className="font-medium">{item.product.title}</p>
+                      <p className="text-sm text-gray-600">
+                        Size: {item.size || "N/A"} | Color: {item.color || "N/A"}
                       </p>
-
-                      {nextStatus && (
+                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                      <p className="text-sm">
+                        Status: <span className="font-semibold">{item.status}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <p className="font-semibold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                    <div className="flex gap-2">
+                      {item.status === "PENDING" && (
                         <button
-                          onClick={() => handleUpdateStatus(item.id, nextStatus)}
+                          onClick={() => handleUpdateStatus(item.id, "CONFIRMED")}
                           disabled={updatingId === item.id}
-                          className={`px-3 py-1 rounded text-white ${
-                            nextStatus === ItemStatus.SHIPPED ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700"
-                          } disabled:opacity-50`}
+                          className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
                         >
-                          {updatingId === item.id ? "Updating..." : `Mark ${nextStatus}`}
+                          {updatingId === item.id ? "Updating..." : "Mark Confirmed"}
+                        </button>
+                      )}
+                      {item.status === "CONFIRMED" && (
+                        <button
+                          onClick={() => handleUpdateStatus(item.id, "SHIPPED")}
+                          disabled={updatingId === item.id}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {updatingId === item.id ? "Updating..." : "Mark Shipped"}
+                        </button>
+                      )}
+                      {item.status === "SHIPPED" && (
+                        <button
+                          onClick={() => handleUpdateStatus(item.id, "DELIVERED")}
+                          disabled={updatingId === item.id}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {updatingId === item.id ? "Updating..." : "Mark Delivered"}
                         </button>
                       )}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             {/* Totals */}
@@ -163,7 +191,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session?.user?.id) {
-    return { redirect: { destination: "/auth/signin", permanent: false } };
+    return {
+      redirect: { destination: "/auth/signin", permanent: false },
+    };
   }
 
   const orderItems = await prisma.orderItem.findMany({
@@ -175,7 +205,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     orderBy: { order: { createdAt: "desc" } },
   });
 
-  // Group items by order
   const orderMap: Record<string, SellerOrder> = {};
   for (const item of orderItems) {
     if (!orderMap[item.orderId]) {
