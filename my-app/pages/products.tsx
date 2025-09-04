@@ -3,7 +3,7 @@ import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import { GetServerSidePropsContext } from "next";
 import { useState, useMemo, ChangeEvent } from "react";
-import AdminHeader from "../components/header";
+import Layout from "../components/header";
 
 interface Product {
   id: string;
@@ -15,13 +15,21 @@ interface Product {
   sizes: string[];
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
 interface ProductsPageProps {
   products: Product[];
+  categories: Category[];
 }
 
 type SortOption = "alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance";
 
-export default function ProductsPage({ products }: ProductsPageProps) {
+export default function ProductsPage({ products, categories }: ProductsPageProps) {
   const [search, setSearch] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -66,7 +74,8 @@ export default function ProductsPage({ products }: ProductsPageProps) {
       case "relevance":
         const searchLower = search.toLowerCase();
         result.sort((a, b) => {
-          const score = (title: string) => title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
+          const score = (title: string) =>
+            title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
           return score(b.title.toLowerCase()) - score(a.title.toLowerCase());
         });
         break;
@@ -76,122 +85,124 @@ export default function ProductsPage({ products }: ProductsPageProps) {
   }, [products, search, selectedColors, selectedSizes, sortBy, priceRange]);
 
   return (
-<>
-      <AdminHeader title="Products" titleHref="/products" />
-      
-<div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
-  <div className="max-w-6xl mx-auto">
-    {/* Header */}
-    <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">All Products</h1>
+    <Layout categories={categories}>
+      <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">All Products</h1>
 
-    {/* Filters */}
-    <div className="flex flex-wrap gap-3 mb-6 items-center">
-      <input
-        type="text"
-        placeholder="Search by title..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="input flex-grow min-w-[150px]"
-      />
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 mb-6 items-center">
+            <input
+              type="text"
+              placeholder="Search by title..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="input flex-grow min-w-[150px]"
+            />
 
-      <select
-        value={sortBy}
-        onChange={e => setSortBy(e.target.value as SortOption)}
-        className="input"
-      >
-        <option value="alpha">A → Z</option>
-        <option value="alphaDesc">Z → A</option>
-        <option value="priceAsc">Price ↑</option>
-        <option value="priceDesc">Price ↓</option>
-        <option value="relevance">Relevance</option>
-      </select>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as SortOption)}
+              className="input"
+            >
+              <option value="alpha">A → Z</option>
+              <option value="alphaDesc">Z → A</option>
+              <option value="priceAsc">Price ↑</option>
+              <option value="priceDesc">Price ↓</option>
+              <option value="relevance">Relevance</option>
+            </select>
 
-      <div className="flex gap-2 items-center">
-        <input
-          type="number"
-          value={priceRange[0]}
-          min={0}
-          onChange={e => handlePriceChange(e, 0)}
-          className="input w-20"
-        />
-        -
-        <input
-          type="number"
-          value={priceRange[1]}
-          min={0}
-          onChange={e => handlePriceChange(e, 1)}
-          className="input w-20"
-        />
-      </div>
-
-      <select
-        multiple
-        value={selectedColors}
-        onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-        className="input flex-grow min-w-[100px]"
-      >
-        {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
-
-      <select
-        multiple
-        value={selectedSizes}
-        onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
-        className="input flex-grow min-w-[100px]"
-      >
-        {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-      </select>
-    </div>
-
-    {/* Products Grid */}
-    {filteredProducts.length === 0 ? (
-      <p className="text-center text-[#3e2f25]">No products found.</p>
-    ) : (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredProducts.map(product => (
-          <Link key={product.id} href={`/products/${product.id}`} className="block">
-            <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
-              {product.images[0] && (
-                <img
-                  src={product.images[0]}
-                  alt={product.title}
-                  className="w-full h-48 object-cover"
-                />
-              )}
-              <div className="p-3 flex-grow flex flex-col justify-between">
-                <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
-                <p className="mt-2 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
-              </div>
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                value={priceRange[0]}
+                min={0}
+                onChange={e => handlePriceChange(e, 0)}
+                className="input w-20"
+              />
+              -
+              <input
+                type="number"
+                value={priceRange[1]}
+                min={0}
+                onChange={e => handlePriceChange(e, 1)}
+                className="input w-20"
+              />
             </div>
-          </Link>
-        ))}
-      </div>
-    )}
-  </div>
 
-  <style jsx>{`
-    .input {
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.75rem;
-      border: 1px solid #ccc;
-      background-color: #fff;
-      color: #000;
-      transition: border 0.2s, box-shadow 0.2s;
-    }
-    .input:focus {
-      outline: none;
-      border-color: #3e2f25;
-      box-shadow: 0 0 0 2px rgba(62, 47, 37, 0.2);
-    }
-  `}</style>
-</div>
-</>
+            <select
+              multiple
+              value={selectedColors}
+              onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
+              className="input flex-grow min-w-[100px]"
+            >
+              {allColors.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+
+            <select
+              multiple
+              value={selectedSizes}
+              onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
+              className="input flex-grow min-w-[100px]"
+            >
+              {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          {/* Products Grid */}
+          {filteredProducts.length === 0 ? (
+            <p className="text-center text-[#3e2f25]">No products found.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredProducts.map(product => (
+                <Link key={product.id} href={`/products/${product.id}`} className="block">
+                  <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
+                    {product.images[0] && (
+                      <img
+                        src={product.images[0]}
+                        alt={product.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <div className="p-3 flex-grow flex flex-col justify-between">
+                      <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
+                      <p className="mt-2 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <style jsx>{`
+          .input {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #000;
+            transition: border 0.2s, box-shadow 0.2s;
+          }
+          .input:focus {
+            outline: none;
+            border-color: #3e2f25;
+            box-shadow: 0 0 0 2px rgba(62, 47, 37, 0.2);
+          }
+        `}</style>
+      </div>
+    </Layout>
   );
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
+  });
+
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
   });
 
   return {
@@ -201,6 +212,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         createdAt: p.createdAt.toISOString(),
         updatedAt: p.updatedAt.toISOString(),
       })),
+      categories,
     },
   };
 }
