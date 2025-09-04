@@ -1,4 +1,5 @@
-import { GetServerSideProps } from "next";
+// pages/orders.tsx
+import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
@@ -49,8 +50,7 @@ interface OrdersPageProps {
   user: User;
 }
 
-
-// ✅ Badge component for item statuses
+// ✅ Status badge component
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     PENDING: "bg-gray-200 text-gray-800",
@@ -61,104 +61,82 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span
-      className={`px-2 py-1 rounded text-xs font-semibold ${
-        colors[status] || "bg-gray-200 text-gray-800"
-      }`}
-    >
+    <span className={`px-2 py-1 rounded text-xs font-semibold ${colors[status] || "bg-gray-200 text-gray-800"}`}>
       {status}
     </span>
   );
 }
 
- export default function OrdersPage({ orders, categories, user }: OrdersPageProps) {
-if (orders.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto p-4 min-h-screen">
-        <h1 className="text-2xl font-bold mb-4">My Orders</h1>
-        <p>You have not placed any orders yet.</p>
-      </div>
-    );
-  }
-
+export default function OrdersPage({ orders, categories, user }: OrdersPageProps) {
   return (
-<Layout categories={categories} user={user}>
-      
-    <div className="max-w-4xl mx-auto p-4 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">My Orders</h1>
+    <Layout categories={categories} user={user}>
+      <div className="max-w-4xl mx-auto p-4 min-h-screen">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-[#3e2f25] text-center sm:text-left">
+          My Orders
+        </h1>
 
-      <div className="space-y-6">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="border rounded p-4 shadow-sm bg-white space-y-4"
-          >
-            <div className="flex justify-between items-center">
-              <h2 className="font-semibold">
-                Order #{order.id.slice(0, 8).toUpperCase()}
-              </h2>
-              <span className="text-sm text-gray-600">
-                {new Date(order.createdAt).toLocaleDateString()}
-              </span>
-            </div>
+        {orders.length === 0 ? (
+          <p className="text-center text-gray-700">
+            You have not placed any orders yet.{" "}
+            <a href="/products" className="text-[#5a4436] hover:underline font-semibold">
+              Browse products
+            </a>
+          </p>
+        ) : (
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <div key={order.id} className="border rounded p-4 shadow-sm bg-white space-y-4 hover:shadow-md transition">
+                <div className="flex justify-between items-center">
+                  <h2 className="font-semibold">Order #{order.id.slice(0, 8).toUpperCase()}</h2>
+                  <span className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</span>
+                </div>
 
-            <div className="text-sm space-y-1">
-              <p>
-                <strong>Order Status:</strong>{" "}
-                <StatusBadge status={order.status} />
-              </p>
-              <p>
-                <strong>Payment:</strong> {order.payment}
-              </p>
-              <p>
-                <strong>Shipping Address:</strong> {order.address}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {order.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between border p-2 rounded"
-                >
-                  <div className="flex items-center gap-3">
-                    {item.product.images?.[0] && (
-                      <img
-                        src={item.product.images[0]}
-                        alt={item.product.title}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    )}
-                    <div>
-                      <p className="font-medium">{item.product.title}</p>
-                      <p className="text-sm text-gray-600">
-                        Size: {item.size || "N/A"} | Color:{" "}
-                        {item.color || "N/A"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Qty: {item.quantity}
-                      </p>
-                      <div className="mt-1">
-                        <StatusBadge status={item.status} />{" "}
-                        {/* ✅ item status badge */}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="font-semibold">
-                    ${(item.price * item.quantity).toFixed(2)}
+                <div className="text-sm space-y-1">
+                  <p>
+                    <strong>Order Status:</strong> <StatusBadge status={order.status} />
+                  </p>
+                  <p>
+                    <strong>Payment:</strong> {order.payment}
+                  </p>
+                  <p>
+                    <strong>Shipping Address:</strong> {order.address}
                   </p>
                 </div>
-              ))}
-            </div>
 
-            <div className="flex justify-end font-bold">
-              Total: ${order.total.toFixed(2)}
-            </div>
+                <div className="space-y-2">
+                  {order.items.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between border p-2 rounded hover:bg-gray-50 transition">
+                      <div className="flex items-center gap-3">
+                        {item.product.images?.[0] && (
+                          <img
+                            src={item.product.images[0]}
+                            alt={item.product.title}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{item.product.title}</p>
+                          <p className="text-sm text-gray-600">
+                            Size: {item.size || "N/A"} | Color: {item.color || "N/A"}
+                          </p>
+                          <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                          <div className="mt-1">
+                            <StatusBadge status={item.status} />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end font-bold text-[#3e2f25]">Total: ${order.total.toFixed(2)}</div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
-    </div>
-</Layout>
+    </Layout>
   );
 }
 
@@ -173,9 +151,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   const ordersData = await prisma.order.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
-    include: {
-      items: { include: { product: true } },
-    },
+    include: { items: { include: { product: true } } },
   });
 
   const formattedOrders: Order[] = ordersData.map((o) => ({
@@ -210,10 +186,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     props: {
       orders: formattedOrders,
       categories,
-      user: {
-        id: session.user.id,
-        name: session.user.name || "Guest",
-      },
+      user: { id: session.user.id, name: session.user.name || "Guest" },
     },
   };
 };
