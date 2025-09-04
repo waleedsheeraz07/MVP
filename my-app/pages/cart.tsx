@@ -22,6 +22,13 @@ interface CartItem {
   quantity: number; // quantity in cart
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
 interface CartPageProps {
   cartItems: CartItem[];
   session: {
