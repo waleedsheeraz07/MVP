@@ -8,6 +8,7 @@ import fs from "fs";
 
 export const config = { api: { bodyParser: false } };
 
+// --- TYPES ---
 interface FormFields {
   title: string;
   description?: string;
@@ -15,19 +16,19 @@ interface FormFields {
   quantity: string;
   colors?: string[];
   sizes?: string[];
+  categories?: string[];
+  condition?: string;
+  era?: string;
 }
 
-// Convert any field into string array
+// --- HELPERS ---
 const normalizeField = (field?: string | string[]): string[] =>
   !field ? [] : Array.isArray(field) ? field.map(String) : [String(field)];
 
-// Split comma-separated string into array
 const splitComma = (field?: string[]): string[] =>
-  field?.flatMap((f) => f.split(",").map((s) => s.trim())) || [];
+  field?.flatMap(f => f.split(",").map(s => s.trim())) || [];
 
-const parseForm = (
-  req: NextApiRequest
-): Promise<{ fields: FormFields; files: File[] }> =>
+const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: File[] }> =>
   new Promise((resolve, reject) => {
     const form = formidable({ multiples: true });
     form.parse(req, (err, fields: Fields, files: Files) => {
@@ -43,9 +44,18 @@ const parseForm = (
         title: fields.title?.toString() || "",
         description: fields.description?.toString(),
         price: fields.price?.toString() || "0",
-        quantity: fields.quantity?.toString() || "0",
+        quantity: fields.quantity?.toString() || "1",
         colors: splitComma(normalizeField(fields.colors)),
         sizes: splitComma(normalizeField(fields.sizes)),
+        condition: fields.condition?.toString(),
+        era: fields.era?.toString(),
+        categories: (() => {
+          try {
+            return JSON.parse(fields.categories?.toString() || "[]");
+          } catch {
+            return [];
+          }
+        })(),
       };
 
       resolve({ fields: safeFields, files: uploadedFiles });
@@ -61,6 +71,7 @@ const uploadFileToCloudinary = (file: File): Promise<string> =>
     fs.createReadStream(file.filepath).pipe(stream);
   });
 
+// --- HANDLER ---
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -69,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { fields, files } = await parseForm(req);
-    const { title, description, price, quantity, colors, sizes } = fields;
+    const { title, description, price, quantity, colors, sizes, categories, condition, era } = fields;
 
     if (!title || !price || !quantity) {
       return res.status(400).json({ error: "Missing required fields", debug: fields });
@@ -82,8 +93,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = (session.user as { id?: string }).id;
     if (!userId) return res.status(401).json({ error: "User ID not found in session" });
 
+    // Upload images
     const imageUrls = await Promise.all(files.map(uploadFileToCloudinary));
 
+    // Create product
     const product = await prisma.product.create({
       data: {
         title,
@@ -92,14 +105,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         quantity: parseInt(quantity, 10),
         colors,
         sizes,
+        condition: condition || "",
+        era: era || "",
         ownerId: userId,
         images: imageUrls,
       },
     });
 
-    res.status(201).json({ success: true, productId: product.id, debug: { fields, fileNames: files.map(f => f.originalFilename), imageUrls } });
+    // Link categories via join table
+    if (categories && categories.length) {
+      const categoryLinks = categories.map(catId =>
+        prisma.productCategory.create({
+          data: { productId: product.id, categoryId: catId },
+        })
+      );
+      await Promise.all(categoryLinks);
+    }
+
+    res.status(201).json({
+      success: true,
+      productId: product.id,
+      debug: {
+        fields,
+        fileNames: files.map(f => f.originalFilename),
+        imageUrls,
+        categoriesLinked: categories,
+      },
+    });
   } catch (error: unknown) {
-  const message = error instanceof Error ? error.message : JSON.stringify(error);
-  res.status(500).json({ error: "Internal server error", detail: message });
-}
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    res.status(500).json({ error: "Internal server error", detail: message });
+  }
 }
