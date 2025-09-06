@@ -21,6 +21,13 @@ interface ParsedFields {
   era: string;
 }
 
+interface ApiResponse {
+  success?: boolean;
+  productId?: string;
+  error?: string;
+  detail?: string;
+}
+
 // --- FORM PARSING ---
 const parseForm = (req: NextApiRequest): Promise<{ fields: ParsedFields; files: File[] }> =>
   new Promise((resolve, reject) => {
@@ -83,7 +90,7 @@ const uploadFileToCloudinary = (file: File): Promise<string> =>
   });
 
 // --- API HANDLER ---
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<ApiResponse>) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const session = await getServerSession(req, res, authOptions);
@@ -93,7 +100,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields, files } = await parseForm(req);
     const { title, description, price, quantity, colors, sizes, categories, condition, era } = fields;
 
-    // Validate required fields
     if (!title || !price || !quantity) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -104,7 +110,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = (session.user as { id?: string }).id;
     if (!userId) return res.status(401).json({ error: "User ID not found in session" });
 
-    // Upload images to Cloudinary
     const imageUrls = await Promise.all(
       files.map(async (file) => {
         try {
@@ -116,7 +121,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     );
 
-    // Create product in MongoDB via Prisma
     const product = await prisma.product.create({
       data: {
         title,
@@ -132,10 +136,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    // Link categories via join table
     if (categories.length) {
       await Promise.all(
-        categories.map((catId) =>
+        categories.map((catId: string) =>
           prisma.productCategory.create({
             data: { productId: product.id, categoryId: catId },
           })
