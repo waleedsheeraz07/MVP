@@ -69,52 +69,62 @@ export default function UsersPage({ users, userName, currentUserId, categories }
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {userList.map((u) => (
-                <div key={u.id} className="bg-white rounded-xl shadow p-4 border border-gray-200">
-                  {/* Basic Info */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-lg font-semibold text-[#3e2f25]">
-                        {u.firstName} {u.lastName || ""}
-                      </h2>
-                      <p className="text-sm text-gray-600">{u.email}</p>
-                      <p className="mt-1 text-sm"><span className="font-medium">Role:</span> {u.role}</p>
-                      <p className="text-sm"><span className="font-medium">Gender:</span> {u.gender || "—"}</p>
-                      <p className="text-sm"><span className="font-medium">Phone:</span> {u.phoneNumber || "—"}</p>
-                    </div>
-                    <button
-                      onClick={() => toggleExpand(u.id)}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      {expanded === u.id ? "Hide Details ▲" : "View Details ▼"}
-                    </button>
-                  </div>
+  <div
+    key={u.id}
+    className="bg-white rounded-xl shadow p-4 border border-gray-200 flex flex-col"
+  >
+    {/* Basic Info */}
+    <div className="flex justify-between items-center">
+      <div>
+        <h2 className="text-lg font-semibold text-[#3e2f25]">
+          {u.firstName} {u.lastName || ""}
+        </h2>
+        <p className="text-sm text-gray-600">{u.email}</p>
+        <p className="mt-1 text-sm">
+          <span className="font-medium">Role:</span> {u.role}
+        </p>
+        <p className="text-sm">
+          <span className="font-medium">Gender:</span> {u.gender || "—"}
+        </p>
+        <p className="text-sm">
+          <span className="font-medium">Phone:</span> {u.phoneNumber || "—"}
+        </p>
+      </div>
+      <button
+        onClick={() => toggleExpand(u.id)}
+        className="text-sm text-blue-600 hover:underline ml-4"
+      >
+        {expanded === u.id ? "Hide ▲" : "View ▼"}
+      </button>
+    </div>
 
-                  {/* Expanded Info */}
-                  {expanded === u.id && (
-                    <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
-                      <p><span className="font-medium">DOB:</span> {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}</p>
-                      <p><span className="font-medium">Address 1:</span> {u.address1 || "—"}</p>
-                      <p><span className="font-medium">Address 2:</span> {u.address2 || "—"}</p>
-                      <p><span className="font-medium">State:</span> {u.state || "—"}</p>
-                      <p><span className="font-medium">Country:</span> {u.country || "—"}</p>
-                      <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
-                      <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
+    {/* Expanded Info */}
+    {expanded === u.id && (
+      <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
+        <p>
+          <span className="font-medium">DOB:</span>{" "}
+          {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
+        </p>
+        <p><span className="font-medium">Address 1:</span> {u.address1 || "—"}</p>
+        <p><span className="font-medium">Address 2:</span> {u.address2 || "—"}</p>
+        <p><span className="font-medium">State:</span> {u.state || "—"}</p>
+        <p><span className="font-medium">Country:</span> {u.country || "—"}</p>
+        <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
+        <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
 
-                      {/* Delete Button - hide for current admin */}
-                      {u.id !== currentUserId && (
-                        <div className="pt-3">
-                          <button
-                            onClick={() => handleDelete(u.id)}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                          >
-                            🗑️ Delete Account
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+        {/* Delete Button (hidden for current admin) */}
+        {u.id !== currentUserId && (
+          <button
+            onClick={() => handleDelete(u.id)}
+            className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            🗑️ Delete Account
+          </button>
+        )}
+      </div>
+    )}
+  </div>
+))}
             </div>
           )}
         </div>
