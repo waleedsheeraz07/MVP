@@ -84,6 +84,37 @@ export default function UsersPage({ users, userName, currentUserId, categories }
     }
   };
 
+const handlePromote = async (id: string) => {
+  if (!confirm("Are you sure you want to promote this user to Manager?")) return;
+  try {
+    const res = await fetch("/api/users/promote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (!res.ok) throw new Error("Failed to promote user");
+    setUserList(userList.map(u => u.id === id ? { ...u, role: "MANAGER" } : u));
+  } catch (err) {
+    alert("Error promoting user: " + (err as Error).message);
+  }
+};
+
+const handleDemote = async (id: string) => {
+  if (!confirm("Are you sure you want to demote this Manager back to User?")) return;
+  try {
+    const res = await fetch("/api/users/demote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (!res.ok) throw new Error("Failed to demote user");
+    setUserList(userList.map(u => u.id === id ? { ...u, role: "USER" } : u));
+  } catch (err) {
+    alert("Error demoting user: " + (err as Error).message);
+  }
+};
+
+
   return (
     <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
@@ -130,30 +161,48 @@ export default function UsersPage({ users, userName, currentUserId, categories }
 
                         {/* Action Buttons */}
                         {u.id !== currentUserId && (
-                          <div className="flex gap-2 mt-3">
-                            <button
-                              onClick={() => handleDelete(u.id)}
-                              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                            >
-                              🗑️ Delete Account
-                            </button>
+                   <div className="flex gap-2 mt-3">
+  <button
+    onClick={() => handleDelete(u.id)}
+    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+  >
+    🗑️ Delete Account
+  </button>
 
-                            {u.role === "BLOCKED" ? (
-                              <button
-                                onClick={() => handleUnblock(u.id)}
-                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                              >
-                                ✅ Unblock User
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleBlock(u.id)}
-                                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
-                              >
-                                🚫 Block User
-                              </button>
-                            )}
-                          </div>
+  {u.role === "BLOCKED" ? (
+    <button
+      onClick={() => handleUnblock(u.id)}
+      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+    >
+      ✅ Unblock User
+    </button>
+  ) : (
+    <button
+      onClick={() => handleBlock(u.id)}
+      className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
+    >
+      🚫 Block User
+    </button>
+  )}
+
+  {u.role === "MANAGER" ? (
+    <button
+      onClick={() => handleDemote(u.id)}
+      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+    >
+      ⬇️ Demote to User
+    </button>
+  ) : (
+    u.role !== "ADMIN" && (
+      <button
+        onClick={() => handlePromote(u.id)}
+        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+      >
+        ⭐ Promote to Manager
+      </button>
+    )
+  )}
+</div>
                         )}
                       </div>
                     )}
