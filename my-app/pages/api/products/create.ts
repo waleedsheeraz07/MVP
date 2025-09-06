@@ -8,10 +8,24 @@ import fs from "fs";
 
 export const config = { api: { bodyParser: false } };
 
-// --- HELPERS ---
-const parseForm = (req: NextApiRequest): Promise<{ fields: any; files: File[] }> =>
+// --- TYPES ---
+interface ParsedFields {
+  title: string;
+  description: string;
+  price: string;
+  quantity: string;
+  colors: string[];
+  sizes: string[];
+  categories: string[];
+  condition: string;
+  era: string;
+}
+
+// --- FORM PARSING ---
+const parseForm = (req: NextApiRequest): Promise<{ fields: ParsedFields; files: File[] }> =>
   new Promise((resolve, reject) => {
     const form = formidable({ multiples: true, keepExtensions: true });
+
     form.parse(req, (err, fields: Fields, files: Files) => {
       if (err) return reject(err);
 
@@ -21,8 +35,7 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: any; files: File[] }>
         else uploadedFiles.push(files.images as File);
       }
 
-      // Parse JSON arrays safely
-      const safeFields = {
+      const safeFields: ParsedFields = {
         title: fields.title?.toString() || "",
         description: fields.description?.toString() || "",
         price: fields.price?.toString() || "0",
@@ -60,14 +73,16 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: any; files: File[] }>
 const uploadFileToCloudinary = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     if (!file.filepath) return reject(new Error("Filepath missing"));
+
     const stream = cloudinary.uploader.upload_stream({ folder: "products" }, (err, result) => {
       if (err || !result?.secure_url) return reject(err || new Error("Upload failed"));
       resolve(result.secure_url);
     });
+
     fs.createReadStream(file.filepath).pipe(stream);
   });
 
-// --- HANDLER ---
+// --- API HANDLER ---
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -78,6 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields, files } = await parseForm(req);
     const { title, description, price, quantity, colors, sizes, categories, condition, era } = fields;
 
+    // Validate required fields
     if (!title || !price || !quantity) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -88,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = (session.user as { id?: string }).id;
     if (!userId) return res.status(401).json({ error: "User ID not found in session" });
 
-    // Upload images
+    // Upload images to Cloudinary
     const imageUrls = await Promise.all(
       files.map(async (file) => {
         try {
@@ -100,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     );
 
-    // Create product
+    // Create product in MongoDB via Prisma
     const product = await prisma.product.create({
       data: {
         title,
@@ -119,7 +135,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Link categories via join table
     if (categories.length) {
       await Promise.all(
-        categories.map((catId: string) =>
+        categories.map((catId) =>
           prisma.productCategory.create({
             data: { productId: product.id, categoryId: catId },
           })
