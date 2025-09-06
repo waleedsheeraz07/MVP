@@ -1,6 +1,4 @@
 /* ---------------- Base Reset ---------------- */
-
-/* ---------------- Prevent Selection ---------------- */
 .item,
 .toggleBtn,
 .title {
@@ -44,20 +42,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
   box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
 }
 
-/* While actively dragging, stop transitions to prevent vibration */
+.item:hover {
+  box-shadow: 0 3px 8px rgba(78, 42, 15, 0.12);
+  transform: translateY(-1px);
+}
+
+.item:active {
+  transform: scale(1.01);
+}
+
 .item.dragging {
   transition: none !important;
   box-shadow: none !important;
-  opacity: 0.6; /* faint ghost of original */
+  opacity: 0.6;
 }
 
-/* ---------------- Drag Overlay (floating element) ---------------- */
+.selected {
+  border-color: #C89B3C;
+  background: #fdf7ef;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
+}
+
+/* ---------------- Drag Overlay ---------------- */
 .dragOverlay {
-  background: #fffefb;
+  background: #fffdfb;
   border: 2px solid #C89B3C;
   border-radius: 8px;
   padding: 0.5rem 0.6rem;
@@ -67,10 +79,6 @@
   font-weight: 600;
   z-index: 9999;
 }
-
-
-
-
 
 /* ---------------- Page Container ---------------- */
 .container {
@@ -92,7 +100,7 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* ---------------- Controls (Mobile-First) ---------------- */
+/* ---------------- Controls ---------------- */
 .controls {
   display: flex;
   flex-direction: column;
@@ -109,6 +117,8 @@
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s ease;
+  background: #fffdfb;
+  color: #4E2A0F;
 }
 
 .controls input:focus {
@@ -121,7 +131,7 @@
   padding: 0.55rem 0.8rem;
   font-size: 0.9rem;
   background: linear-gradient(135deg, #C89B3C, #b3842f);
-  color: #fff;
+  color: #fffdfb;
   font-weight: 600;
   border: none;
   border-radius: 6px;
@@ -157,35 +167,6 @@
   margin-left: 0.6rem;
   border-left: 1.5px dashed #D6BCA6;
   padding-left: 0.5rem;
-}
-
-/* ---------------- Sortable Item ---------------- */
-.item {
-  background: #fffaf5;
-  border: 2px solid #D6BCA6;
-  border-radius: 8px;
-  padding: 0.5rem 0.6rem;
-  margin-bottom: 0.3rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
-}
-
-.item:hover {
-  box-shadow: 0 3px 8px rgba(123, 63, 0, 0.12);
-  transform: translateY(-1px);
-}
-
-.item:active {
-  transform: scale(1.01);
-}
-
-.selected {
-  border-color: #C89B3C;
-  background: #fdf7ef;
-  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
 }
 
 /* ---------------- Item Content ---------------- */
