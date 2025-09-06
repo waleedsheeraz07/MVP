@@ -33,9 +33,33 @@ interface UsersPageProps {
 
 export default function UsersPage({ users, userName, categories }: UsersPageProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [userList, setUserList] = useState(users);
 
   const toggleExpand = (id: string) => {
     setExpanded(expanded === id ? null : id);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this account? This action is irreversible.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/users/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete user");
+      }
+
+      setUserList(userList.filter((u) => u.id !== id));
+      setExpanded(null);
+    } catch (err) {
+      alert("Error deleting user: " + (err as Error).message);
+    }
   };
 
   return (
@@ -46,11 +70,11 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
             👥 All Users
           </h1>
 
-          {users.length === 0 ? (
+          {userList.length === 0 ? (
             <p className="text-gray-600">No users found.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {users.map((u) => (
+              {userList.map((u) => (
                 <div
                   key={u.id}
                   className="bg-white rounded-xl shadow p-4 border border-gray-200"
@@ -113,6 +137,16 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
                         <span className="font-medium">Created At:</span>{" "}
                         {new Date(u.createdAt).toLocaleString()}
                       </p>
+
+                      {/* Delete Button */}
+                      <div className="pt-3">
+                        <button
+                          onClick={() => handleDelete(u.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                        >
+                          🗑️ Delete Account
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -132,7 +166,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { redirect: { destination: "/login", permanent: false } };
   }
 
-  // Only admins can view this page
   if (session.user.role !== "ADMIN") {
     return { redirect: { destination: "/", permanent: false } };
   }
