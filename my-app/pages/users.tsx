@@ -68,6 +68,21 @@ export default function UsersPage({ users, userName, currentUserId, categories }
     }
   };
 
+  const handleUnblock = async (id: string) => {
+    if (!confirm("Are you sure you want to unblock this user?")) return;
+    try {
+      const res = await fetch("/api/users/unblock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed to unblock user");
+      setUserList(userList.map(u => u.id === id ? { ...u, role: "USER" } : u));
+    } catch (err) {
+      alert("Error unblocking user: " + (err as Error).message);
+    }
+  };
+
   return (
     <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
@@ -121,12 +136,22 @@ export default function UsersPage({ users, userName, currentUserId, categories }
                             >
                               🗑️ Delete Account
                             </button>
-                            <button
-                              onClick={() => handleBlock(u.id)}
-                              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
-                            >
-                              🚫 Block User
-                            </button>
+
+                            {u.role === "BLOCKED" ? (
+                              <button
+                                onClick={() => handleUnblock(u.id)}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                              >
+                                ✅ Unblock User
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleBlock(u.id)}
+                                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
+                              >
+                                🚫 Block User
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
