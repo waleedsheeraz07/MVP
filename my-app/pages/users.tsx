@@ -12,15 +12,22 @@ interface User {
   role: string;
 }
 
-interface UsersPageProps {
-  users: User[];
-  userName: string;
-  categories: { id: string; title: string; order: number; parentId?: string | null }[];
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
 }
 
-export default function UsersPage({ users, userName, categories }: UsersPageProps) {
+interface UsersPageProps {
+  users: User[];
+  user: { id: string; name?: string | null };
+  categories: Category[];
+}
+
+export default function UsersPage({ users, user, categories }: UsersPageProps) {
   return (
-    <Layout categories={categories} user={{ name: userName }}>
+    <Layout categories={categories} user={user}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">
@@ -79,11 +86,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     orderBy: { order: "asc" },
   });
 
+  // Get the logged-in user’s record (with id + name)
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email! },
+    select: { id: true, name: true },
+  });
+
   return {
     props: {
       users,
       categories,
-      userName: session.user.name || "Admin",
+      user: dbUser || { id: "unknown", name: session.user.name || "Admin" },
     },
   };
 }
