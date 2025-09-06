@@ -7,27 +7,21 @@ import Layout from "../components/header";
 
 interface User {
   id: string;
-  name: string | null;
+  firstName: string;
+  lastName?: string | null;
   email: string;
   role: string;
 }
 
-interface Category {
-  id: string;
-  title: string;
-  order: number;
-  parentId?: string | null;
-}
-
 interface UsersPageProps {
   users: User[];
-  user: { id: string; name?: string | null };
-  categories: Category[];
+  userName: string;
+  categories: { id: string; title: string; order: number; parentId?: string | null }[];
 }
 
-export default function UsersPage({ users, user, categories }: UsersPageProps) {
+export default function UsersPage({ users, userName, categories }: UsersPageProps) {
   return (
-    <Layout categories={categories} user={user}>
+    <Layout categories={categories} user={{ id: "admin", name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">
@@ -49,7 +43,9 @@ export default function UsersPage({ users, user, categories }: UsersPageProps) {
                 <tbody>
                   {users.map(u => (
                     <tr key={u.id} className="border-t">
-                      <td className="px-4 py-2">{u.name || "—"}</td>
+                      <td className="px-4 py-2">
+                        {u.firstName} {u.lastName || ""}
+                      </td>
                       <td className="px-4 py-2">{u.email}</td>
                       <td className="px-4 py-2 font-semibold">{u.role}</td>
                     </tr>
@@ -77,7 +73,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const users = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true },
+    select: { id: true, firstName: true, lastName: true, email: true, role: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -86,17 +82,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     orderBy: { order: "asc" },
   });
 
-  // Get the logged-in user’s record (with id + name)
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session.user.email! },
-    select: { id: true, name: true },
-  });
-
   return {
     props: {
       users,
       categories,
-      user: dbUser || { id: "unknown", name: session.user.name || "Admin" },
+      userName: session.user.firstName || "Admin",
     },
   };
 }
