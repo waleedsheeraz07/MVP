@@ -57,6 +57,7 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
     id: user.id,
     firstName: user.firstName || "",
     lastName: user.lastName || "",
+    role: user.role || "",
     phoneNumber: user.phoneNumber || "", // ✅ correct field
     address1: user.address1 || "",
     address2: user.address2 || "",
