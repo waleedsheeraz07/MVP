@@ -168,7 +168,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session?.user?.id) {
-    return { redirect: { destination: "/auth/signin", permanent: false } };
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
   // Fetch wishlist items
