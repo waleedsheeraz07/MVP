@@ -8,29 +8,10 @@ import fs from "fs";
 
 export const config = { api: { bodyParser: false } };
 
-// --- TYPES ---
-interface FormFields {
-  title: string;
-  description?: string;
-  price: string;
-  quantity: string;
-  colors?: string[];
-  sizes?: string[];
-  categories?: string[];
-  condition?: string;
-  era?: string;
-}
-
 // --- HELPERS ---
-const normalizeField = (field?: string | string[]): string[] =>
-  !field ? [] : Array.isArray(field) ? field.map(String) : [String(field)];
-
-const splitComma = (field?: string[]): string[] =>
-  field?.flatMap(f => f.split(",").map(s => s.trim())) || [];
-
-const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: File[] }> =>
+const parseForm = (req: NextApiRequest): Promise<{ fields: any; files: File[] }> =>
   new Promise((resolve, reject) => {
-    const form = formidable({ multiples: true });
+    const form = formidable({ multiples: true, keepExtensions: true });
     form.parse(req, (err, fields: Fields, files: Files) => {
       if (err) return reject(err);
 
@@ -40,15 +21,26 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: Fi
         else uploadedFiles.push(files.images as File);
       }
 
-      const safeFields: FormFields = {
+      // Parse JSON arrays safely
+      const safeFields = {
         title: fields.title?.toString() || "",
-        description: fields.description?.toString(),
+        description: fields.description?.toString() || "",
         price: fields.price?.toString() || "0",
         quantity: fields.quantity?.toString() || "1",
-        colors: splitComma(normalizeField(fields.colors)),
-        sizes: splitComma(normalizeField(fields.sizes)),
-        condition: fields.condition?.toString(),
-        era: fields.era?.toString(),
+        colors: (() => {
+          try {
+            return JSON.parse(fields.colors?.toString() || "[]");
+          } catch {
+            return [];
+          }
+        })(),
+        sizes: (() => {
+          try {
+            return JSON.parse(fields.sizes?.toString() || "[]");
+          } catch {
+            return [];
+          }
+        })(),
         categories: (() => {
           try {
             return JSON.parse(fields.categories?.toString() || "[]");
@@ -56,6 +48,8 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: FormFields; files: Fi
             return [];
           }
         })(),
+        condition: fields.condition?.toString() || "",
+        era: fields.era?.toString() || "",
       };
 
       resolve({ fields: safeFields, files: uploadedFiles });
@@ -84,11 +78,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields, files } = await parseForm(req);
     const { title, description, price, quantity, colors, sizes, categories, condition, era } = fields;
 
-    // Required fields check
     if (!title || !price || !quantity) {
-      return res.status(400).json({ error: "Missing required fields", debug: fields });
+      return res.status(400).json({ error: "Missing required fields" });
     }
-
     if (!files.length) {
       return res.status(400).json({ error: "At least one image is required" });
     }
@@ -96,55 +88,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = (session.user as { id?: string }).id;
     if (!userId) return res.status(401).json({ error: "User ID not found in session" });
 
-    // Upload images safely
-    const imageUrls = await Promise.all(files.map(async file => {
-      try {
-        return await uploadFileToCloudinary(file);
-      } catch (err) {
-        console.error("Cloudinary upload failed for file:", file.originalFilename, err);
-        throw new Error(`Failed to upload ${file.originalFilename}`);
-      }
-    }));
+    // Upload images
+    const imageUrls = await Promise.all(
+      files.map(async (file) => {
+        try {
+          return await uploadFileToCloudinary(file);
+        } catch (err) {
+          console.error("Cloudinary upload failed:", file.originalFilename, err);
+          throw new Error(`Failed to upload ${file.originalFilename}`);
+        }
+      })
+    );
 
     // Create product
     const product = await prisma.product.create({
       data: {
         title,
-        description: description || "",
+        description,
         price: parseFloat(price),
         quantity: parseInt(quantity, 10),
         colors,
         sizes,
-        condition: condition || "",
-        era: era || "",
+        condition,
+        era,
         ownerId: userId,
-        // Ensure your schema has an `images` JSON/text field to store URLs
         images: imageUrls,
       },
     });
 
-    // Link categories via join table (if any)
-    if (categories?.length) {
-      const categoryLinks = categories.map(catId =>
-        prisma.productCategory.create({
-          data: { productId: product.id, categoryId: catId },
-        })
+    // Link categories via join table
+    if (categories.length) {
+      await Promise.all(
+        categories.map((catId: string) =>
+          prisma.productCategory.create({
+            data: { productId: product.id, categoryId: catId },
+          })
+        )
       );
-      await Promise.all(categoryLinks);
     }
 
-    res.status(201).json({
-      success: true,
-      productId: product.id,
-      debug: {
-        fields,
-        fileNames: files.map(f => f.originalFilename),
-        imageUrls,
-        categoriesLinked: categories,
-      },
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    res.status(201).json({ success: true, productId: product.id });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : JSON.stringify(err);
     console.error("Product creation failed:", message);
     res.status(500).json({ error: "Internal server error", detail: message });
   }
