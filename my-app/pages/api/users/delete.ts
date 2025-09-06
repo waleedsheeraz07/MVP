@@ -18,19 +18,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!id) return res.status(400).json({ error: "Missing user ID" });
 
   try {
-    // 1️⃣ Set all products from this user to quantity = 0
-    await prisma.product.updateMany({
-      where: { ownerId: id },
-      data: { quantity: 0 },
-    });
-
-    // 2️⃣ Find or create a placeholder "deleted user"
+    // 1️⃣ Find or create the placeholder "deleted_user"
     let deletedUser = await prisma.user.findUnique({ where: { email: "deleted_user@example.com" } });
     if (!deletedUser) {
       deletedUser = await prisma.user.create({
         data: {
           email: "deleted_user@example.com",
-          password: "deleted", // dummy, won't be used
+          password: "deleted", // dummy
           role: "DELETED",
           firstName: "Deleted",
           lastName: "User",
@@ -38,7 +32,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // 3️⃣ Reassign related records to placeholder
+    // 2️⃣ Update products: set quantity = 0 and reassign owner
+    await prisma.product.updateMany({
+      where: { ownerId: id },
+      data: { quantity: 0, ownerId: deletedUser.id },
+    });
+
+    // 3️⃣ Reassign related records to deleted_user
     await prisma.orderItem.updateMany({
       where: { sellerId: id },
       data: { sellerId: deletedUser.id },
