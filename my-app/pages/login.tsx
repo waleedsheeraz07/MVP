@@ -1,3 +1,4 @@
+// pages/login.tsx:
 import { getCsrfToken, signIn } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import { useState } from "react";
@@ -35,7 +36,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
     if (res?.error) {
       setErrorMessage(res.error);
     } else {
-      router.push("/dashboard");
+      router.push("/products");
     }
   };
 
