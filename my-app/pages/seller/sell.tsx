@@ -50,10 +50,29 @@ export default function SellProductPage() {
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-      setDebug(err.debug || null);
-    } finally {
+    }  catch (err: unknown) {
+  // Default values
+  let message = "Something went wrong";
+  let debug: string | null = null;
+
+  if (err instanceof Error) {
+    // Standard JS Error object
+    message = err.message;
+    // @ts-ignore: some custom error libraries may have debug
+    debug = (err as any).debug ?? null;
+  } else if (typeof err === "object" && err !== null) {
+    // If it's a plain object
+    // @ts-ignore
+    message = (err as { message?: string }).message ?? message;
+    // @ts-ignore
+    debug = (err as { debug?: string }).debug ?? null;
+  } else if (typeof err === "string") {
+    message = err;
+  }
+
+  setError(message);
+  setDebug(debug);
+}finally {
       setLoading(false);
     }
   };
