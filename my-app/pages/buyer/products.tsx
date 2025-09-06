@@ -1,4 +1,4 @@
-// pages/products.tsx
+// pages/buyer/products.tsx
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { GetServerSidePropsContext } from "next";
