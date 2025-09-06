@@ -1,4 +1,3 @@
-// pages/users.tsx
 "use client";
 
 import { prisma } from "../lib/prisma";
@@ -28,10 +27,11 @@ interface User {
 interface UsersPageProps {
   users: User[];
   userName: string;
+  currentUserId: string;
   categories: { id: string; title: string; order: number; parentId?: string | null }[];
 }
 
-export default function UsersPage({ users, userName, categories }: UsersPageProps) {
+export default function UsersPage({ users, userName, currentUserId, categories }: UsersPageProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [userList, setUserList] = useState(users);
 
@@ -40,9 +40,7 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this account? This action is irreversible.")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete this account? This action is irreversible.")) return;
 
     try {
       const res = await fetch(`/api/users/delete`, {
@@ -51,9 +49,7 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
         body: JSON.stringify({ id }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to delete user");
-      }
+      if (!res.ok) throw new Error("Failed to delete user");
 
       setUserList(userList.filter((u) => u.id !== id));
       setExpanded(null);
@@ -63,22 +59,17 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
   };
 
   return (
-    <Layout categories={categories} user={{ id: "current", name: userName }}>
+    <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">
-            👥 All Users
-          </h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">👥 All Users</h1>
 
           {userList.length === 0 ? (
             <p className="text-gray-600">No users found.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {userList.map((u) => (
-                <div
-                  key={u.id}
-                  className="bg-white rounded-xl shadow p-4 border border-gray-200"
-                >
+                <div key={u.id} className="bg-white rounded-xl shadow p-4 border border-gray-200">
                   {/* Basic Info */}
                   <div className="flex justify-between items-start">
                     <div>
@@ -86,17 +77,9 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
                         {u.firstName} {u.lastName || ""}
                       </h2>
                       <p className="text-sm text-gray-600">{u.email}</p>
-                      <p className="mt-1 text-sm">
-                        <span className="font-medium">Role:</span> {u.role}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Gender:</span>{" "}
-                        {u.gender || "—"}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Phone:</span>{" "}
-                        {u.phoneNumber || "—"}
-                      </p>
+                      <p className="mt-1 text-sm"><span className="font-medium">Role:</span> {u.role}</p>
+                      <p className="text-sm"><span className="font-medium">Gender:</span> {u.gender || "—"}</p>
+                      <p className="text-sm"><span className="font-medium">Phone:</span> {u.phoneNumber || "—"}</p>
                     </div>
                     <button
                       onClick={() => toggleExpand(u.id)}
@@ -109,44 +92,25 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
                   {/* Expanded Info */}
                   {expanded === u.id && (
                     <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
-                      <p>
-                        <span className="font-medium">DOB:</span>{" "}
-                        {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Address 1:</span>{" "}
-                        {u.address1 || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Address 2:</span>{" "}
-                        {u.address2 || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">State:</span>{" "}
-                        {u.state || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Country:</span>{" "}
-                        {u.country || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Postal Code:</span>{" "}
-                        {u.postalCode || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Created At:</span>{" "}
-                        {new Date(u.createdAt).toLocaleString()}
-                      </p>
+                      <p><span className="font-medium">DOB:</span> {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}</p>
+                      <p><span className="font-medium">Address 1:</span> {u.address1 || "—"}</p>
+                      <p><span className="font-medium">Address 2:</span> {u.address2 || "—"}</p>
+                      <p><span className="font-medium">State:</span> {u.state || "—"}</p>
+                      <p><span className="font-medium">Country:</span> {u.country || "—"}</p>
+                      <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
+                      <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
 
-                      {/* Delete Button */}
-                      <div className="pt-3">
-                        <button
-                          onClick={() => handleDelete(u.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                        >
-                          🗑️ Delete Account
-                        </button>
-                      </div>
+                      {/* Delete Button - hide for current admin */}
+                      {u.id !== currentUserId && (
+                        <div className="pt-3">
+                          <button
+                            onClick={() => handleDelete(u.id)}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                          >
+                            🗑️ Delete Account
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -162,13 +126,8 @@ export default function UsersPage({ users, userName, categories }: UsersPageProp
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (!session) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
-  if (session.user.role !== "ADMIN") {
-    return { redirect: { destination: "/", permanent: false } };
-  }
+  if (!session) return { redirect: { destination: "/login", permanent: false } };
+  if (session.user.role !== "ADMIN") return { redirect: { destination: "/", permanent: false } };
 
   const users = await prisma.user.findMany({
     select: {
@@ -208,9 +167,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         createdAt: u.createdAt.toISOString(),
       })),
       categories,
-      userName: currentUser
-        ? `${currentUser.firstName} ${currentUser.lastName || ""}`
-        : "Admin",
+      userName: currentUser ? `${currentUser.firstName} ${currentUser.lastName || ""}` : "Admin",
+      currentUserId: session.user.id,
     },
   };
 }
