@@ -1,3 +1,4 @@
+// components/header.tsx:
 "use client";
 
 import { useState, useEffect } from "react";
@@ -79,7 +80,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
 
   {/* Cart Icon */}
   <Link
-    href="/cart"
+    href="/buyer/cart"
     className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl my-4"
   >
     <span
@@ -163,13 +164,13 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         <h3 className="text-[#3e2f25] font-semibold mb-2">🛒 Buyer</h3>
         <ul className="space-y-1 pl-3 text-gray-600">
           <li>
-            <Link href="/order" className="hover:text-[#5a4436] transition-colors">
+            <Link href="/buyer/order" className="hover:text-[#5a4436] transition-colors">
               My Orders
             </Link>
           </li>
           <li>
             <Link
-              href="/cart"
+              href="/buyer/cart"
               className="hover:text-[#5a4436] transition-colors flex items-center gap-1"
             >
               My Cart
@@ -181,7 +182,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             </Link>
           </li>
           <li>
-            <Link href="/wishlist" className="hover:text-[#5a4436] transition-colors">
+            <Link href="/buyer/wishlist" className="hover:text-[#5a4436] transition-colors">
               My Wishlist
             </Link>
           </li>
@@ -193,7 +194,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
         <ul className="space-y-1 pl-3 text-gray-600">
           <li>
-            <Link href="/products" className="hover:text-[#5a4436] transition-colors">
+            <Link href="/buyer/products" className="hover:text-[#5a4436] transition-colors">
               All Products
             </Link>
           </li>
