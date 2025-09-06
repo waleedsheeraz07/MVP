@@ -187,22 +187,61 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   }
 
   // SUBMIT
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+import { FormEvent } from "react";
+import { useRouter } from "next/router";
+
+interface SubmitError {
+  error?: string;
+}
+
+const handleSubmit = async (
+  e: FormEvent<HTMLFormElement>,
+  {
+    title,
+    description,
+    price,
+    quantity,
+    colors,
+    sizes,
+    selectedCategories,
+    condition,
+    era,
+    before1900,
+    images,
+    setError,
+    setLoading,
+  }: {
+    title: string;
+    description?: string;
+    price: string;
+    quantity: string;
+    colors?: string[];
+    sizes?: string[];
+    selectedCategories?: string[];
+    condition?: string;
+    era?: string;
+    before1900?: string;
+    images: File[];
+    setError: (msg: string) => void;
+    setLoading: (loading: boolean) => void;
+  }
+) => {
   e.preventDefault();
   setLoading(true);
   setError("");
 
   try {
     const formData = new FormData();
+
     formData.append("title", title);
     formData.append("description", description || "");
     formData.append("price", price);
     formData.append("quantity", quantity);
-    formData.append("colors", JSON.stringify(colors || []));
-    formData.append("sizes", JSON.stringify(sizes || []));
-    formData.append("categories", JSON.stringify(selectedCategories || []));
+    formData.append("colors", JSON.stringify(colors ?? []));
+    formData.append("sizes", JSON.stringify(sizes ?? []));
+    formData.append("categories", JSON.stringify(selectedCategories ?? []));
     formData.append("condition", condition || "");
-    formData.append("era", era === "before1900" ? before1900 : era || "");
+    formData.append("era", era === "before1900" ? before1900 || "" : era || "");
 
     images.forEach((file) => formData.append("images", file));
 
@@ -211,13 +250,15 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       body: formData,
     });
 
-    const data = await res.json();
+    const data: SubmitError & Record<string, any> = await res.json();
+
     if (!res.ok) throw data;
 
+    const router = useRouter();
     router.push("/seller/products");
   } catch (err: unknown) {
     if (err && typeof err === "object" && "error" in err) {
-      setError((err as { error?: string }).error || "Something went wrong");
+      setError((err as SubmitError).error || "Something went wrong");
     } else {
       setError("Something went wrong");
     }
