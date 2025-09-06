@@ -4,6 +4,8 @@ import { authOptions } from "../api/auth/[...nextauth]";
 import Layout from "../../components/header";
 import { useState, useMemo, useEffect, useRef } from 'react'
 import styles from '../../styles/admincat.module.css'
+import { GetServerSideProps } from "next"
+import { prisma } from "../../lib/prisma"
 import {
   DndContext,
   closestCenter,
@@ -341,9 +343,6 @@ const handleCreate = async () => {
 }
 
 // ---------------- SSR ----------------
-import { GetServerSideProps } from "next"
-import { prisma } from "../../lib/prisma"
-
 export const getServerSideProps: GetServerSideProps = async () => {
 const session = await getServerSession(context.req, context.res, authOptions);
 
