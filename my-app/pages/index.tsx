@@ -39,7 +39,7 @@ export default function Home({ products }: Props) {
           Shop Now
         </a>
       </Link>
-      <Link href="/seller/sell">
+      <Link href="/seller/products">
         <a className="bg-[#fdf8f3] text-[#3e2f25] border-2 border-[#3e2f25] px-6 py-3 rounded-lg font-semibold hover:bg-[#3e2f25] hover:text-[#fdf8f3] transition">
           Sell Now
         </a>
