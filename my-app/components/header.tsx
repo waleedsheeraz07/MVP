@@ -16,7 +16,11 @@ interface Category {
 interface LayoutProps {
   children: React.ReactNode;
   categories: Category[];
-  user?: { id: string; name?: string | null };
+  user?: { 
+    id: string; 
+    name?: string | null;
+    role?: string | null;  // <-- added role
+  };
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
