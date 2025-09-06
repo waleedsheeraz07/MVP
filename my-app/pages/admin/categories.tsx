@@ -320,6 +320,8 @@ const handleCreate = async () => {
 
   return (
     <>
+<Layout categories={categories} user={user}>
+ 
       <div className={styles.container} ref={containerRef}>
         <h1 className={styles.pageTitle}>Categories</h1>
         {isProcessing && <div>Processing...</div>}
@@ -346,6 +348,7 @@ const handleCreate = async () => {
           </div>
         </DndContext>
       </div>
+</Layout>
     </>
   )
 }
