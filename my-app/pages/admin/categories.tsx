@@ -343,7 +343,7 @@ const handleCreate = async () => {
 }
 
 // ---------------- SSR ----------------
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (context: GetServerSidePropsContext) => {
 const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) return { redirect: { destination: "/login", permanent: false } };
