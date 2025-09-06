@@ -35,15 +35,13 @@ export default function UsersPage({ users, userName, currentUserId, categories }
   const [expanded, setExpanded] = useState<string | null>(null);
   const [userList, setUserList] = useState(users);
 
-  const toggleExpand = (id: string) => {
-    setExpanded(expanded === id ? null : id);
-  };
+  const toggleExpand = (id: string) => setExpanded(expanded === id ? null : id);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this account? This action is irreversible.")) return;
 
     try {
-      const res = await fetch(`/api/users/delete`, {
+      const res = await fetch("/api/users/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -68,60 +66,49 @@ export default function UsersPage({ users, userName, currentUserId, categories }
             <p className="text-gray-600">No users found.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-{userList.map((u) => (
-  <div
-    key={u.id}
-    className="bg-white rounded-xl shadow p-4 border border-gray-200 flex flex-col"
-  >
-    {/* Basic Info */}
-    <div className="flex justify-between items-center">
-      <div>
-        <h2 className="text-lg font-semibold text-[#3e2f25]">
-          {u.firstName} {u.lastName || ""}
-        </h2>
-        <p className="text-sm text-gray-600">{u.email}</p>
-        <p className="mt-1 text-sm">
-          <span className="font-medium">Role:</span> {u.role}
-        </p>
-        <p className="text-sm">
-          <span className="font-medium">Gender:</span> {u.gender || "—"}
-        </p>
-        <p className="text-sm">
-          <span className="font-medium">Phone:</span> {u.phoneNumber || "—"}
-        </p>
-      </div>
-      <button
-        onClick={() => toggleExpand(u.id)}
-        className="text-sm text-blue-600 hover:underline ml-4"
-      >
-        {expanded === u.id ? "Hide ▲" : "View ▼"}
-      </button>
-    </div>
+              {userList.map((u) => {
+                const isCurrentUser = u.id === currentUserId.toString(); // Force string comparison
+                return (
+                  <div key={u.id} className="bg-white rounded-xl shadow p-4 border border-gray-200 flex flex-col">
+                    {/* Basic Info */}
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-lg font-semibold text-[#3e2f25]">{u.firstName} {u.lastName || ""}</h2>
+                        <p className="text-sm text-gray-600">{u.email}</p>
+                        <p className="mt-1 text-sm"><span className="font-medium">Role:</span> {u.role}</p>
+                        <p className="text-sm"><span className="font-medium">Gender:</span> {u.gender || "—"}</p>
+                        <p className="text-sm"><span className="font-medium">Phone:</span> {u.phoneNumber || "—"}</p>
+                      </div>
+                      <button onClick={() => toggleExpand(u.id)} className="text-sm text-blue-600 hover:underline ml-4">
+                        {expanded === u.id ? "Hide ▲" : "View ▼"}
+                      </button>
+                    </div>
 
-    {/* Expanded Info */}
-    {expanded === u.id && (
-      <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
-        <p><span className="font-medium">DOB:</span> {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}</p>
-        <p><span className="font-medium">Address 1:</span> {u.address1 || "—"}</p>
-        <p><span className="font-medium">Address 2:</span> {u.address2 || "—"}</p>
-        <p><span className="font-medium">State:</span> {u.state || "—"}</p>
-        <p><span className="font-medium">Country:</span> {u.country || "—"}</p>
-        <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
-        <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
+                    {/* Expanded Info */}
+                    {expanded === u.id && (
+                      <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
+                        <p><span className="font-medium">DOB:</span> {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}</p>
+                        <p><span className="font-medium">Address 1:</span> {u.address1 || "—"}</p>
+                        <p><span className="font-medium">Address 2:</span> {u.address2 || "—"}</p>
+                        <p><span className="font-medium">State:</span> {u.state || "—"}</p>
+                        <p><span className="font-medium">Country:</span> {u.country || "—"}</p>
+                        <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
+                        <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
 
-        {/* Delete Button: only if not the logged-in admin */}
-        {u.id !== currentUserId && (
-          <button
-            onClick={() => handleDelete(u.id)}
-            className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-          >
-            🗑️ Delete Account
-          </button>
-        )}
-      </div>
-    )}
-  </div>
-))}
+                        {/* Delete button only for non-current users */}
+                        {!isCurrentUser && (
+                          <button
+                            onClick={() => handleDelete(u.id)}
+                            className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                          >
+                            🗑️ Delete Account
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -132,7 +119,6 @@ export default function UsersPage({ users, userName, currentUserId, categories }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
-
   if (!session) return { redirect: { destination: "/login", permanent: false } };
   if (session.user.role !== "ADMIN") return { redirect: { destination: "/", permanent: false } };
 
@@ -158,7 +144,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { firstName: true, lastName: true },
+    select: { id: true, firstName: true, lastName: true },
   });
 
   const categories = await prisma.category.findMany({
@@ -175,7 +161,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       })),
       categories,
       userName: currentUser ? `${currentUser.firstName} ${currentUser.lastName || ""}` : "Admin",
-      currentUserId: session.user.id,
+      currentUserId: currentUser?.id.toString() || "", // ensure string comparison
     },
   };
 }
