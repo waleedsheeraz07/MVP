@@ -275,7 +275,7 @@ const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
     const data = await res.json()
     if (!res.ok) throw data
 
-    router.push("/myproducts")
+    router.push("/seller/products")
   } catch (err: unknown) {
     const e = err as { error?: string }
     setError(e.error || "Something went wrong")
@@ -302,7 +302,7 @@ const deleteProduct = async () => {
     const data = await res.json()
     if (!res.ok) throw data
 
-    router.push("/myproducts")
+    router.push("/seller/products")
   } catch (err: unknown) {
     if (err && typeof err === "object" && "error" in err) {
       setError((err as { error?: string }).error || "Delete failed")
