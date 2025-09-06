@@ -156,8 +156,8 @@ interface User {
 }
 
 interface Props {
-  categories: Category[],
-  user: User
+  categories: Category[];
+  user: User;
 }
 
 
