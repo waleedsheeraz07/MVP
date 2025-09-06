@@ -70,7 +70,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   <div className="absolute left-1/2 transform -translate-x-1/2">
     <Link href="/">
       <img
-        src="/logo.png"
+        src="../public/Logo.PNG"
         alt="Website Logo"
         className="w-18 h-18 sm:w-12 sm:h-12 object-contain"
       />
