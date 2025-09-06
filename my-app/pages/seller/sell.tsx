@@ -187,44 +187,44 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   }
 
   // SUBMIT
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      const formData = new FormData()
-      formData.append("title", title)
-      formData.append("description", description)
-      formData.append("price", price)
-      formData.append("quantity", quantity)
-      formData.append("colors", colors)
-      formData.append("sizes", sizes)
-      formData.append("categories", JSON.stringify(selectedCategories))
-      formData.append("condition", condition)
-      formData.append("era", era === "before1900" ? before1900 : era)
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description || "");
+    formData.append("price", price);
+    formData.append("quantity", quantity);
+    formData.append("colors", JSON.stringify(colors || []));
+    formData.append("sizes", JSON.stringify(sizes || []));
+    formData.append("categories", JSON.stringify(selectedCategories || []));
+    formData.append("condition", condition || "");
+    formData.append("era", era === "before1900" ? before1900 : era || "");
 
-      images.forEach(file => formData.append("images", file))
+    images.forEach((file) => formData.append("images", file));
 
-      const res = await fetch("/api/products/create", {
-        method: "POST",
-        body: formData,
-      })
+    const res = await fetch("/api/products/create", {
+      method: "POST",
+      body: formData,
+    });
 
-      const data = await res.json()
-      if (!res.ok) throw data
+    const data = await res.json();
+    if (!res.ok) throw data;
 
-      router.push("/seller/products")
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "error" in err) {
-        setError((err as { error?: string }).error || "Something went wrong")
-      } else {
-        setError("Something went wrong")
-      }
-    } finally {
-      setLoading(false)
+    router.push("/seller/products");
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && "error" in err) {
+      setError((err as { error?: string }).error || "Something went wrong");
+    } else {
+      setError("Something went wrong");
     }
+  } finally {
+    setLoading(false);
   }
+};
 
   // --- ERA OPTIONS ---
   const eraOptions = [
