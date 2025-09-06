@@ -32,6 +32,7 @@ interface Category {
 interface UserInfo {
   id: string;
   name?: string | null;
+  role: string;
   firstName: string;
   lastName?: string;
   phoneNumber?: string;
@@ -308,6 +309,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     select: {
       firstName: true,
       lastName: true,
+      role: true,
       phoneNumber: true,
       address1: true,
       address2: true,
@@ -347,6 +349,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       user: {
         id: session.user.id,
         name: session.user.name || "Guest",
+        role: session.user.role,
         ...(dbUser || {}),
       },
       cartItems,
