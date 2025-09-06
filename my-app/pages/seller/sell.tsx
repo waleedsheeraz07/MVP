@@ -214,7 +214,7 @@ export default function SellProductPage({ categories, categories2, user }: SellP
       const data = await res.json()
       if (!res.ok) throw data
 
-      router.push("/myproducts")
+      router.push("/seller/products")
     } catch (err: unknown) {
       if (err && typeof err === "object" && "error" in err) {
         setError((err as { error?: string }).error || "Something went wrong")
