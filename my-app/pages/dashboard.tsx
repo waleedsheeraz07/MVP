@@ -74,7 +74,7 @@ export default function Dashboard({ session }: DashboardProps) {
             </button>
           </Link>
 
-          <Link href="/sell">
+          <Link href="/seller/products">
             <button
               style={{
                 padding: "0.75rem 1.5rem",
