@@ -345,6 +345,12 @@ import { GetServerSideProps } from "next"
 import { prisma } from "../../lib/prisma"
 
 export const getServerSideProps: GetServerSideProps = async () => {
+const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session) return { redirect: { destination: "/login", permanent: false } };
+  if (session.user.role !== "ADMIN")
+    return { redirect: { destination: "/", permanent: false } };
+
   const categories: Category[] = (await prisma.category.findMany({
     orderBy: { order: "asc" }
   })) || []
