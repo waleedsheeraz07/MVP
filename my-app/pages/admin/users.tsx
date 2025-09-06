@@ -137,7 +137,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
   });
 
   return (
-    <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
+    <Layout categories={categories} user={{ id: currentUserId, name: userName, role: session.user.role}}>
 <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
   <div className="max-w-6xl mx-auto">
     <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">
