@@ -43,6 +43,7 @@ interface Category {
 interface User {
   id: string;
   name?: string | null;
+  role: string;
 }
 
 interface OrdersPageProps {
@@ -203,7 +204,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     props: {
       orders: formattedOrders,
       categories,
-      user: { id: session.user.id, name: session.user.name || "Guest" },
+      user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
     },
   };
 };
