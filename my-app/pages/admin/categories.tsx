@@ -354,5 +354,5 @@ const session = await getServerSession(context.req, context.res, authOptions);
     orderBy: { order: "asc" }
   })) || []
 
-  return { props: { categories } }
+  return { props: { categories, role:session.user.role } }
 }
