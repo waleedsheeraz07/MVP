@@ -142,6 +142,32 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         </ul>
       </div>
 
+
+{/* Admin Section - only visible to Admins */}
+{user?.role === "ADMIN" && (
+  <div>
+    <h3 className="text-[#3e2f25] font-semibold mb-2">🛡️ Admin</h3>
+    <ul className="space-y-1 pl-3 text-gray-600">
+      <li>
+        <Link href="/admin/users" className="hover:text-[#5a4436] transition-colors">
+          Manage Users
+        </Link>
+      </li>
+      <li>
+        <Link href="/admin/orders" className="hover:text-[#5a4436] transition-colors">
+          Manage Orders
+        </Link>
+      </li>
+      <li>
+        <Link href="/admin/reports" className="hover:text-[#5a4436] transition-colors">
+          Reports
+        </Link>
+      </li>
+    </ul>
+  </div>
+)}
+
+
       {/* Seller */}
       <div>
         <h3 className="text-[#3e2f25] font-semibold mb-2">📦 Seller</h3>
