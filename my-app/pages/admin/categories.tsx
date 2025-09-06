@@ -149,16 +149,19 @@ const renderTree = (
 }
 
 // ---------------- Main Component ----------------
-interface Props {
-  categories: Category[]
-}
-
 interface User {
   id: string;
   name?: string | null;
   role: string;
 }
-export default function CategoriesPage({ categories: initialCategories }: Props) {
+
+interface Props {
+  categories: Category[],
+  user: User
+}
+
+
+export default function CategoriesPage({ categories: initialCategories, user}: Props) {
   const [categories, setCategories] = useState<Category[]>(initialCategories || [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
