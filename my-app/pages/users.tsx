@@ -68,7 +68,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
             <p className="text-gray-600">No users found.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {userList.map((u) => (
+{userList.map((u) => (
   <div
     key={u.id}
     className="bg-white rounded-xl shadow p-4 border border-gray-200 flex flex-col"
@@ -101,10 +101,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
     {/* Expanded Info */}
     {expanded === u.id && (
       <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
-        <p>
-          <span className="font-medium">DOB:</span>{" "}
-          {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
-        </p>
+        <p><span className="font-medium">DOB:</span> {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}</p>
         <p><span className="font-medium">Address 1:</span> {u.address1 || "—"}</p>
         <p><span className="font-medium">Address 2:</span> {u.address2 || "—"}</p>
         <p><span className="font-medium">State:</span> {u.state || "—"}</p>
@@ -112,7 +109,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
         <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
         <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
 
-        {/* Delete Button (hidden for current admin) */}
+        {/* Delete Button: only if not the logged-in admin */}
         {u.id !== currentUserId && (
           <button
             onClick={() => handleDelete(u.id)}
