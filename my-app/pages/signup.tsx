@@ -8,7 +8,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const role = "buyer"; // fixed role
+  const role = "USER"; // fixed role
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
