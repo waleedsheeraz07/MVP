@@ -187,11 +187,11 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   }
 
   // SUBMIT
-import { FormEvent } from "react";
-import { useRouter } from "next/router";
-
-interface SubmitError {
+interface ApiResponse {
+  success?: boolean;
+  productId?: string;
   error?: string;
+  detail?: string;
 }
 
 const handleSubmit = async (
@@ -230,9 +230,10 @@ const handleSubmit = async (
   setLoading(true);
   setError("");
 
+  const router = useRouter();
+
   try {
     const formData = new FormData();
-
     formData.append("title", title);
     formData.append("description", description || "");
     formData.append("price", price);
@@ -250,15 +251,14 @@ const handleSubmit = async (
       body: formData,
     });
 
-    const data: SubmitError & Record<string, any> = await res.json();
+    const data: ApiResponse = await res.json();
 
     if (!res.ok) throw data;
 
-    const router = useRouter();
     router.push("/seller/products");
   } catch (err: unknown) {
     if (err && typeof err === "object" && "error" in err) {
-      setError((err as SubmitError).error || "Something went wrong");
+      setError((err as ApiResponse).error || "Something went wrong");
     } else {
       setError("Something went wrong");
     }
@@ -266,6 +266,8 @@ const handleSubmit = async (
     setLoading(false);
   }
 };
+
+
 
   // --- ERA OPTIONS ---
   const eraOptions = [
