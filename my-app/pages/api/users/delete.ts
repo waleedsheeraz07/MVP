@@ -24,12 +24,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: { quantity: 0 },
     });
 
-    // 2️⃣ Remove dependent records that block deletion
-    await prisma.userItem.deleteMany({ where: { userId: id } });
-    await prisma.orderItem.updateMany({ where: { sellerId: id }, data: { sellerId: null } }); // cut off sold items
-    await prisma.order.deleteMany({ where: { userId: id } });
+    // 2️⃣ Find or create a placeholder "deleted user"
+    let deletedUser = await prisma.user.findUnique({ where: { email: "deleted_user@example.com" } });
+    if (!deletedUser) {
+      deletedUser = await prisma.user.create({
+        data: {
+          email: "deleted_user@example.com",
+          password: "deleted", // dummy, won't be used
+          role: "DELETED",
+          firstName: "Deleted",
+          lastName: "User",
+        },
+      });
+    }
 
-    // 3️⃣ Delete the user
+    // 3️⃣ Reassign related records to placeholder
+    await prisma.orderItem.updateMany({
+      where: { sellerId: id },
+      data: { sellerId: deletedUser.id },
+    });
+
+    await prisma.userItem.updateMany({
+      where: { userId: id },
+      data: { userId: deletedUser.id },
+    });
+
+    await prisma.order.updateMany({
+      where: { userId: id },
+      data: { userId: deletedUser.id },
+    });
+
+    // 4️⃣ Delete the user
     await prisma.user.delete({ where: { id } });
 
     return res.status(200).json({ success: true });
