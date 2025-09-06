@@ -5,6 +5,7 @@ import Layout from "../../components/header";
 import { useState, useMemo, useEffect, useRef } from 'react'
 import styles from '../../styles/admincat.module.css'
 import { GetServerSideProps } from "next"
+import { GetServerSidePropsContext } from "next";
 import { prisma } from "../../lib/prisma"
 import {
   DndContext,
