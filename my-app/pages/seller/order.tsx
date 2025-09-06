@@ -216,7 +216,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session?.user?.id) {
-    return { redirect: { destination: "/auth/signin", permanent: false } };
+    return { redirect: { destination: "/login", permanent: false } };
   }
 
   const orderItems = await prisma.orderItem.findMany({
