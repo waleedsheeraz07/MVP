@@ -138,152 +138,172 @@ export default function UsersPage({ users, userName, currentUserId, categories }
 
   return (
     <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
-      <div className="min-h-screen p-6 bg-[#f9f2ec] font-sans">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-[#6b3e26] mb-6">👥 All Users</h1>
+<div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
+  <div className="max-w-6xl mx-auto">
+    <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">
+      👥 All Users
+    </h1>
 
-          {/* Search & Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="flex-1 px-4 py-2 border border-[#c79a74] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b17440]"
-            />
-            <select
-              value={roleFilter}
-              onChange={e => setRoleFilter(e.target.value)}
-              className="px-4 py-2 border border-[#c79a74] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b17440]"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="USER">User</option>
-              <option value="MANAGER">Manager</option>
-              <option value="ADMIN">Admin</option>
-              <option value="BLOCKED">Blocked</option>
-            </select>
-            <button
-              onClick={resetFilters}
-              className="px-4 py-2 bg-[#a66b3d] text-white rounded-lg hover:bg-[#8c5730] transition"
-            >
-              🔄 Reset
-            </button>
-          </div>
+    {/* Search + Role Filter + Reset */}
+    <div className="flex flex-wrap gap-3 mb-6 items-center bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+      <input
+        type="text"
+        placeholder="Search by name or email..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
+      />
 
-          {filteredUsers.length === 0 ? (
-            <p className="text-gray-600">No users found.</p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filteredUsers.map(u => (
-                <div
-                  key={u.id}
-                  className="bg-[#fff8f0] rounded-xl shadow p-4 border border-[#c79a74] flex flex-col"
-                >
-                  {/* Basic Info */}
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h2 className="text-lg font-semibold text-[#6b3e26]">
-                        {u.firstName} {u.lastName || ""}
-                      </h2>
-                      <p className="text-sm text-[#7b5a47]">{u.email}</p>
-                      <p className="mt-1 text-sm">
-                        <span className="font-medium">Role:</span> {u.role}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Gender:</span> {u.gender || "—"}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Phone:</span> {u.phoneNumber || "—"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => toggleExpand(u.id)}
-                      className="text-sm text-[#b17440] hover:underline ml-4"
-                    >
-                      {expanded === u.id ? "Hide ▲" : "View ▼"}
-                    </button>
-                  </div>
+      <select
+        value={roleFilter}
+        onChange={(e) => setRoleFilter(e.target.value)}
+        className="input bg-white text-[#3e2f25]"
+      >
+        <option value="ALL">All Roles</option>
+        <option value="USER">User</option>
+        <option value="MANAGER">Manager</option>
+        <option value="ADMIN">Admin</option>
+        <option value="BLOCKED">Blocked</option>
+      </select>
 
-                  {/* Expanded Info & Actions */}
-                  {expanded === u.id && (
-                    <div className="mt-4 border-t border-[#c79a74] pt-3 text-sm text-[#5b3b28] space-y-2">
-                      <p>
-                        <span className="font-medium">DOB:</span>{" "}
-                        {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Address 1:</span> {u.address1 || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Address 2:</span> {u.address2 || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">State:</span> {u.state || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Country:</span> {u.country || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Postal Code:</span>{" "}
-                        {u.postalCode || "—"}
-                      </p>
-                      <p>
-                        <span className="font-medium">Created At:</span>{" "}
-                        {new Date(u.createdAt).toLocaleString()}
-                      </p>
+      <button
+        onClick={resetFilters}
+        className="px-4 py-2 bg-[#5a4436] text-white rounded-xl hover:bg-[#3e2f25] transition"
+      >
+        🔄 Reset
+      </button>
+    </div>
 
-                      {u.id !== currentUserId && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <button
-                            onClick={() => handleDelete(u.id)}
-                            className="px-4 py-2 bg-[#b33a2f] text-white rounded-lg hover:bg-[#912f25] transition"
-                          >
-                            🗑️ Delete
-                          </button>
+    {/* Users Grid */}
+    {filteredUsers.length === 0 ? (
+      <p className="text-center text-[#3e2f25] font-medium mt-6">No users found.</p>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {filteredUsers.map((u) => (
+          <div
+            key={u.id}
+            className="bg-[#fffdfb] rounded-2xl shadow-md p-4 border border-[#ccc] flex flex-col"
+          >
+            {/* Basic Info */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-semibold text-[#3e2f25]">
+                  {u.firstName} {u.lastName || ""}
+                </h2>
+                <p className="text-sm text-[#5a4436]">{u.email}</p>
+                <p className="mt-1 text-sm">
+                  <span className="font-medium">Role:</span> {u.role}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Gender:</span> {u.gender || "—"}
+                </p>
+              </div>
+              <button
+                onClick={() => toggleExpand(u.id)}
+                className="text-sm text-[#5a4436] hover:underline ml-4"
+              >
+                {expanded === u.id ? "Hide ▲" : "View ▼"}
+              </button>
+            </div>
 
-                          {u.role === "BLOCKED" ? (
-                            <button
-                              onClick={() => handleUnblock(u.id)}
-                              className="px-4 py-2 bg-[#4b8b3b] text-white rounded-lg hover:bg-[#3e6f2f] transition"
-                            >
-                              ✅ Unblock
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleBlock(u.id)}
-                              className="px-4 py-2 bg-[#d4a953] text-white rounded-lg hover:bg-[#b38b43] transition"
-                            >
-                              🚫 Block
-                            </button>
-                          )}
+            {/* Expanded Info + Actions */}
+            {expanded === u.id && (
+              <div className="mt-4 border-t border-[#ccc] pt-3 text-sm text-[#3e2f25] space-y-2">
+                <p>
+                  <span className="font-medium">Phone:</span> {u.phoneNumber || "—"}
+                </p>
+                <p>
+                  <span className="font-medium">DOB:</span>{" "}
+                  {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
+                </p>
+                <p>
+                  <span className="font-medium">Address 1:</span> {u.address1 || "—"}
+                </p>
+                <p>
+                  <span className="font-medium">Address 2:</span> {u.address2 || "—"}
+                </p>
+                <p>
+                  <span className="font-medium">State:</span> {u.state || "—"}
+                </p>
+                <p>
+                  <span className="font-medium">Country:</span> {u.country || "—"}
+                </p>
+                <p>
+                  <span className="font-medium">Postal Code:</span> {u.postalCode || "—"}
+                </p>
+                <p>
+                  <span className="font-medium">Created At:</span>{" "}
+                  {new Date(u.createdAt).toLocaleString()}
+                </p>
 
-                          {u.role === "MANAGER" ? (
-                            <button
-                              onClick={() => handleDemote(u.id)}
-                              className="px-4 py-2 bg-[#7b7b7b] text-white rounded-lg hover:bg-[#5e5e5e] transition"
-                            >
-                              ⬇️ Demote
-                            </button>
-                          ) : (
-                            u.role !== "ADMIN" && (
-                              <button
-                                onClick={() => handlePromote(u.id)}
-                                className="px-4 py-2 bg-[#9b59b6] text-white rounded-lg hover:bg-[#7b3d99] transition"
-                              >
-                                ⭐ Promote
-                              </button>
-                            )
-                          )}
-                        </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {u.id !== currentUserId && (
+                    <>
+                      <button
+                        onClick={() => handleDelete(u.id)}
+                        className="px-4 py-2 bg-[#5a4436] text-white rounded-xl hover:bg-[#3e2f25] transition"
+                      >
+                        🗑️ Delete
+                      </button>
+
+                      {u.role === "BLOCKED" ? (
+                        <button
+                          onClick={() => handleUnblock(u.id)}
+                          className="px-4 py-2 bg-[#d4a953] text-white rounded-xl hover:bg-[#b37a40] transition"
+                        >
+                          ✅ Unblock
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleBlock(u.id)}
+                          className="px-4 py-2 bg-[#d4a953] text-white rounded-xl hover:bg-[#b37a40] transition"
+                        >
+                          🚫 Block
+                        </button>
                       )}
-                    </div>
+
+                      {u.role === "MANAGER" ? (
+                        <button
+                          onClick={() => handleDemote(u.id)}
+                          className="px-4 py-2 bg-[#8c6a4d] text-white rounded-xl hover:bg-[#6b4d37] transition"
+                        >
+                          ⬇️ Demote
+                        </button>
+                      ) : (
+                        u.role !== "ADMIN" && (
+                          <button
+                            onClick={() => handlePromote(u.id)}
+                            className="px-4 py-2 bg-[#9b59b6] text-white rounded-xl hover:bg-[#7b3d99] transition"
+                          >
+                            ⭐ Promote
+                          </button>
+                        )
+                      )}
+                    </>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
+    )}
+  </div>
+
+  <style jsx>{`
+    .input {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ccc;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #5a4436;
+      box-shadow: 0 0 0 2px rgba(90, 68, 54, 0.2);
+    }
+  `}</style>
+</div>
     </Layout>
   );
 }
