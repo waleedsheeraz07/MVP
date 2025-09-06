@@ -1,5 +1,7 @@
 'use client'
-
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../api/auth/[...nextauth]";
+import Layout from "../../components/header";
 import { useState, useMemo, useEffect, useRef } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
