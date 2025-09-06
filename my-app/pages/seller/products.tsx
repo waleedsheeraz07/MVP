@@ -1,4 +1,4 @@
-// pages/myproducts.tsx
+// pages/seller/products.tsx
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
@@ -189,7 +189,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
         {filteredProducts.map((product) => (
           <Link
             key={product.id}
-            href={`/admin/products/${product.id}`}
+            href={`/seller/products/${product.id}`}
             className="block"
           >
             <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
