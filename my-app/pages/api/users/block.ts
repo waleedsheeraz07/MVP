@@ -24,7 +24,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Cannot block yourself" });
     }
 
-    // Update the user's role to BLOCKED
+    // 1️⃣ Set all of this user's products quantity to 0
+    await prisma.product.updateMany({
+      where: { ownerId: id },
+      data: { quantity: 0 },
+    });
+
+    // 2️⃣ Update user's role to BLOCKED
     await prisma.user.update({
       where: { id },
       data: { role: "BLOCKED" },
