@@ -33,6 +33,7 @@ interface Category {
 interface User {
   id: string;
   name?: string | null;
+  role: string;
 }
 
 interface CartPageProps {
@@ -263,6 +264,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       user: {
         id: session.user.id,
         name: session.user.name || "Guest",
+        role: session.user.role,
       },
     },
   };
