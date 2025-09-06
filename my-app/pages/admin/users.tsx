@@ -36,13 +36,16 @@ export default function UsersPage({ users, userName, currentUserId, categories }
   const [expanded, setExpanded] = useState<string | null>(null);
   const [userList, setUserList] = useState(users);
 
-  // 🔎 Search + filter state
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
 
   const toggleExpand = (id: string) => setExpanded(expanded === id ? null : id);
 
-  // ---- Actions (delete, block, unblock, promote, demote) ----
+  const resetFilters = () => {
+    setSearch("");
+    setRoleFilter("ALL");
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this account? This action is irreversible.")) return;
     try {
@@ -119,7 +122,6 @@ export default function UsersPage({ users, userName, currentUserId, categories }
     }
   };
 
-  // ---- Filtering logic ----
   const filteredUsers = userList.filter(u => {
     if (u.role === "DELETED") return false;
 
@@ -136,23 +138,23 @@ export default function UsersPage({ users, userName, currentUserId, categories }
 
   return (
     <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
-      <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
+      <div className="min-h-screen p-6 bg-[#f9f2ec] font-sans">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">👥 All Users</h1>
+          <h1 className="text-3xl font-bold text-[#6b3e26] mb-6">👥 All Users</h1>
 
-          {/* 🔎 Search + Filter */}
+          {/* Search & Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <input
               type="text"
               placeholder="Search by name or email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+              className="flex-1 px-4 py-2 border border-[#c79a74] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b17440]"
             />
             <select
               value={roleFilter}
               onChange={e => setRoleFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[#c79a74] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b17440]"
             >
               <option value="ALL">All Roles</option>
               <option value="USER">User</option>
@@ -160,6 +162,12 @@ export default function UsersPage({ users, userName, currentUserId, categories }
               <option value="ADMIN">Admin</option>
               <option value="BLOCKED">Blocked</option>
             </select>
+            <button
+              onClick={resetFilters}
+              className="px-4 py-2 bg-[#a66b3d] text-white rounded-lg hover:bg-[#8c5730] transition"
+            >
+              🔄 Reset
+            </button>
           </div>
 
           {filteredUsers.length === 0 ? (
@@ -169,15 +177,15 @@ export default function UsersPage({ users, userName, currentUserId, categories }
               {filteredUsers.map(u => (
                 <div
                   key={u.id}
-                  className="bg-white rounded-xl shadow p-4 border border-gray-200 flex flex-col"
+                  className="bg-[#fff8f0] rounded-xl shadow p-4 border border-[#c79a74] flex flex-col"
                 >
                   {/* Basic Info */}
                   <div className="flex justify-between items-center">
                     <div>
-                      <h2 className="text-lg font-semibold text-[#3e2f25]">
+                      <h2 className="text-lg font-semibold text-[#6b3e26]">
                         {u.firstName} {u.lastName || ""}
                       </h2>
-                      <p className="text-sm text-gray-600">{u.email}</p>
+                      <p className="text-sm text-[#7b5a47]">{u.email}</p>
                       <p className="mt-1 text-sm">
                         <span className="font-medium">Role:</span> {u.role}
                       </p>
@@ -190,15 +198,15 @@ export default function UsersPage({ users, userName, currentUserId, categories }
                     </div>
                     <button
                       onClick={() => toggleExpand(u.id)}
-                      className="text-sm text-blue-600 hover:underline ml-4"
+                      className="text-sm text-[#b17440] hover:underline ml-4"
                     >
                       {expanded === u.id ? "Hide ▲" : "View ▼"}
                     </button>
                   </div>
 
-                  {/* Expanded Info */}
+                  {/* Expanded Info & Actions */}
                   {expanded === u.id && (
-                    <div className="mt-4 border-t pt-3 text-sm text-gray-700 space-y-1">
+                    <div className="mt-4 border-t border-[#c79a74] pt-3 text-sm text-[#5b3b28] space-y-2">
                       <p>
                         <span className="font-medium">DOB:</span>{" "}
                         {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
@@ -224,46 +232,45 @@ export default function UsersPage({ users, userName, currentUserId, categories }
                         {new Date(u.createdAt).toLocaleString()}
                       </p>
 
-                      {/* Action Buttons */}
                       {u.id !== currentUserId && (
-                        <div className="flex flex-wrap gap-2 mt-3">
+                        <div className="flex flex-wrap gap-2 mt-2">
                           <button
                             onClick={() => handleDelete(u.id)}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                            className="px-4 py-2 bg-[#b33a2f] text-white rounded-lg hover:bg-[#912f25] transition"
                           >
-                            🗑️ Delete Account
+                            🗑️ Delete
                           </button>
 
                           {u.role === "BLOCKED" ? (
                             <button
                               onClick={() => handleUnblock(u.id)}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                              className="px-4 py-2 bg-[#4b8b3b] text-white rounded-lg hover:bg-[#3e6f2f] transition"
                             >
-                              ✅ Unblock User
+                              ✅ Unblock
                             </button>
                           ) : (
                             <button
                               onClick={() => handleBlock(u.id)}
-                              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
+                              className="px-4 py-2 bg-[#d4a953] text-white rounded-lg hover:bg-[#b38b43] transition"
                             >
-                              🚫 Block User
+                              🚫 Block
                             </button>
                           )}
 
                           {u.role === "MANAGER" ? (
                             <button
                               onClick={() => handleDemote(u.id)}
-                              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                              className="px-4 py-2 bg-[#7b7b7b] text-white rounded-lg hover:bg-[#5e5e5e] transition"
                             >
-                              ⬇️ Demote to User
+                              ⬇️ Demote
                             </button>
                           ) : (
                             u.role !== "ADMIN" && (
                               <button
                                 onClick={() => handlePromote(u.id)}
-                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                                className="px-4 py-2 bg-[#9b59b6] text-white rounded-lg hover:bg-[#7b3d99] transition"
                               >
-                                ⭐ Promote to Manager
+                                ⭐ Promote
                               </button>
                             )
                           )}
