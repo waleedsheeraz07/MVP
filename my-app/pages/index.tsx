@@ -34,7 +34,7 @@ export default function Home({ products }: Props) {
       Discover, buy, and sell authentic vintage items with ease.
     </p>
     <div className="flex justify-center flex-wrap gap-4">
-      <Link href="/products">
+      <Link href="/buyer/products">
         <a className="bg-[#3e2f25] text-[#fdf8f3] px-6 py-3 rounded-lg font-semibold hover:bg-[#5a4436] transition">
           Shop Now
         </a>
