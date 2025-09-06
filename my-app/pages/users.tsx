@@ -8,7 +8,7 @@ import Layout from "../components/header";
 interface User {
   id: string;
   firstName: string;
-  lastName?: string | null;
+  lastName: string | null;
   email: string;
   role: string;
 }
@@ -21,7 +21,7 @@ interface UsersPageProps {
 
 export default function UsersPage({ users, userName, categories }: UsersPageProps) {
   return (
-    <Layout categories={categories} user={{ id: "admin", name: userName }}>
+    <Layout categories={categories} user={{ id: "current", name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">
@@ -77,6 +77,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     orderBy: { createdAt: "desc" },
   });
 
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { firstName: true, lastName: true },
+  });
+
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
     orderBy: { order: "asc" },
@@ -86,7 +91,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       users,
       categories,
-      userName: session.user.firstName || "Admin",
+      userName: currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName || ""}`
+        : "Admin",
     },
   };
 }
