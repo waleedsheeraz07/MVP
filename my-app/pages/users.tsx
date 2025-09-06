@@ -61,7 +61,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
     <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">👥 All User</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">👥 All Users</h1>
 
           {userList.length === 0 ? (
             <p className="text-gray-600">No users found.</p>
@@ -70,7 +70,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
               {userList.map((u) => (
                 <div key={u.id} className="bg-white rounded-xl shadow p-4 border border-gray-200 flex flex-col">
                   {/* Basic Info */}
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-lg font-semibold text-[#3e2f25]">
                         {u.firstName} {u.lastName || ""}
@@ -80,12 +80,25 @@ export default function UsersPage({ users, userName, currentUserId, categories }
                       <p className="text-sm"><span className="font-medium">Gender:</span> {u.gender || "—"}</p>
                       <p className="text-sm"><span className="font-medium">Phone:</span> {u.phoneNumber || "—"}</p>
                     </div>
-                    <button
-                      onClick={() => toggleExpand(u.id)}
-                      className="text-sm text-blue-600 hover:underline ml-4"
-                    >
-                      {expanded === u.id ? "Hide ▲" : "View ▼"}
-                    </button>
+
+                    <div className="flex flex-col items-end">
+                      <button
+                        onClick={() => toggleExpand(u.id)}
+                        className="text-sm text-blue-600 hover:underline mb-2"
+                      >
+                        {expanded === u.id ? "Hide ▲" : "View ▼"}
+                      </button>
+
+                      {/* Delete Button: always visible (except logged-in admin) */}
+                      {u.id !== currentUserId && (
+                        <button
+                          onClick={() => handleDelete(u.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                        >
+                          🗑️ Delete Account
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Expanded Info */}
@@ -98,16 +111,6 @@ export default function UsersPage({ users, userName, currentUserId, categories }
                       <p><span className="font-medium">Country:</span> {u.country || "—"}</p>
                       <p><span className="font-medium">Postal Code:</span> {u.postalCode || "—"}</p>
                       <p><span className="font-medium">Created At:</span> {new Date(u.createdAt).toLocaleString()}</p>
-
-                      {/* Delete Button: only for non-logged-in admin */}
-                      {u.id !== currentUserId && (
-                        <button
-                          onClick={() => handleDelete(u.id)}
-                          className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                        >
-                          🗑️ Delete Account
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
