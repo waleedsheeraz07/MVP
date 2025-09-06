@@ -30,9 +30,10 @@ interface UsersPageProps {
   userName: string;
   currentUserId: string;
   categories: { id: string; title: string; order: number; parentId?: string | null }[];
+  role: string;
 }
 
-export default function UsersPage({ users, userName, currentUserId, categories }: UsersPageProps) {
+export default function UsersPage({ users, userName, currentUserId, categories, role}: UsersPageProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [userList, setUserList] = useState(users);
 
@@ -137,7 +138,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
   });
 
   return (
-    <Layout categories={categories} user={{ id: currentUserId, name: userName, role: session.user.role}}>
+    <Layout categories={categories} user={{ id: currentUserId, name: userName, role: role}}>
 <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
   <div className="max-w-6xl mx-auto">
     <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">
@@ -353,6 +354,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       categories,
       userName,
       currentUserId,
+      role: session.user.role
     },
   };
 }
