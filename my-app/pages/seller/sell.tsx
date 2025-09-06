@@ -7,7 +7,10 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "../api/auth/[...nextauth]"
 import { prisma } from "../../lib/prisma" // adjust path
 import Layout from "../../components/header";
-    
+import { FormEvent } from "react";
+import { NextRouter } from "next/router";
+
+
 // --- SERVER SIDE FETCH ---
 interface CategoryRaw {
   _id: string;
@@ -194,57 +197,41 @@ interface ApiResponse {
   detail?: string;
 }
 
-const handleSubmit = async (
-  e: FormEvent<HTMLFormElement>,
-  {
-    title,
-    description,
-    price,
-    quantity,
-    colors,
-    sizes,
-    selectedCategories,
-    condition,
-    era,
-    before1900,
-    images,
-    setError,
-    setLoading,
-  }: {
-    title: string;
-    description?: string;
-    price: string;
-    quantity: string;
-    colors?: string[];
-    sizes?: string[];
-    selectedCategories?: string[];
-    condition?: string;
-    era?: string;
-    before1900?: string;
-    images: File[];
-    setError: (msg: string) => void;
-    setLoading: (loading: boolean) => void;
-  }
-) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+interface SubmitParams {
+  title: string;
+  description?: string;
+  price: string;
+  quantity: string;
+  colors?: string[];
+  sizes?: string[];
+  selectedCategories?: string[];
+  condition?: string;
+  era?: string;
+  before1900?: string;
+  images: File[];
+  setError: (msg: string) => void;
+  setLoading: (loading: boolean) => void;
+  router: NextRouter; // Pass router from component
+}
 
-  const router = useRouter();
+export const handleSubmit = async (e: FormEvent<HTMLFormElement>, params: SubmitParams) => {
+  e.preventDefault();
+  params.setLoading(true);
+  params.setError("");
 
   try {
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description || "");
-    formData.append("price", price);
-    formData.append("quantity", quantity);
-    formData.append("colors", JSON.stringify(colors ?? []));
-    formData.append("sizes", JSON.stringify(sizes ?? []));
-    formData.append("categories", JSON.stringify(selectedCategories ?? []));
-    formData.append("condition", condition || "");
-    formData.append("era", era === "before1900" ? before1900 || "" : era || "");
+    formData.append("title", params.title);
+    formData.append("description", params.description || "");
+    formData.append("price", params.price);
+    formData.append("quantity", params.quantity);
+    formData.append("colors", JSON.stringify(params.colors ?? []));
+    formData.append("sizes", JSON.stringify(params.sizes ?? []));
+    formData.append("categories", JSON.stringify(params.selectedCategories ?? []));
+    formData.append("condition", params.condition || "");
+    formData.append("era", params.era === "before1900" ? params.before1900 || "" : params.era || "");
 
-    images.forEach((file) => formData.append("images", file));
+    params.images.forEach((file) => formData.append("images", file));
 
     const res = await fetch("/api/products/create", {
       method: "POST",
@@ -255,15 +242,15 @@ const handleSubmit = async (
 
     if (!res.ok) throw data;
 
-    router.push("/seller/products");
+    params.router.push("/seller/products");
   } catch (err: unknown) {
     if (err && typeof err === "object" && "error" in err) {
-      setError((err as ApiResponse).error || "Something went wrong");
+      params.setError((err as ApiResponse).error || "Something went wrong");
     } else {
-      setError("Something went wrong");
+      params.setError("Something went wrong");
     }
   } finally {
-    setLoading(false);
+    params.setLoading(false);
   }
 };
 
