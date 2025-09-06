@@ -36,7 +36,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
     if (res?.error) {
       setErrorMessage(res.error);
     } else {
-      router.push("/products");
+      router.push("/buyer/products");
     }
   };
 
