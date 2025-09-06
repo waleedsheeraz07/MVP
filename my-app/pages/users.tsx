@@ -61,7 +61,7 @@ export default function UsersPage({ users, userName, currentUserId, categories }
     <Layout categories={categories} user={{ id: currentUserId, name: userName }}>
       <div className="min-h-screen p-6 bg-[#fdf8f3] font-sans">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">👥 All Users</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3e2f25] mb-6">👥 All User</h1>
 
           {userList.length === 0 ? (
             <p className="text-gray-600">No users found.</p>
