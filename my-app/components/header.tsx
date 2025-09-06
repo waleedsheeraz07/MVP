@@ -158,13 +158,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         </Link>
       </li>
       <li>
-        <Link href="/admin/orders" className="hover:text-[#5a4436] transition-colors">
-          Manage Orders
-        </Link>
-      </li>
-      <li>
-        <Link href="/admin/reports" className="hover:text-[#5a4436] transition-colors">
-          Reports
+        <Link href="/admin/categories" className="hover:text-[#5a4436] transition-colors">
+          Manage Categories
         </Link>
       </li>
     </ul>
