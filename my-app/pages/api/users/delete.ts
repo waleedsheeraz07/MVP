@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
-import { ObjectId } from "mongodb";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -19,19 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!id) return res.status(400).json({ error: "Missing user ID" });
 
   try {
-    // Ensure ObjectId
-    const userId = new ObjectId(id);
-
     // 1️⃣ Set all products from this user to quantity = 0
     await prisma.product.updateMany({
       where: { ownerId: id },
       data: { quantity: 0 },
     });
 
-    // 2️⃣ Delete the user
-    await prisma.user.delete({
-      where: { id: id },
-    });
+    // 2️⃣ Remove dependent records that block deletion
+    await prisma.userItem.deleteMany({ where: { userId: id } });
+    await prisma.orderItem.updateMany({ where: { sellerId: id }, data: { sellerId: null } }); // cut off sold items
+    await prisma.order.deleteMany({ where: { userId: id } });
+
+    // 3️⃣ Delete the user
+    await prisma.user.delete({ where: { id } });
 
     return res.status(200).json({ success: true });
   } catch (err) {
