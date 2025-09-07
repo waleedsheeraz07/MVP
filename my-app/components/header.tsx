@@ -98,7 +98,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         </button>
 
         <div className="absolute left-1/2 transform -translate-x-1/2">
-          <Link href="/">
+          <Link href="/buyer/products">
             <img src="/logo.png" alt="Logo" className="w-18 h-18 sm:w-12 sm:h-12 object-contain" />
           </Link>
         </div>
