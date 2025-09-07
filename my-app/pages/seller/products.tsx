@@ -191,7 +191,42 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
             </Link>
           </div>
 
- {/* Toggle Filters */}
+{/* Search Bar and Reset Filters: Always Visible */}
+<div className="flex flex-wrap gap-3 mb-4 items-center">
+  {/* Search */}
+  <input
+    type="text"
+    placeholder="Search by title..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="input flex-grow min-w-[200px] bg-white text-[#3e2f25]"
+  />
+
+  {/* Reset Filters */}
+  <button
+    onClick={() => {
+      setSearch("");
+      setSelectedColors([]);
+      setSelectedSizes([]);
+      setSelectedCategories([]);
+      setSortBy("relevance");
+      const prices = products.map(p => p.price);
+      setPriceRange([Math.min(...prices), Math.max(...prices)]);
+
+      // Update URL shallowly
+      router.replace(
+        { pathname: router.pathname, query: {} },
+        undefined,
+        { shallow: true }
+      );
+    }}
+    className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition"
+  >
+    Reset Filters
+  </button>
+</div>
+
+{/* Toggle Filters */}
 <button
   className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl"
   onClick={() => setFiltersVisible(prev => !prev)}
@@ -199,41 +234,9 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
   {filtersVisible ? "Hide Filters" : "Show Filters"}
 </button>
 
+{/* Filters Panel */}
 {filtersVisible && (
   <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
-    
-    {/* Reset Filters Button */}
-    <button
-      onClick={() => {
-        setSearch("");
-        setSelectedColors([]);
-        setSelectedSizes([]);
-        setSelectedCategories([]);
-        setSortBy("relevance");
-        const prices = products.map(p => p.price);
-        setPriceRange([Math.min(...prices), Math.max(...prices)]);
-
-        // Update URL shallowly
-        router.replace(
-          { pathname: router.pathname, query: {} },
-          undefined,
-          { shallow: true }
-        );
-      }}
-      className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition mb-2"
-    >
-      Reset Filters
-    </button>
-
-    {/* Search */}
-    <input
-      type="text"
-      placeholder="Search by title..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
-    />
-
     {/* Sort */}
     <select
       value={sortBy}
@@ -249,40 +252,18 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
 
     {/* Price Range */}
     <div className="flex gap-2 items-center">
-      <input
-        type="number"
-        value={priceRange[0]}
-        min={0}
-        onChange={e => handlePriceChange(e, 0)}
-        className="input w-20 bg-white text-[#3e2f25]"
-      />
+      <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)} className="input w-20 bg-white text-[#3e2f25]" />
       <span className="text-[#3e2f25]">-</span>
-      <input
-        type="number"
-        value={priceRange[1]}
-        min={0}
-        onChange={e => handlePriceChange(e, 1)}
-        className="input w-20 bg-white text-[#3e2f25]"
-      />
+      <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)} className="input w-20 bg-white text-[#3e2f25]" />
     </div>
 
     {/* Colors */}
-    <select
-      multiple
-      value={selectedColors}
-      onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-      className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]"
-    >
+    <select multiple value={selectedColors} onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
       {allColors.map(c => <option key={c} value={c}>{c}</option>)}
     </select>
 
     {/* Sizes */}
-    <select
-      multiple
-      value={selectedSizes}
-      onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
-      className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]"
-    >
+    <select multiple value={selectedSizes} onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
       {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
     </select>
 
