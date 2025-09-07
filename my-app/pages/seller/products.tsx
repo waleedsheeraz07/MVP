@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { GetServerSidePropsContext } from "next";
-import { useState, useMemo, ChangeEvent } from "react";
+import { useState, useMemo, ChangeEvent, useEffect } from "react";
 import Layout from "../../components/header";
 
 interface Product {
@@ -16,6 +16,8 @@ interface Product {
   colors: string[];
   sizes: string[];
   categories: { id: string; title: string }[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Category {
@@ -58,16 +60,10 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
 
-  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
-    const val = Number(e.target.value);
-    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
-  };
-
-  // Build category tree
+  // Category tree
   const categoryTree: CategoryNode[] = useMemo(() => {
     const map: Map<string, CategoryNode> = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
     const roots: CategoryNode[] = [];
-
     map.forEach(cat => {
       if (cat.parentId && map.has(cat.parentId)) {
         map.get(cat.parentId)!.children!.push(cat);
@@ -75,10 +71,10 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
         roots.push(cat);
       }
     });
-
     return roots;
   }, [categories]);
 
+  // Recursive category checkbox
   const CategoryCheckbox: React.FC<{
     category: CategoryNode;
     selected: string[];
@@ -130,7 +126,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
       .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
       .filter(p => selectedColors.length === 0 || p.colors.some(c => selectedColors.includes(c)))
       .filter(p => selectedSizes.length === 0 || p.sizes.some(s => selectedSizes.includes(s)))
-      .filter(p => selectedCategories.length === 0 || p.categories.some(c => selectedCategories.includes(c.id)));
+      .filter(p => selectedCategories.length === 0 || p.categories.some(cat => selectedCategories.includes(cat.id)));
 
     if (search.trim()) {
       const searchLower = search.toLowerCase();
@@ -151,14 +147,34 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
         });
         break;
     }
-
     return result;
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+
+  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
+    const val = Number(e.target.value);
+    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
+  };
+
+  // Sync filters to URL
+  useEffect(() => {
+    const query: Record<string, string> = {};
+    if (search) query.search = search;
+    if (selectedColors.length) query.colors = selectedColors.join(",");
+    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
+    if (selectedCategories.length) query.categories = selectedCategories.join(",");
+    if (sortBy !== "relevance") query.sortBy = sortBy;
+    const minPrice = Math.min(...products.map(p => p.price));
+    const maxPrice = Math.max(...products.map(p => p.price));
+    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
+    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
+    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
   return (
     <Layout categories={categories} user={user}>
       <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
         <div className="max-w-5xl mx-auto">
+          {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25]">My Products</h1>
             <Link href="/seller/sell">
@@ -168,6 +184,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
             </Link>
           </div>
 
+          {/* Toggle Filters */}
           <button
             className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl"
             onClick={() => setFiltersVisible(prev => !prev)}
@@ -176,20 +193,16 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
           </button>
 
           {filtersVisible && (
-            <div className="flex flex-wrap gap-3 mb-6 items-center bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+            <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
               <input
                 type="text"
                 placeholder="Search by title..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
               />
 
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as SortOption)}
-                className="input bg-white text-[#3e2f25]"
-              >
+              <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className="input bg-white text-[#3e2f25]">
                 <option value="alpha">A → Z</option>
                 <option value="alphaDesc">Z → A</option>
                 <option value="priceAsc">Price ↑</option>
@@ -203,14 +216,17 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
                 <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)} className="input w-20 bg-white text-[#3e2f25]" />
               </div>
 
+              {/* Colors */}
               <select multiple value={selectedColors} onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
                 {allColors.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
 
+              {/* Sizes */}
               <select multiple value={selectedSizes} onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
                 {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
 
+              {/* Category Tree */}
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
                 {categoryTree.map(cat => (
                   <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
@@ -219,17 +235,18 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
             </div>
           )}
 
+          {/* Products Grid */}
           {filteredProducts.length === 0 ? (
             <p className="text-center text-[#3e2f25] font-medium mt-6">No products found.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.map(product => (
-                <Link key={product.id} href={`/seller/products/${product.id}`} className="block">
+              {filteredProducts.map(p => (
+                <Link key={p.id} href={`/seller/products/${p.id}`} className="block">
                   <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition h-[320px] flex flex-col">
-                    {product.images[0] && <img src={product.images[0]} alt={product.title} className="w-full h-48 object-cover" />}
+                    {p.images[0] && <img src={p.images[0]} alt={p.title} className="w-full h-48 object-cover" />}
                     <div className="p-3 flex-grow flex flex-col justify-between">
-                      <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{product.title}</h2>
-                      <p className="mt-2 font-bold text-[#5a4436]">${product.price.toFixed(2)}</p>
+                      <h2 className="text-lg font-semibold text-[#3e2f25] truncate">{p.title}</h2>
+                      <p className="mt-2 font-bold text-[#5a4436]">${p.price.toFixed(2)}</p>
                     </div>
                   </div>
                 </Link>
