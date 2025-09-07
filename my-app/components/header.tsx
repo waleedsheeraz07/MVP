@@ -32,6 +32,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
 
+  const closeSidebar = () => setIsOpen(false);
+
   // Build hierarchical category tree
   const categoryTree: CategoryNode[] = useMemo(() => {
     const map: Record<string, CategoryNode> = {};
@@ -56,49 +58,49 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     }
   }, [user?.id, setUserId, refreshCart]);
 
-  // Recursive render of categories
-// Helper: collect all descendant IDs including the category itself
-const collectCategoryIds = (category: CategoryNode): string[] => {
-  const ids: string[] = [category.id];
-  if (category.children) {
-    for (const child of category.children) {
-      ids.push(...collectCategoryIds(child));
+  // Helper: collect all descendant IDs including the category itself
+  const collectCategoryIds = (category: CategoryNode): string[] => {
+    const ids: string[] = [category.id];
+    if (category.children) {
+      for (const child of category.children) {
+        ids.push(...collectCategoryIds(child));
+      }
     }
-  }
-  return ids;
-};
+    return ids;
+  };
 
-const renderCategory = (cat: CategoryNode) => {
-  // Build query string with parent + all descendants
-  const categoryIds = collectCategoryIds(cat).join("%2C");
+  // Recursive render of categories
+  const renderCategory = (cat: CategoryNode) => {
+    const categoryIds = collectCategoryIds(cat).join("%2C"); // use encoded commas
 
-  return (
-    <li key={cat.id} className="space-y-1">
-      <div className="flex items-center justify-between">
-        <Link
-          href={`/buyer/products?categories=${categoryIds}`}
-          className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
-        >
-          {cat.title}
-        </Link>
-        {cat.children?.length ? (
-          <button
-            type="button"
-            onClick={() => toggleCategory(cat.id)}
-            className="ml-2 text-sm font-bold focus:outline-none"
+    return (
+      <li key={cat.id} className="space-y-1">
+        <div className="flex items-center justify-between">
+          <Link
+            href={`/buyer/products?categories=${categoryIds}`}
+            className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
+            onClick={closeSidebar}
           >
-            {expandedCategories[cat.id] ? "▾" : "▸"}
-          </button>
-        ) : null}
-      </div>
-      {cat.children?.length && expandedCategories[cat.id] && (
-        <ul className="pl-4 space-y-1">
-          {cat.children.map(child => renderCategory(child))}
-        </ul>
-      )}
-    </li>
-  );
-};
+            {cat.title}
+          </Link>
+          {cat.children?.length ? (
+            <button
+              type="button"
+              onClick={() => toggleCategory(cat.id)}
+              className="ml-2 text-sm font-bold focus:outline-none"
+            >
+              {expandedCategories[cat.id] ? "▾" : "▸"}
+            </button>
+          ) : null}
+        </div>
+        {cat.children?.length && expandedCategories[cat.id] && (
+          <ul className="pl-4 space-y-1">
+            {cat.children.map(child => renderCategory(child))}
+          </ul>
+        )}
+      </li>
+    );
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
@@ -114,7 +116,7 @@ const renderCategory = (cat: CategoryNode) => {
         </button>
 
         <div className="absolute left-1/2 transform -translate-x-1/2">
-          <Link href="/buyer/products">
+          <Link href="/buyer/products" onClick={closeSidebar}>
             <img src="/logo.png" alt="Logo" className="w-18 h-18 sm:w-12 sm:h-12 object-contain" />
           </Link>
         </div>
@@ -131,7 +133,10 @@ const renderCategory = (cat: CategoryNode) => {
 
       {/* Sidebar Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-[rgba(62,47,37,0.4)] backdrop-blur-sm z-40 transition-opacity duration-300" onClick={() => setIsOpen(false)} />
+        <div
+          className="fixed inset-0 bg-[rgba(62,47,37,0.4)] backdrop-blur-sm z-40 transition-opacity duration-300"
+          onClick={closeSidebar}
+        />
       )}
 
       {/* Sidebar */}
@@ -142,7 +147,7 @@ const renderCategory = (cat: CategoryNode) => {
             <p className="font-bold text-lg text-[#3e2f25]">{user?.name || "Guest"}</p>
             <p className="text-sm text-gray-600">Welcome back</p>
           </div>
-          <button onClick={() => setIsOpen(false)} className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold">✕</button>
+          <button onClick={closeSidebar} className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold">✕</button>
         </div>
 
         <nav className="p-4 space-y-6 overflow-y-auto flex-1">
@@ -150,7 +155,7 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">👤 My Account</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/profile" className="hover:text-[#5a4436] transition-colors">My Profile</Link></li>
+              <li><Link href="/profile" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Profile</Link></li>
             </ul>
           </div>
 
@@ -159,8 +164,8 @@ const renderCategory = (cat: CategoryNode) => {
             <div>
               <h3 className="text-[#3e2f25] font-semibold mb-2">🛡️ Admin</h3>
               <ul className="space-y-1 pl-3 text-gray-600">
-                <li><Link href="/admin/users" className="hover:text-[#5a4436] transition-colors">Manage Users</Link></li>
-                <li><Link href="/admin/categories" className="hover:text-[#5a4436] transition-colors">Manage Categories</Link></li>
+                <li><Link href="/admin/users" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>Manage Users</Link></li>
+                <li><Link href="/admin/categories" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>Manage Categories</Link></li>
               </ul>
             </div>
           )}
@@ -169,8 +174,8 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">📦 Seller</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/seller/products" className="hover:text-[#5a4436] transition-colors">My Products</Link></li>
-              <li><Link href="/seller/order" className="hover:text-[#5a4436] transition-colors">My Orders</Link></li>
+              <li><Link href="/seller/products" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Products</Link></li>
+              <li><Link href="/seller/order" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Orders</Link></li>
             </ul>
           </div>
 
@@ -178,14 +183,14 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛒 Buyer</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/buyer/order" className="hover:text-[#5a4436] transition-colors">My Orders</Link></li>
+              <li><Link href="/buyer/order" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Orders</Link></li>
               <li>
-                <Link href="/buyer/cart" className="hover:text-[#5a4436] transition-colors flex items-center gap-1">
+                <Link href="/buyer/cart" className="hover:text-[#5a4436] transition-colors flex items-center gap-1" onClick={closeSidebar}>
                   My Cart
                   {cartCount > 0 && <span className="ml-1 bg-[#b58b5a] text-[#fffdfb] rounded-full px-2 text-xs">{cartCount}</span>}
                 </Link>
               </li>
-              <li><Link href="/buyer/wishlist" className="hover:text-[#5a4436] transition-colors">My Wishlist</Link></li>
+              <li><Link href="/buyer/wishlist" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Wishlist</Link></li>
             </ul>
           </div>
 
@@ -193,7 +198,7 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/buyer/products" className="hover:text-[#5a4436] transition-colors">All Products</Link></li>
+              <li><Link href="/buyer/products" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>All Products</Link></li>
               {categoryTree.map(cat => renderCategory(cat))}
             </ul>
           </div>
