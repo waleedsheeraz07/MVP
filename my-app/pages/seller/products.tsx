@@ -1,4 +1,4 @@
-// pages/seller/products.tsx
+// pages/seller/products.tsx:
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
@@ -27,6 +27,7 @@ interface Category {
 interface User {
   id: string;
   name?: string | null;
+  role: string;
 }
 
 interface MyProductsPageProps {
@@ -259,7 +260,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         updatedAt: p.updatedAt.toISOString(),
       })),
       categories,
-      user: { id: session.user.id, name: session.user.name || "Guest" },
+      user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
     },
   };
 }
