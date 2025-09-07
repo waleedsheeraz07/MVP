@@ -47,6 +47,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       session,
       categories: mappedCategories,
+      categories2: categories,
       product: {
         id: productData.id,
         title: productData.title,
