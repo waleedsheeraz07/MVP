@@ -47,7 +47,8 @@ interface CategoryNode extends Category {
 }
 
 export default function MyProductsPage({ products, categories, user }: MyProductsPageProps) {
-  const [search, setSearch] = useState("");
+ const router = useRouter();
+ const [search, setSearch] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
