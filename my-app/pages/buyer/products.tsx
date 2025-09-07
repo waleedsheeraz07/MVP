@@ -64,92 +64,76 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
     router.query.categories ? (router.query.categories as string).split(",") : []
   );
-  const [sortBy, setSortBy] = useState<SortOption>(
-    () => (router.query.sortBy as SortOption) || "relevance"
-  );
+  const [sortBy, setSortBy] = useState<SortOption>(() => (router.query.sortBy as SortOption) || "relevance");
   const [priceRange, setPriceRange] = useState<[number, number]>(() => {
     const prices = products.map(p => p.price);
     const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
     const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
     return [min, max];
   });
+  const [filtersVisible, setFiltersVisible] = useState(false);
 
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
 
-// Build category tree
-const categoryTree: CategoryNode[] = useMemo(() => {
-  const map: Map<string, CategoryNode> = new Map(
-    categories.map(c => [c.id, { ...c, children: [] }])
-  );
+  // Build category tree
+  const categoryTree: CategoryNode[] = useMemo(() => {
+    const map: Map<string, CategoryNode> = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
+    const roots: CategoryNode[] = [];
 
-  const roots: CategoryNode[] = [];
+    map.forEach(cat => {
+      if (cat.parentId && map.has(cat.parentId)) {
+        map.get(cat.parentId)!.children!.push(cat);
+      } else {
+        roots.push(cat);
+      }
+    });
 
-  map.forEach(cat => {
-    if (cat.parentId && map.has(cat.parentId)) {
-      map.get(cat.parentId)!.children!.push(cat);
-    } else {
-      roots.push(cat);
-    }
-  });
+    return roots;
+  }, [categories]);
 
-  return roots;
-}, [categories]);
-
-  // Sync filters to URL
-  useEffect(() => {
-    const query: Record<string, string> = {};
-    if (search) query.search = search;
-    if (selectedColors.length) query.colors = selectedColors.join(",");
-    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
-    if (selectedCategories.length) query.categories = selectedCategories.join(",");
-    if (sortBy && sortBy !== "relevance") query.sortBy = sortBy;
-    const minPrice = Math.min(...products.map(p => p.price));
-    const maxPrice = Math.max(...products.map(p => p.price));
-    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
-    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
-    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
-  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
-
-  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
-    const val = Number(e.target.value);
-    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
-  };
-
-  // Recursive category checkbox
+  // Recursive category checkbox with expand/collapse
   const CategoryCheckbox: React.FC<{
     category: CategoryNode;
     selected: string[];
     setSelected: (ids: string[]) => void;
-    includeChildren?: boolean;
-  }> = ({ category, selected, setSelected, includeChildren = true }) => {
+  }> = ({ category, selected, setSelected }) => {
+    const [expanded, setExpanded] = useState(true);
     const isChecked = selected.includes(category.id);
+
+    const allDescendantIds = useMemo(() => {
+      const ids: string[] = [];
+      const traverse = (node: CategoryNode) => {
+        ids.push(node.id);
+        node.children?.forEach(traverse);
+      };
+      traverse(category);
+      return ids;
+    }, [category]);
+
     const toggle = () => {
-      let newSelected = [...selected];
-      const allIds = includeChildren ? [category.id, ...(category.children?.map(c => c.id) || [])] : [category.id];
-      if (isChecked) newSelected = newSelected.filter(id => !allIds.includes(id));
-      else newSelected = Array.from(new Set([...newSelected, ...allIds]));
-      setSelected(newSelected);
+      if (isChecked) setSelected(prev => prev.filter(id => !allDescendantIds.includes(id)));
+      else setSelected(prev => Array.from(new Set([...prev, ...allDescendantIds])));
     };
+
     return (
       <div className="ml-2">
         <label className="flex items-center gap-1">
+          {category.children?.length ? (
+            <button type="button" className="mr-1 text-sm font-bold" onClick={() => setExpanded(prev => !prev)}>
+              {expanded ? "▼" : "►"}
+            </button>
+          ) : null}
           <input type="checkbox" checked={isChecked} onChange={toggle} />
           {category.title}
         </label>
-        {category.children && category.children.length > 0 && (
+        {expanded && category.children?.length ? (
           <div className="ml-4 border-l border-gray-200 pl-2">
             {category.children.map(child => (
-              <CategoryCheckbox
-                key={child.id}
-                category={child}
-                selected={selected}
-                setSelected={setSelected}
-                includeChildren={includeChildren}
-              />
+              <CategoryCheckbox key={child.id} category={child} selected={selected} setSelected={setSelected} />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     );
   };
@@ -184,6 +168,26 @@ const categoryTree: CategoryNode[] = useMemo(() => {
     return result;
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
+  // Update URL query when filters change
+  useEffect(() => {
+    const query: Record<string, string> = {};
+    if (search) query.search = search;
+    if (selectedColors.length) query.colors = selectedColors.join(",");
+    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
+    if (selectedCategories.length) query.categories = selectedCategories.join(",");
+    if (sortBy !== "relevance") query.sortBy = sortBy;
+    const minPrice = Math.min(...products.map(p => p.price));
+    const maxPrice = Math.max(...products.map(p => p.price));
+    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
+    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
+    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+
+  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
+    const val = Number(e.target.value);
+    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
+  };
+
   return (
     <Layout categories={categories} user={user}>
       <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
@@ -192,60 +196,68 @@ const categoryTree: CategoryNode[] = useMemo(() => {
             All Products
           </h1>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search by title..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
-            />
+          <button
+            className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl"
+            onClick={() => setFiltersVisible(prev => !prev)}
+          >
+            {filtersVisible ? "Hide Filters" : "Show Filters"}
+          </button>
 
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as SortOption)}
-              className="input bg-white text-[#3e2f25]"
-            >
-              <option value="alpha">A → Z</option>
-              <option value="alphaDesc">Z → A</option>
-              <option value="priceAsc">Price ↑</option>
-              <option value="priceDesc">Price ↓</option>
-              <option value="relevance">Relevance</option>
-            </select>
+          {filtersVisible && (
+            <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+              {/* Search */}
+              <input
+                type="text"
+                placeholder="Search by title..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
+              />
 
-            {/* Price Range */}
-            <div className="flex gap-2 items-center">
-              <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)}
-                className="input w-20 bg-white text-[#3e2f25]" />
-              <span className="text-[#3e2f25]">-</span>
-              <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)}
-                className="input w-20 bg-white text-[#3e2f25]" />
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as SortOption)}
+                className="input bg-white text-[#3e2f25]"
+              >
+                <option value="alpha">A → Z</option>
+                <option value="alphaDesc">Z → A</option>
+                <option value="priceAsc">Price ↑</option>
+                <option value="priceDesc">Price ↓</option>
+                <option value="relevance">Relevance</option>
+              </select>
+
+              {/* Price Range */}
+              <div className="flex gap-2 items-center">
+                <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)}
+                  className="input w-20 bg-white text-[#3e2f25]" />
+                <span className="text-[#3e2f25]">-</span>
+                <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)}
+                  className="input w-20 bg-white text-[#3e2f25]" />
+              </div>
+
+              {/* Colors */}
+              <select multiple value={selectedColors} onChange={e =>
+                setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
+                className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
+                {allColors.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+
+              {/* Sizes */}
+              <select multiple value={selectedSizes} onChange={e =>
+                setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
+                className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
+                {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+
+              {/* Category Tree */}
+              <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
+                {categoryTree.map(cat => (
+                  <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
+                ))}
+              </div>
             </div>
-
-            {/* Colors */}
-            <select multiple value={selectedColors} onChange={e =>
-              setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-              className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-              {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-
-            {/* Sizes */}
-            <select multiple value={selectedSizes} onChange={e =>
-              setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
-              className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-              {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-
-            {/* Category Tree */}
-            <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
-              {categoryTree.map(cat => (
-                <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* Products Grid */}
           {filteredProducts.length === 0 ? (
@@ -295,9 +307,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
-    include: {
-      categories: { include: { category: { select: { id: true, title: true } } } },
-    },
+    include: { categories: { include: { category: { select: { id: true, title: true } } } } },
   });
 
   const categories = await prisma.category.findMany({
