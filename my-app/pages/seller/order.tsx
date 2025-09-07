@@ -1,4 +1,4 @@
-// pages/seller/orders.tsx
+// pages/seller/orders.tsx:
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
@@ -44,6 +44,7 @@ interface Category {
 interface User {
   id: string;
   name?: string | null;
+  role: string;
 }
 
 interface SellerOrdersPageProps {
@@ -268,7 +269,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     props: {
       orders: Object.values(orderMap),
       categories,
-      user: { id: session.user.id, name: session.user.name || "Seller" },
+      user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
     },
   };
 };
