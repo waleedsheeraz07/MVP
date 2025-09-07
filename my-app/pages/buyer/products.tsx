@@ -77,19 +77,24 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
 
-  // Build category tree
-  const categoryTree: CategoryNode[] = useMemo(() => {
-    const map = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
-    const roots: CategoryNode[] = [];
-    map.forEach(cat => {
-      if (cat.parentId && map.has(cat.parentId)) {
-        map.get(cat.parentId)!.children!.push(cat);
-      } else {
-        roots.push(cat);
-      }
-    });
-    return roots;
-  }, [categories]);
+// Build category tree
+const categoryTree: CategoryNode[] = useMemo(() => {
+  const map: Map<string, CategoryNode> = new Map(
+    categories.map(c => [c.id, { ...c, children: [] }])
+  );
+
+  const roots: CategoryNode[] = [];
+
+  map.forEach(cat => {
+    if (cat.parentId && map.has(cat.parentId)) {
+      map.get(cat.parentId)!.children!.push(cat);
+    } else {
+      roots.push(cat);
+    }
+  });
+
+  return roots;
+}, [categories]);
 
   // Sync filters to URL
   useEffect(() => {
