@@ -28,6 +28,7 @@ interface CategoryNode extends Category {
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
+  const router = useRouter(); // ✅ declare once here
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
