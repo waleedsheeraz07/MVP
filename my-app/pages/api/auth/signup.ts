@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } = req.body;
 
   // ---------------- Validation ----------------
-  if (!role || (role !== "buyer" && role !== "seller")) {
+  if (!role || (role !== "USER" && role !== "USER")) {
     return res.status(400).json({ error: "Role must be buyer or seller" });
   }
 
