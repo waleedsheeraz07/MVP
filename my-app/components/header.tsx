@@ -70,7 +70,7 @@ const collectCategoryIds = (category: CategoryNode): string[] => {
 
 const renderCategory = (cat: CategoryNode) => {
   // Build query string with parent + all descendants
-  const categoryIds = collectCategoryIds(cat).join("%");
+  const categoryIds = collectCategoryIds(cat).join("%2C");
 
   return (
     <li key={cat.id} className="space-y-1">
