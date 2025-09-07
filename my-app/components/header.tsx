@@ -1,7 +1,6 @@
 // components/header.tsx
 "use client";
 
-import { useRouter } from "next/router";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
@@ -29,7 +28,6 @@ interface CategoryNode extends Category {
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
-  const router = useRouter(); // hook at top level
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
@@ -73,23 +71,18 @@ export default function Layout({ children, categories, user }: LayoutProps) {
 
   // Recursive render of categories
   const renderCategory = (cat: CategoryNode) => {
-    const handleClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      const categoryIds = collectCategoryIds(cat).join("%2C");
-      router.replace(`/buyer/products?categories=${categoryIds}`, undefined, { shallow: true });
-      closeSidebar();
-    };
+    const categoryIds = collectCategoryIds(cat).join("%2C"); // use encoded commas
 
     return (
       <li key={cat.id} className="space-y-1">
         <div className="flex items-center justify-between">
-          <a
-            href={`/buyer/products?categories=${collectCategoryIds(cat).join("%2C")}`}
-            onClick={handleClick}
+          <Link
+            href={`/buyer/products?categories=${categoryIds}`}
             className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
+            onClick={closeSidebar}
           >
             {cat.title}
-          </a>
+          </Link>
           {cat.children?.length ? (
             <button
               type="button"
@@ -157,7 +150,6 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           <button onClick={closeSidebar} className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold">✕</button>
         </div>
 
-
         <nav className="p-4 space-y-6 overflow-y-auto flex-1">
           {/* My Account */}
           <div>
@@ -202,7 +194,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             </ul>
           </div>
 
-        {/* Account, Admin, Seller, Buyer Sections */}
+          {/* Products Categories */}
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
@@ -211,6 +203,15 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             </ul>
           </div>
         </nav>
+
+        {/* Sign Out */}
+        {user && (
+          <div className="p-4 border-t bg-[#f9f4ec]">
+            <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition">
+              Sign Out
+            </button>
+          </div>
+        )}
       </aside>
 
       <main className="flex-1">{children}</main>
