@@ -49,7 +49,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
       <img
         src="/logo.png"       // Replace with your logo path
         alt="Company Logo"
-        className="h-16 w-auto"
+        className="h-26 w-auto"
       />
     </div>
 
