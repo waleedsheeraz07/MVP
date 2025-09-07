@@ -175,6 +175,7 @@ const toggle = () => {
     return result;
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
+
   // Update URL query when filters change
   useEffect(() => {
     const query: Record<string, string> = {};
@@ -189,8 +190,28 @@ const toggle = () => {
     if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
     router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
   }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+// update filters when url changed
+useEffect(() => {
+  if (!router.isReady) return;
+  setSearch((router.query.search as string) || "");
+  setSelectedColors(
+    router.query.colors ? (router.query.colors as string).split(",") : []
+  );
+  setSelectedSizes(
+    router.query.sizes ? (router.query.sizes as string).split(",") : []
+  );
+  setSelectedCategories(
+    router.query.categories ? (router.query.categories as string).split("%") : []
+  );
+  setSortBy((router.query.sortBy as SortOption) || "relevance");
+  const prices = products.map(p => p.price);
+  const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
+  const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
+  setPriceRange([min, max]);
+}, [router.query, router.isReady]);
+ 
 
-  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
+ const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
     const val = Number(e.target.value);
     setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
   };
