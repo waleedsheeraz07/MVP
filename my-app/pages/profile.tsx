@@ -245,7 +245,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
         if (!res.ok) throw new Error(data.error || "Failed to delete account");
 
         alert("Your account has been deleted.");
-        window.location.href = "/auth/signin"; // redirect to login
+        window.location.href = "/login"; // redirect to login
       } catch (err: unknown) {
         if (err instanceof Error) alert(err.message);
         else alert("Unexpected error occurred");
