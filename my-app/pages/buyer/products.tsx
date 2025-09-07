@@ -46,19 +46,23 @@ interface ProductsPageProps {
 
 type SortOption = "alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance";
 
+interface CategoryNode extends Category {
+  children?: CategoryNode[];
+}
+
 export default function ProductsPage({ products, categories, user }: ProductsPageProps) {
   const router = useRouter();
 
-  // Initialize filters from URL query params
+  // Filters from URL
   const [search, setSearch] = useState(() => (router.query.search as string) || "");
-  const [selectedColors, setSelectedColors] = useState<string[]>(
-    () => (router.query.colors ? (router.query.colors as string).split(",") : [])
+  const [selectedColors, setSelectedColors] = useState<string[]>(() =>
+    router.query.colors ? (router.query.colors as string).split(",") : []
   );
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(
-    () => (router.query.sizes ? (router.query.sizes as string).split(",") : [])
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(() =>
+    router.query.sizes ? (router.query.sizes as string).split(",") : []
   );
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    () => (router.query.categories ? (router.query.categories as string).split(",") : [])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
+    router.query.categories ? (router.query.categories as string).split(",") : []
   );
   const [sortBy, setSortBy] = useState<SortOption>(
     () => (router.query.sortBy as SortOption) || "relevance"
@@ -73,23 +77,33 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
 
-  // Update URL query when filters change
+  // Build category tree
+  const categoryTree: CategoryNode[] = useMemo(() => {
+    const map = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
+    const roots: CategoryNode[] = [];
+    map.forEach(cat => {
+      if (cat.parentId && map.has(cat.parentId)) {
+        map.get(cat.parentId)!.children!.push(cat);
+      } else {
+        roots.push(cat);
+      }
+    });
+    return roots;
+  }, [categories]);
+
+  // Sync filters to URL
   useEffect(() => {
     const query: Record<string, string> = {};
-
     if (search) query.search = search;
     if (selectedColors.length) query.colors = selectedColors.join(",");
     if (selectedSizes.length) query.sizes = selectedSizes.join(",");
     if (selectedCategories.length) query.categories = selectedCategories.join(",");
     if (sortBy && sortBy !== "relevance") query.sortBy = sortBy;
-    if (priceRange[0] !== Math.min(...products.map(p => p.price))) query.priceMin = String(priceRange[0]);
-    if (priceRange[1] !== Math.max(...products.map(p => p.price))) query.priceMax = String(priceRange[1]);
-
-    router.replace(
-      { pathname: router.pathname, query },
-      undefined,
-      { shallow: true }
-    );
+    const minPrice = Math.min(...products.map(p => p.price));
+    const maxPrice = Math.max(...products.map(p => p.price));
+    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
+    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
+    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
   }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
@@ -97,33 +111,62 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
   };
 
+  // Recursive category checkbox
+  const CategoryCheckbox: React.FC<{
+    category: CategoryNode;
+    selected: string[];
+    setSelected: (ids: string[]) => void;
+    includeChildren?: boolean;
+  }> = ({ category, selected, setSelected, includeChildren = true }) => {
+    const isChecked = selected.includes(category.id);
+    const toggle = () => {
+      let newSelected = [...selected];
+      const allIds = includeChildren ? [category.id, ...(category.children?.map(c => c.id) || [])] : [category.id];
+      if (isChecked) newSelected = newSelected.filter(id => !allIds.includes(id));
+      else newSelected = Array.from(new Set([...newSelected, ...allIds]));
+      setSelected(newSelected);
+    };
+    return (
+      <div className="ml-2">
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={isChecked} onChange={toggle} />
+          {category.title}
+        </label>
+        {category.children && category.children.length > 0 && (
+          <div className="ml-4 border-l border-gray-200 pl-2">
+            {category.children.map(child => (
+              <CategoryCheckbox
+                key={child.id}
+                category={child}
+                selected={selected}
+                setSelected={setSelected}
+                includeChildren={includeChildren}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Filter products
   const filteredProducts = useMemo(() => {
     let result = products
       .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
       .filter(p => selectedColors.length === 0 || p.colors.some(c => selectedColors.includes(c)))
       .filter(p => selectedSizes.length === 0 || p.sizes.some(s => selectedSizes.includes(s)))
-      .filter(
-        p => selectedCategories.length === 0 || p.categories.some(cat => selectedCategories.includes(cat.id))
-      );
+      .filter(p => selectedCategories.length === 0 || p.categories.some(cat => selectedCategories.includes(cat.id)));
 
-    if (search.trim() !== "") {
+    if (search.trim()) {
       const searchLower = search.toLowerCase();
       result = result.filter(p => p.title.toLowerCase().includes(searchLower));
     }
 
     switch (sortBy) {
-      case "alpha":
-        result.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case "alphaDesc":
-        result.sort((a, b) => b.title.localeCompare(a.title));
-        break;
-      case "priceAsc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "priceDesc":
-        result.sort((a, b) => b.price - a.price);
-        break;
+      case "alpha": result.sort((a, b) => a.title.localeCompare(b.title)); break;
+      case "alphaDesc": result.sort((a, b) => b.title.localeCompare(a.title)); break;
+      case "priceAsc": result.sort((a, b) => a.price - b.price); break;
+      case "priceDesc": result.sort((a, b) => b.price - a.price); break;
       case "relevance":
         const searchLower = search.toLowerCase();
         result.sort((a, b) => {
@@ -133,7 +176,6 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
         });
         break;
     }
-
     return result;
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
@@ -146,20 +188,20 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
           </h1>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-3 mb-6 items-center bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+          <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
             {/* Search */}
             <input
               type="text"
               placeholder="Search by title..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
             />
 
             {/* Sort */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              onChange={e => setSortBy(e.target.value as SortOption)}
               className="input bg-white text-[#3e2f25]"
             >
               <option value="alpha">A → Z</option>
@@ -171,64 +213,33 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
 
             {/* Price Range */}
             <div className="flex gap-2 items-center">
-              <input
-                type="number"
-                value={priceRange[0]}
-                min={0}
-                onChange={(e) => handlePriceChange(e, 0)}
-                className="input w-20 bg-white text-[#3e2f25]"
-              />
+              <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)}
+                className="input w-20 bg-white text-[#3e2f25]" />
               <span className="text-[#3e2f25]">-</span>
-              <input
-                type="number"
-                value={priceRange[1]}
-                min={0}
-                onChange={(e) => handlePriceChange(e, 1)}
-                className="input w-20 bg-white text-[#3e2f25]"
-              />
+              <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)}
+                className="input w-20 bg-white text-[#3e2f25]" />
             </div>
 
             {/* Colors */}
-            <select
-              multiple
-              value={selectedColors}
-              onChange={(e) =>
-                setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))
-              }
-              className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]"
-            >
-              {allColors.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+            <select multiple value={selectedColors} onChange={e =>
+              setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
+              className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
+              {allColors.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
 
             {/* Sizes */}
-            <select
-              multiple
-              value={selectedSizes}
-              onChange={(e) =>
-                setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))
-              }
-              className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]"
-            >
-              {allSizes.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+            <select multiple value={selectedSizes} onChange={e =>
+              setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
+              className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
+              {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
 
-            {/* Categories */}
-            <select
-              multiple
-              value={selectedCategories}
-              onChange={(e) =>
-                setSelectedCategories(Array.from(e.target.selectedOptions, o => o.value))
-              }
-              className="input flex-grow min-w-[150px] bg-white text-[#3e2f25]"
-            >
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.title}</option>
+            {/* Category Tree */}
+            <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
+              {categoryTree.map(cat => (
+                <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Products Grid */}
@@ -273,7 +284,6 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
-
   if (!session || !session.user?.id) {
     return { redirect: { destination: "/login", permanent: false } };
   }
@@ -281,11 +291,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      categories: {
-        include: {
-          category: { select: { id: true, title: true } },
-        },
-      },
+      categories: { include: { category: { select: { id: true, title: true } } } },
     },
   });
 
