@@ -80,6 +80,13 @@ interface CategoryRaw {
   order?: number
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
 interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
@@ -104,6 +111,7 @@ interface Product {
 
 interface EditProductPageProps {
   categories: CategoryRaw[]
+  categories2: Category[]
   product: Product
   user: User
 }
@@ -136,7 +144,7 @@ const ConfirmModal = ({ message, onConfirm, onCancel }: ConfirmModalProps) => (
   </div>
 )
 
-export default function EditProductPage({ categories, product, user }: EditProductPageProps) {
+export default function EditProductPage({ categories, categories2, product, user }: EditProductPageProps) {
   const router = useRouter()
 
   // --- STATES ---
@@ -336,7 +344,7 @@ const eraOptions = [
   ]
 
   return (
-<Layout categories={categories} user={user}>
+<Layout categories={categories2} user={user}>
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
       <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
