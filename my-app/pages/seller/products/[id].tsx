@@ -59,8 +59,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         images: productData.images || [],
         categories: productData.categories,
       },
+    user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
     },
   }
+}
+
+
+interface User {
+  id: string;
+  name?: string | null;
+  role: string;
 }
 
 // --- TYPES ---
@@ -96,6 +104,7 @@ interface Product {
 interface EditProductPageProps {
   categories: CategoryRaw[]
   product: Product
+  user: User
 }
 
 // --- REUSABLE CONFIRM MODAL ---
@@ -126,7 +135,7 @@ const ConfirmModal = ({ message, onConfirm, onCancel }: ConfirmModalProps) => (
   </div>
 )
 
-export default function EditProductPage({ categories, product }: EditProductPageProps) {
+export default function EditProductPage({ categories, product, user }: EditProductPageProps) {
   const router = useRouter()
 
   // --- STATES ---
