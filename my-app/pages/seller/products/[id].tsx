@@ -414,7 +414,7 @@ const eraOptions = [
 </div>
         </form>
       </div>
-</Layout>
+
 
 
 {modal.open && modal.type === "update" && (
@@ -437,5 +437,6 @@ const eraOptions = [
         .input { padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #ccc; width: 100%; background-color: #fff; color: #000; }
       `}</style>
     </div>
+</Layout>
   )
 }
