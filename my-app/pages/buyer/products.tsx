@@ -54,23 +54,12 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
   const router = useRouter();
 
   // Filters from URL
-  const [search, setSearch] = useState(() => (router.query.search as string) || "");
-  const [selectedColors, setSelectedColors] = useState<string[]>(() =>
-    router.query.colors ? (router.query.colors as string).split(",") : []
-  );
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(() =>
-    router.query.sizes ? (router.query.sizes as string).split(",") : []
-  );
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
-    router.query.categories ? (router.query.categories as string).split(",") : []
-  );
-  const [sortBy, setSortBy] = useState<SortOption>(() => (router.query.sortBy as SortOption) || "relevance");
-  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
-    const prices = products.map(p => p.price);
-    const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
-    const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
-    return [min, max];
-  });
+  const [search, setSearch] = useState("");
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<SortOption>("relevance");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [filtersVisible, setFiltersVisible] = useState(false);
 
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
@@ -78,9 +67,10 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
 
   // Build category tree
   const categoryTree: CategoryNode[] = useMemo(() => {
-    const map: Map<string, CategoryNode> = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
+    const map: Map<string, CategoryNode> = new Map(
+      categories.map(c => [c.id, { ...c, children: [] }])
+    );
     const roots: CategoryNode[] = [];
-
     map.forEach(cat => {
       if (cat.parentId && map.has(cat.parentId)) {
         map.get(cat.parentId)!.children!.push(cat);
@@ -88,11 +78,57 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
         roots.push(cat);
       }
     });
-
     return roots;
   }, [categories]);
 
-  // Recursive category checkbox with expand/collapse
+  // Sync filters when URL changes
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    setSearch((router.query.search as string) || "");
+    setSelectedColors(
+      router.query.colors ? (router.query.colors as string).split(",") : []
+    );
+    setSelectedSizes(
+      router.query.sizes ? (router.query.sizes as string).split(",") : []
+    );
+    setSelectedCategories(
+      router.query.categories ? (router.query.categories as string).split(",") : []
+    );
+    setSortBy((router.query.sortBy as SortOption) || "relevance");
+
+    const prices = products.map(p => p.price);
+    const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
+    const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
+    setPriceRange([min, max]);
+  }, [router.query, router.isReady, products]);
+
+  // Update URL query when filters change
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const query: Record<string, string> = {};
+    if (search) query.search = search;
+    if (selectedColors.length) query.colors = selectedColors.join(",");
+    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
+    if (selectedCategories.length) query.categories = selectedCategories.join(",");
+    if (sortBy !== "relevance") query.sortBy = sortBy;
+
+    const minPrice = Math.min(...products.map(p => p.price));
+    const maxPrice = Math.max(...products.map(p => p.price));
+    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
+    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
+
+    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange, products, router]);
+
+  // Price change handler
+  const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
+    const val = Number(e.target.value);
+    setPriceRange(prev => (index === 0 ? [val, prev[1]] : [prev[0], val]));
+  };
+
+  // Recursive category checkbox
   const CategoryCheckbox: React.FC<{
     category: CategoryNode;
     selected: string[];
@@ -101,7 +137,6 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     const [expanded, setExpanded] = useState(true);
     const isChecked = selected.includes(category.id);
 
-    // Collect all descendant ids including this category
     const allDescendantIds = useMemo(() => {
       const ids: string[] = [];
       const traverse = (node: CategoryNode) => {
@@ -112,22 +147,19 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
       return ids;
     }, [category]);
 
- 
-const toggle = () => {
-  if (isChecked) {
-    const newSelected = selected.filter(id => !allDescendantIds.includes(id));
-    setSelected(newSelected);
-  } else {
-    const newSelected = Array.from(new Set([...selected, ...allDescendantIds]));
-    setSelected(newSelected);
-  }
-};
+    const toggle = () => {
+      if (isChecked) {
+        setSelected(selected.filter(id => !allDescendantIds.includes(id)));
+      } else {
+        setSelected([...new Set([...selected, ...allDescendantIds])]);
+      }
+    };
 
     return (
       <div className="ml-2">
         <label className="flex items-center gap-1">
           {category.children?.length ? (
-            <button type="button" className="mr-1 text-sm font-bold" onClick={() => setExpanded(prev => !prev)}>
+            <button type="button" className="mr-1 text-sm font-bold" onClick={() => setExpanded(p => !p)}>
               {expanded ? "▼" : "►"}
             </button>
           ) : null}
@@ -137,7 +169,12 @@ const toggle = () => {
         {expanded && category.children?.length ? (
           <div className="ml-4 border-l border-gray-200 pl-2">
             {category.children.map(child => (
-              <CategoryCheckbox key={child.id} category={child} selected={selected} setSelected={setSelected} />
+              <CategoryCheckbox
+                key={child.id}
+                category={child}
+                selected={selected}
+                setSelected={setSelected}
+              />
             ))}
           </div>
         ) : null}
@@ -145,6 +182,7 @@ const toggle = () => {
     );
   };
 
+  // Filtering logic remains the same ...
   // Filter products
   const filteredProducts = useMemo(() => {
     let result = products
@@ -174,47 +212,6 @@ const toggle = () => {
     }
     return result;
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
-
-
-  // Update URL query when filters change
-  useEffect(() => {
-    const query: Record<string, string> = {};
-    if (search) query.search = search;
-    if (selectedColors.length) query.colors = selectedColors.join(",");
-    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
-    if (selectedCategories.length) query.categories = selectedCategories.join(",");
-    if (sortBy !== "relevance") query.sortBy = sortBy;
-    const minPrice = Math.min(...products.map(p => p.price));
-    const maxPrice = Math.max(...products.map(p => p.price));
-    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
-    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
-    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
-  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
-// update filters when url changed
-useEffect(() => {
-  if (!router.isReady) return;
-  setSearch((router.query.search as string) || "");
-  setSelectedColors(
-    router.query.colors ? (router.query.colors as string).split(",") : []
-  );
-  setSelectedSizes(
-    router.query.sizes ? (router.query.sizes as string).split(",") : []
-  );
-  setSelectedCategories(
-    router.query.categories ? (router.query.categories as string).split("%") : []
-  );
-  setSortBy((router.query.sortBy as SortOption) || "relevance");
-  const prices = products.map(p => p.price);
-  const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
-  const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
-  setPriceRange([min, max]);
-}, [router.query, router.isReady]);
- 
-
- const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
-    const val = Number(e.target.value);
-    setPriceRange(prev => index === 0 ? [val, prev[1]] : [prev[0], val]);
-  };
 
   return (
     <Layout categories={categories} user={user}>
