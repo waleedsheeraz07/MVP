@@ -1,4 +1,6 @@
+// components/header.tsx
 "use client";
+
 import { useRouter } from "next/router";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -27,21 +29,12 @@ interface CategoryNode extends Category {
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
-  const router = useRouter();
+  const router = useRouter(); // hook at top level
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
 
   const closeSidebar = () => setIsOpen(false);
-  const toggleCategory = (id: string) => setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
-
-  // Initialize cart
-  useEffect(() => {
-    if (user?.id) {
-      setUserId(user.id);
-      refreshCart();
-    }
-  }, [user?.id, setUserId, refreshCart]);
 
   // Build hierarchical category tree
   const categoryTree: CategoryNode[] = useMemo(() => {
@@ -55,11 +48,25 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     return roots;
   }, [categories]);
 
+  const toggleCategory = (id: string) => {
+    setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Initialize cart
+  useEffect(() => {
+    if (user?.id) {
+      setUserId(user.id);
+      refreshCart();
+    }
+  }, [user?.id, setUserId, refreshCart]);
+
   // Helper: collect all descendant IDs including the category itself
   const collectCategoryIds = (category: CategoryNode): string[] => {
     const ids: string[] = [category.id];
     if (category.children) {
-      for (const child of category.children) ids.push(...collectCategoryIds(child));
+      for (const child of category.children) {
+        ids.push(...collectCategoryIds(child));
+      }
     }
     return ids;
   };
@@ -102,13 +109,6 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     );
   };
 
-  // Generic click handler for normal links
-  const handleLinkClick = (href: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    router.push(href);
-    closeSidebar();
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
       {/* Header */}
@@ -139,10 +139,15 @@ export default function Layout({ children, categories, user }: LayoutProps) {
       </header>
 
       {/* Sidebar Overlay */}
-      {isOpen && <div className="fixed inset-0 bg-[rgba(62,47,37,0.4)] backdrop-blur-sm z-40 transition-opacity duration-300" onClick={closeSidebar} />}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-[rgba(62,47,37,0.4)] backdrop-blur-sm z-40 transition-opacity duration-300"
+          onClick={closeSidebar}
+        />
+      )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 w-72 h-full bg-[#fffdfb] shadow-lg transform transition-transform duration-300 z-50 flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed top-0 left-0 w-72 h-full bg-[#fffdfb] shadow-lg transform transition-transform duration-300 z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"} flex flex-col`}>
         {/* Sidebar Header */}
         <div className="p-4 flex justify-between items-center border-b bg-[#f9f4ec]">
           <div>
@@ -151,6 +156,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           </div>
           <button onClick={closeSidebar} className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold">✕</button>
         </div>
+
 
         <nav className="p-4 space-y-6 overflow-y-auto flex-1">
           {/* My Account */}
@@ -196,23 +202,16 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             </ul>
           </div>
 
-          {/* Products Categories */}
+
+        <nav className="p-4 space-y-6 overflow-y-auto flex-1">
+          {/* Account, Admin, Seller, Buyer Sections */}
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><a href="/buyer/products" onClick={handleLinkClick("/buyer/products")} className="hover:text-[#5a4436] transition-colors">All Products</a></li>
+              <li><Link href="/buyer/products" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>All Products</Link></li>
               {categoryTree.map(cat => renderCategory(cat))}
             </ul>
           </div>
-
-          {/* Sign Out */}
-          {user && (
-            <div className="mt-auto p-4 border-t bg-[#f9f4ec]">
-              <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition">
-                Sign Out
-              </button>
-            </div>
-          )}
         </nav>
       </aside>
 
