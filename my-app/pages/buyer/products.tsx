@@ -112,10 +112,13 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     }, [category]);
 
     const toggle = () => {
-  if (isChecked) 
-    setSelected((prev: string[]) => prev.filter(id => !allDescendantIds.includes(id)));
-  else 
-    setSelected((prev: string[]) => Array.from(new Set([...prev, ...allDescendantIds])));
+  const newSelected: string[];
+  if (isChecked) {
+    newSelected = selected.filter(id => !allDescendantIds.includes(id));
+  } else {
+    newSelected = Array.from(new Set([...selected, ...allDescendantIds]));
+  }
+  setSelected(newSelected);
 };
 
     return (
