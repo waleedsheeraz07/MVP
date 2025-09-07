@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useCart } from "../context/CartContext";
@@ -31,6 +32,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
+  const router = useRouter();
 
   const closeSidebar = () => setIsOpen(false);
 
@@ -58,7 +60,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     }
   }, [user?.id, setUserId, refreshCart]);
 
-  // Helper: collect all descendant IDs including the category itself
+  // Collect all descendant IDs
   const collectCategoryIds = (category: CategoryNode): string[] => {
     const ids: string[] = [category.id];
     if (category.children) {
@@ -69,38 +71,40 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     return ids;
   };
 
-  // Recursive render of categories
-  const renderCategory = (cat: CategoryNode) => {
-    const categoryIds = collectCategoryIds(cat).join("%2C"); // use encoded commas
-
-    return (
-      <li key={cat.id} className="space-y-1">
-        <div className="flex items-center justify-between">
-          <Link
-            href={`/buyer/products?categories=${categoryIds}`}
-            className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
-            onClick={closeSidebar}
-          >
-            {cat.title}
-          </Link>
-          {cat.children?.length ? (
-            <button
-              type="button"
-              onClick={() => toggleCategory(cat.id)}
-              className="ml-2 text-sm font-bold focus:outline-none"
-            >
-              {expandedCategories[cat.id] ? "▾" : "▸"}
-            </button>
-          ) : null}
-        </div>
-        {cat.children?.length && expandedCategories[cat.id] && (
-          <ul className="pl-4 space-y-1">
-            {cat.children.map(child => renderCategory(child))}
-          </ul>
-        )}
-      </li>
-    );
+  // Handle category navigation with router.push
+  const handleCategoryClick = (cat: CategoryNode) => {
+    const ids = collectCategoryIds(cat).join("%");
+    router.push(`/buyer/products?categories=${ids}`, undefined, { shallow: true });
+    closeSidebar();
   };
+
+  // Recursive render
+  const renderCategory = (cat: CategoryNode) => (
+    <li key={cat.id} className="space-y-1">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => handleCategoryClick(cat)}
+          className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow text-left"
+        >
+          {cat.title}
+        </button>
+        {cat.children?.length ? (
+          <button
+            type="button"
+            onClick={() => toggleCategory(cat.id)}
+            className="ml-2 text-sm font-bold focus:outline-none"
+          >
+            {expandedCategories[cat.id] ? "▾" : "▸"}
+          </button>
+        ) : null}
+      </div>
+      {cat.children?.length && expandedCategories[cat.id] && (
+        <ul className="pl-4 space-y-1">
+          {cat.children.map(child => renderCategory(child))}
+        </ul>
+      )}
+    </li>
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
