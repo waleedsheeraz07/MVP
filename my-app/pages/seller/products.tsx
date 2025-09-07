@@ -6,6 +6,7 @@ import { authOptions } from "../api/auth/[...nextauth]";
 import { GetServerSidePropsContext } from "next";
 import { useState, useMemo, ChangeEvent, useEffect } from "react";
 import Layout from "../../components/header";
+import { useRouter } from "next/router";
 
 interface Product {
   id: string;
