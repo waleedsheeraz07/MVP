@@ -1,4 +1,3 @@
-// components/header.tsx
 "use client";
 import { useRouter } from "next/router";
 import { useState, useEffect, useMemo } from "react";
@@ -28,12 +27,21 @@ interface CategoryNode extends Category {
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
-  const router = useRouter(); // ✅ declare once here
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
 
   const closeSidebar = () => setIsOpen(false);
+  const toggleCategory = (id: string) => setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
+
+  // Initialize cart
+  useEffect(() => {
+    if (user?.id) {
+      setUserId(user.id);
+      refreshCart();
+    }
+  }, [user?.id, setUserId, refreshCart]);
 
   // Build hierarchical category tree
   const categoryTree: CategoryNode[] = useMemo(() => {
@@ -47,72 +55,59 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     return roots;
   }, [categories]);
 
-  const toggleCategory = (id: string) => {
-    setExpandedCategories(prev => ({ ...prev, [id]: !prev[id] }));
+  // Helper: collect all descendant IDs including the category itself
+  const collectCategoryIds = (category: CategoryNode): string[] => {
+    const ids: string[] = [category.id];
+    if (category.children) {
+      for (const child of category.children) ids.push(...collectCategoryIds(child));
+    }
+    return ids;
   };
 
-  // Initialize cart
-  useEffect(() => {
-    if (user?.id) {
-      setUserId(user.id);
-      refreshCart();
-    }
-  }, [user?.id, setUserId, refreshCart]);
+  // Recursive render of categories
+  const renderCategory = (cat: CategoryNode) => {
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      const categoryIds = collectCategoryIds(cat).join("%2C");
+      router.replace(`/buyer/products?categories=${categoryIds}`, undefined, { shallow: true });
+      closeSidebar();
+    };
 
-// Helper: collect all descendant IDs including the category itself
-const collectCategoryIds = (category: CategoryNode): string[] => {
-  const ids: string[] = [category.id];
-  if (category.children) {
-    for (const child of category.children) {
-      ids.push(...collectCategoryIds(child));
-    }
-  }
-  return ids;
-};
-
-// Recursive render of categories
-const renderCategory = (cat: CategoryNode) => {
-  const router = useRouter();
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const categoryIds = collectCategoryIds(cat).join("%2C"); // encoded commas
-    router.replace(
-      `/buyer/products?categories=${categoryIds}`,
-      undefined,
-      { shallow: true }
-    );
-    closeSidebar(); // immediately close sidebar
-  };
-
-  return (
-    <li key={cat.id} className="space-y-1">
-      <div className="flex items-center justify-between">
-        <a
-          href={`/buyer/products?categories=${collectCategoryIds(cat).join("%2C")}`}
-          onClick={handleClick}
-          className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
-        >
-          {cat.title}
-        </a>
-        {cat.children?.length ? (
-          <button
-            type="button"
-            onClick={() => toggleCategory(cat.id)}
-            className="ml-2 text-sm font-bold focus:outline-none"
+    return (
+      <li key={cat.id} className="space-y-1">
+        <div className="flex items-center justify-between">
+          <a
+            href={`/buyer/products?categories=${collectCategoryIds(cat).join("%2C")}`}
+            onClick={handleClick}
+            className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
           >
-            {expandedCategories[cat.id] ? "▾" : "▸"}
-          </button>
-        ) : null}
-      </div>
-      {cat.children?.length && expandedCategories[cat.id] && (
-        <ul className="pl-4 space-y-1">
-          {cat.children.map(child => renderCategory(child))}
-        </ul>
-      )}
-    </li>
-  );
-};
+            {cat.title}
+          </a>
+          {cat.children?.length ? (
+            <button
+              type="button"
+              onClick={() => toggleCategory(cat.id)}
+              className="ml-2 text-sm font-bold focus:outline-none"
+            >
+              {expandedCategories[cat.id] ? "▾" : "▸"}
+            </button>
+          ) : null}
+        </div>
+        {cat.children?.length && expandedCategories[cat.id] && (
+          <ul className="pl-4 space-y-1">
+            {cat.children.map(child => renderCategory(child))}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
+  // Generic click handler for normal links
+  const handleLinkClick = (href: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push(href);
+    closeSidebar();
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
@@ -144,15 +139,10 @@ const renderCategory = (cat: CategoryNode) => {
       </header>
 
       {/* Sidebar Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-[rgba(62,47,37,0.4)] backdrop-blur-sm z-40 transition-opacity duration-300"
-          onClick={closeSidebar}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 bg-[rgba(62,47,37,0.4)] backdrop-blur-sm z-40 transition-opacity duration-300" onClick={closeSidebar} />}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 w-72 h-full bg-[#fffdfb] shadow-lg transform transition-transform duration-300 z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"} flex flex-col`}>
+      <aside className={`fixed top-0 left-0 w-72 h-full bg-[#fffdfb] shadow-lg transform transition-transform duration-300 z-50 flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Sidebar Header */}
         <div className="p-4 flex justify-between items-center border-b bg-[#f9f4ec]">
           <div>
@@ -167,7 +157,7 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">👤 My Account</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/profile" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Profile</Link></li>
+              <li><a href="/profile" onClick={handleLinkClick("/profile")} className="hover:text-[#5a4436] transition-colors">My Profile</a></li>
             </ul>
           </div>
 
@@ -176,8 +166,8 @@ const renderCategory = (cat: CategoryNode) => {
             <div>
               <h3 className="text-[#3e2f25] font-semibold mb-2">🛡️ Admin</h3>
               <ul className="space-y-1 pl-3 text-gray-600">
-                <li><Link href="/admin/users" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>Manage Users</Link></li>
-                <li><Link href="/admin/categories" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>Manage Categories</Link></li>
+                <li><a href="/admin/users" onClick={handleLinkClick("/admin/users")} className="hover:text-[#5a4436] transition-colors">Manage Users</a></li>
+                <li><a href="/admin/categories" onClick={handleLinkClick("/admin/categories")} className="hover:text-[#5a4436] transition-colors">Manage Categories</a></li>
               </ul>
             </div>
           )}
@@ -186,8 +176,8 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">📦 Seller</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/seller/products" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Products</Link></li>
-              <li><Link href="/seller/order" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Orders</Link></li>
+              <li><a href="/seller/products" onClick={handleLinkClick("/seller/products")} className="hover:text-[#5a4436] transition-colors">My Products</a></li>
+              <li><a href="/seller/order" onClick={handleLinkClick("/seller/order")} className="hover:text-[#5a4436] transition-colors">My Orders</a></li>
             </ul>
           </div>
 
@@ -195,14 +185,14 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛒 Buyer</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/buyer/order" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Orders</Link></li>
+              <li><a href="/buyer/order" onClick={handleLinkClick("/buyer/order")} className="hover:text-[#5a4436] transition-colors">My Orders</a></li>
               <li>
-                <Link href="/buyer/cart" className="hover:text-[#5a4436] transition-colors flex items-center gap-1" onClick={closeSidebar}>
+                <a href="/buyer/cart" onClick={handleLinkClick("/buyer/cart")} className="hover:text-[#5a4436] transition-colors flex items-center gap-1">
                   My Cart
                   {cartCount > 0 && <span className="ml-1 bg-[#b58b5a] text-[#fffdfb] rounded-full px-2 text-xs">{cartCount}</span>}
-                </Link>
+                </a>
               </li>
-              <li><Link href="/buyer/wishlist" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Wishlist</Link></li>
+              <li><a href="/buyer/wishlist" onClick={handleLinkClick("/buyer/wishlist")} className="hover:text-[#5a4436] transition-colors">My Wishlist</a></li>
             </ul>
           </div>
 
@@ -210,20 +200,20 @@ const renderCategory = (cat: CategoryNode) => {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><Link href="/buyer/products" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>All Products</Link></li>
+              <li><a href="/buyer/products" onClick={handleLinkClick("/buyer/products")} className="hover:text-[#5a4436] transition-colors">All Products</a></li>
               {categoryTree.map(cat => renderCategory(cat))}
             </ul>
           </div>
-        </nav>
 
-        {/* Sign Out */}
-        {user && (
-          <div className="p-4 border-t bg-[#f9f4ec]">
-            <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition">
-              Sign Out
-            </button>
-          </div>
-        )}
+          {/* Sign Out */}
+          {user && (
+            <div className="mt-auto p-4 border-t bg-[#f9f4ec]">
+              <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition">
+                Sign Out
+              </button>
+            </div>
+          )}
+        </nav>
       </aside>
 
       <main className="flex-1">{children}</main>
