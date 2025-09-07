@@ -222,15 +222,38 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     </h1>
 
     {/* Search Bar: Always Visible */}
-    <div className="mb-4">
-      <input
-        type="text"
-        placeholder="Search by title..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="input w-full sm:w-1/2 bg-white text-[#3e2f25]"
-      />
-    </div>
+    {/* Search Bar + Reset Button */}
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+  <input
+    type="text"
+    placeholder="Search by title..."
+    value={search}
+    onChange={e => setSearch(e.target.value)}
+    className="input w-full sm:w-1/2 bg-white text-[#3e2f25]"
+  />
+  <button
+    onClick={() => {
+      // Reset state
+      setSearch("");
+      setSelectedColors([]);
+      setSelectedSizes([]);
+      setSelectedCategories([]);
+      setSortBy("relevance");
+      const prices = products.map(p => p.price);
+      setPriceRange([Math.min(...prices), Math.max(...prices)]);
+
+      // Reset URL query shallowly
+      router.replace(
+        { pathname: router.pathname, query: {} },
+        undefined,
+        { shallow: true }
+      );
+    }}
+    className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition"
+  >
+    Reset Filters
+  </button>
+</div>
 
     {/* Toggle Filters Button */}
     <button
