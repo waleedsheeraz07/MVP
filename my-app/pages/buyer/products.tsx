@@ -115,11 +115,9 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
  
 const toggle = () => {
   if (isChecked) {
-    // remove this category and all descendants
     const newSelected = selected.filter(id => !allDescendantIds.includes(id));
     setSelected(newSelected);
   } else {
-    // add this category and all descendants, avoiding duplicates
     const newSelected = Array.from(new Set([...selected, ...allDescendantIds]));
     setSelected(newSelected);
   }
