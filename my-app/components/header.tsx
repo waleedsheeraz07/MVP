@@ -163,7 +163,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">👤 My Account</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><a href="/profile" onClick={handleLinkClick("/profile")} className="hover:text-[#5a4436] transition-colors">My Profile</a></li>
+              <li><Link href="/profile" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Profile</Link></li>
             </ul>
           </div>
 
@@ -172,8 +172,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             <div>
               <h3 className="text-[#3e2f25] font-semibold mb-2">🛡️ Admin</h3>
               <ul className="space-y-1 pl-3 text-gray-600">
-                <li><a href="/admin/users" onClick={handleLinkClick("/admin/users")} className="hover:text-[#5a4436] transition-colors">Manage Users</a></li>
-                <li><a href="/admin/categories" onClick={handleLinkClick("/admin/categories")} className="hover:text-[#5a4436] transition-colors">Manage Categories</a></li>
+                <li><Link href="/admin/users" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>Manage Users</Link></li>
+                <li><Link href="/admin/categories" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>Manage Categories</Link></li>
               </ul>
             </div>
           )}
@@ -182,8 +182,8 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">📦 Seller</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><a href="/seller/products" onClick={handleLinkClick("/seller/products")} className="hover:text-[#5a4436] transition-colors">My Products</a></li>
-              <li><a href="/seller/order" onClick={handleLinkClick("/seller/order")} className="hover:text-[#5a4436] transition-colors">My Orders</a></li>
+              <li><Link href="/seller/products" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Products</Link></li>
+              <li><Link href="/seller/order" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Orders</Link></li>
             </ul>
           </div>
 
@@ -191,14 +191,14 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛒 Buyer</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
-              <li><a href="/buyer/order" onClick={handleLinkClick("/buyer/order")} className="hover:text-[#5a4436] transition-colors">My Orders</a></li>
+              <li><Link href="/buyer/order" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Orders</Link></li>
               <li>
-                <a href="/buyer/cart" onClick={handleLinkClick("/buyer/cart")} className="hover:text-[#5a4436] transition-colors flex items-center gap-1">
+                <Link href="/buyer/cart" className="hover:text-[#5a4436] transition-colors flex items-center gap-1" onClick={closeSidebar}>
                   My Cart
                   {cartCount > 0 && <span className="ml-1 bg-[#b58b5a] text-[#fffdfb] rounded-full px-2 text-xs">{cartCount}</span>}
-                </a>
+                </Link>
               </li>
-              <li><a href="/buyer/wishlist" onClick={handleLinkClick("/buyer/wishlist")} className="hover:text-[#5a4436] transition-colors">My Wishlist</a></li>
+              <li><Link href="/buyer/wishlist" className="hover:text-[#5a4436] transition-colors" onClick={closeSidebar}>My Wishlist</Link></li>
             </ul>
           </div>
 
