@@ -41,72 +41,82 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
-      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Login</h1>
+<div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
+  <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
+    
+    {/* Company Logo */}
+    <div className="flex justify-center mb-4">
+      <img
+        src="/logo.png"       // Replace with your logo path
+        alt="Company Logo"
+        className="h-16 w-auto"
+      />
+    </div>
 
-        {errorMessage && (
-          <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{errorMessage}</p>
-        )}
+    <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Login</h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input type="hidden" name="csrfToken" defaultValue={csrfToken} />
+    {errorMessage && (
+      <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{errorMessage}</p>
+    )}
 
-          <input
-            type="email"
-            name="email"
-            autoComplete="email"
-            placeholder="Email Address"
-            required
-            className="input"
-          />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <input type="hidden" name="csrfToken" defaultValue={csrfToken} />
 
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              autoComplete="current-password"
-              placeholder="Password"
-              required
-              className="input pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(prev => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
+      <input
+        type="email"
+        name="email"
+        autoComplete="email"
+        placeholder="Email Address"
+        required
+        className="input"
+      />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
-          >
-            {loading ? "Logging In..." : "Login"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm mt-4">
-          Don’t have an account?{" "}
-          <Link href="/signup" className="text-[#3e2f25] font-semibold underline">
-            Signup
-          </Link>
-        </p>
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete="current-password"
+          placeholder="Password"
+          required
+          className="input pr-12"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(prev => !prev)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
+        >
+          {showPassword ? "Hide" : "Show"}
+        </button>
       </div>
 
-      <style jsx>{`
-        .input {
-          padding: 0.75rem;
-          border-radius: 0.75rem;
-          border: 1px solid #ccc;
-          width: 100%;
-          background-color: #fff;
-          color: #000;
-        }
-      `}</style>
-    </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
+      >
+        {loading ? "Logging In..." : "Login"}
+      </button>
+    </form>
+
+    <p className="text-center text-sm mt-4">
+      Don’t have an account?{" "}
+      <Link href="/signup" className="text-[#3e2f25] font-semibold underline">
+        Signup
+      </Link>
+    </p>
+  </div>
+
+  <style jsx>{`
+    .input {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ccc;
+      width: 100%;
+      background-color: #fff;
+      color: #000;
+    }
+  `}</style>
+</div>
   );
 }
 
