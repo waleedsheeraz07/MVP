@@ -238,7 +238,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
                   {subCategoriesMap[top.id].map((sub) => (
                     <li key={sub.id}>
                       <Link
-                        href={`/products/category/${sub.id}`}
+                        href={`/buyer/products?categories=${sub.id}`}
                         className="hover:text-[#5a4436] transition-colors"
                       >
                         {sub.title}
