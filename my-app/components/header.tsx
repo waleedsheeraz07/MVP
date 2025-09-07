@@ -57,11 +57,26 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   }, [user?.id, setUserId, refreshCart]);
 
   // Recursive render of categories
-  const renderCategory = (cat: CategoryNode) => (
+// Helper: collect all descendant IDs including the category itself
+const collectCategoryIds = (category: CategoryNode): string[] => {
+  const ids: string[] = [category.id];
+  if (category.children) {
+    for (const child of category.children) {
+      ids.push(...collectCategoryIds(child));
+    }
+  }
+  return ids;
+};
+
+const renderCategory = (cat: CategoryNode) => {
+  // Build query string with parent + all descendants
+  const categoryIds = collectCategoryIds(cat).join("%");
+
+  return (
     <li key={cat.id} className="space-y-1">
       <div className="flex items-center justify-between">
         <Link
-          href={`/buyer/products?categories=${cat.id}`}
+          href={`/buyer/products?categories=${categoryIds}`}
           className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
         >
           {cat.title}
@@ -83,6 +98,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
       )}
     </li>
   );
+};
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
