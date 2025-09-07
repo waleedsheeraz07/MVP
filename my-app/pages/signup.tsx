@@ -273,7 +273,7 @@ const validatePhoneNumber = (phone: string) => {
     <img
       src="/logo.png"       // Replace with your logo path
       alt="Company Logo"
-      className="h-36 w-auto"
+      className="h-34 w-auto"
     />
   </div>
 
