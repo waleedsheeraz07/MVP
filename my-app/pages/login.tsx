@@ -41,18 +41,18 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
   };
 
   return (
-<div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
-  <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-    
-    {/* Company Logo */}
-    <div className="flex justify-center mb-4">
-      <img
-        src="/logo.png"       // Replace with your logo path
-        alt="Company Logo"
-        className="h-26 w-auto"
-      />
-    </div>
+<div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
 
+  {/* Company Logo - outside the form container */}
+  <div className="flex justify-center mb-6">
+    <img
+      src="/logo.png"         // Replace with your logo path
+      alt="Company Logo"
+      className="h-24 w-auto" // Increased size
+    />
+  </div>
+
+  <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
     <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Login</h1>
 
     {errorMessage && (
