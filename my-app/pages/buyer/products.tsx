@@ -112,9 +112,11 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     }, [category]);
 
     const toggle = () => {
-      if (isChecked) setSelected(prev => prev.filter(id => !allDescendantIds.includes(id)));
-      else setSelected(prev => Array.from(new Set([...prev, ...allDescendantIds])));
-    };
+  if (isChecked) 
+    setSelected((prev: string[]) => prev.filter(id => !allDescendantIds.includes(id)));
+  else 
+    setSelected((prev: string[]) => Array.from(new Set([...prev, ...allDescendantIds])));
+};
 
     return (
       <div className="ml-2">
