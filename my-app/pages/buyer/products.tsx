@@ -112,7 +112,7 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     }, [category]);
 
     const toggle = () => {
-  const newSelected: string[];
+  let newSelected: string[];
   if (isChecked) {
     newSelected = selected.filter(id => !allDescendantIds.includes(id));
   } else {
