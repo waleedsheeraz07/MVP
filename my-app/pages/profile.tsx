@@ -235,6 +235,27 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
                 {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
+  <div className="flex justify-between mt-4">
+  <button
+    onClick={async () => {
+      if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+      try {
+        const res = await fetch("/api/profile/delete", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to delete account");
+
+        alert("Your account has been deleted.");
+        window.location.href = "/auth/signin"; // redirect to login
+      } catch (err: unknown) {
+        if (err instanceof Error) alert(err.message);
+        else alert("Unexpected error occurred");
+      }
+    }}
+    className="px-6 py-2 bg-[#b84a2f] text-[#fdf8f3] rounded-lg hover:bg-[#9e3e25] transition"
+  >
+    🗑️ Delete Account
+  </button>
+</div>
           </form>
         </div>
 
