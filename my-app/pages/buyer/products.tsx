@@ -112,13 +112,16 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
       return ids;
     }, [category]);
 
- const [selected, setSelected] = useState<string[]>([]); // Correct type
-
+ 
 const toggle = () => {
   if (isChecked) {
-    setSelected(prev => prev.filter(id => !allDescendantIds.includes(id)));
+    // remove this category and all descendants
+    const newSelected = selected.filter(id => !allDescendantIds.includes(id));
+    setSelected(newSelected);
   } else {
-    setSelected(prev => Array.from(new Set([...prev, ...allDescendantIds])));
+    // add this category and all descendants, but avoid duplicates
+    const newSelected = Array.from(new Set([...selected, ...allDescendantIds]));
+    setSelected(newSelected);
   }
 };
 
