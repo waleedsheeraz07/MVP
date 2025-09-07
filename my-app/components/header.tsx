@@ -202,9 +202,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             </ul>
           </div>
 
-
-        <nav className="p-4 space-y-6 overflow-y-auto flex-1">
-          {/* Account, Admin, Seller, Buyer Sections */}
+        {/* Account, Admin, Seller, Buyer Sections */}
           <div>
             <h3 className="text-[#3e2f25] font-semibold mb-2">🛍️ Products</h3>
             <ul className="space-y-1 pl-3 text-gray-600">
