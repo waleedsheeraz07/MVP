@@ -93,11 +93,14 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
       return ids;
     }, [category]);
 
-   const toggle = () => {
-  if (isChecked) 
-    setSelected((prev: string[]) => prev.filter(id => !allDescendantIds.includes(id)));
-  else 
-    setSelected((prev: string[]) => Array.from(new Set([...prev, ...allDescendantIds])));
+ const toggle = () => {
+  if (isChecked) {
+    const newSelected = selected.filter(id => !allDescendantIds.includes(id));
+    setSelected(newSelected);
+  } else {
+    const newSelected = Array.from(new Set([...selected, ...allDescendantIds]));
+    setSelected(newSelected);
+  }
 };
 
     return (
