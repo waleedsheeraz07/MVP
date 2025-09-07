@@ -119,7 +119,7 @@ const toggle = () => {
     const newSelected = selected.filter(id => !allDescendantIds.includes(id));
     setSelected(newSelected);
   } else {
-    // add this category and all descendants, but avoid duplicates
+    // add this category and all descendants, avoiding duplicates
     const newSelected = Array.from(new Set([...selected, ...allDescendantIds]));
     setSelected(newSelected);
   }
