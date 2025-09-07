@@ -1,3 +1,4 @@
+// pages/profile.tsx:
 import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
