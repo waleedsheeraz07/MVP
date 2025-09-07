@@ -192,19 +192,17 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
           </div>
 
 {/* Search Bar and Reset Filters: Always Visible */}
-<div className="flex flex-wrap gap-3 mb-4 items-center">
-  {/* Search */}
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
   <input
     type="text"
     placeholder="Search by title..."
     value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    className="input flex-grow min-w-[200px] bg-white text-[#3e2f25]"
+    onChange={e => setSearch(e.target.value)}
+    className="input w-full sm:w-1/2 bg-white text-[#3e2f25]"
   />
-
-  {/* Reset Filters */}
   <button
     onClick={() => {
+      // Reset state
       setSearch("");
       setSelectedColors([]);
       setSelectedSizes([]);
@@ -213,7 +211,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
       const prices = products.map(p => p.price);
       setPriceRange([Math.min(...prices), Math.max(...prices)]);
 
-      // Update URL shallowly
+      // Reset URL query shallowly
       router.replace(
         { pathname: router.pathname, query: {} },
         undefined,
