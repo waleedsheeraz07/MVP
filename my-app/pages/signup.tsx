@@ -273,7 +273,7 @@ const validatePhoneNumber = (phone: string) => {
     <img
       src="/logo.png"       // Replace with your logo path
       alt="Company Logo"
-      className="h-24 w-auto"
+      className="h-36 w-auto"
     />
   </div>
 
@@ -301,20 +301,20 @@ const validatePhoneNumber = (phone: string) => {
     {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
 
     {/* Form Fields */}
-    <div className="flex flex-col gap-4">
-      {stepContent().map((field, idx) => (
-        <input
-          key={idx}
-          type={field.type}
-          name={field.name}
-          placeholder={field.placeholder}
-          value={field.value}
-          onChange={field.onChange}
-          required
-          className="input"
-        />
-      ))}
-    </div>
+<div className="flex flex-col gap-4">
+  {(stepContent() || []).map((field, idx) => (
+    <input
+      key={idx}
+      type={field.type}
+      name={field.name}
+      placeholder={field.placeholder}
+      value={field.value}
+      onChange={field.onChange}
+      required
+      className="input"
+    />
+  ))}
+</div>
 
     {/* Navigation Buttons */}
     <div className="flex justify-between mt-6">
