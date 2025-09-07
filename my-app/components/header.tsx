@@ -1,8 +1,7 @@
 // components/header.tsx
 "use client";
-
-import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useCart } from "../context/CartContext";
@@ -32,7 +31,6 @@ export default function Layout({ children, categories, user }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
-  const router = useRouter();
 
   const closeSidebar = () => setIsOpen(false);
 
@@ -60,34 +58,42 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     }
   }, [user?.id, setUserId, refreshCart]);
 
-  // Collect all descendant IDs
-  const collectCategoryIds = (category: CategoryNode): string[] => {
-    const ids: string[] = [category.id];
-    if (category.children) {
-      for (const child of category.children) {
-        ids.push(...collectCategoryIds(child));
-      }
+// Helper: collect all descendant IDs including the category itself
+const collectCategoryIds = (category: CategoryNode): string[] => {
+  const ids: string[] = [category.id];
+  if (category.children) {
+    for (const child of category.children) {
+      ids.push(...collectCategoryIds(child));
     }
-    return ids;
+  }
+  return ids;
+};
+
+// Recursive render of categories
+const renderCategory = (cat: CategoryNode) => {
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const categoryIds = collectCategoryIds(cat).join("%2C"); // encoded commas
+    router.replace(
+      `/buyer/products?categories=${categoryIds}`,
+      undefined,
+      { shallow: true }
+    );
+    closeSidebar(); // immediately close sidebar
   };
 
-  // Handle category navigation with router.push
-  const handleCategoryClick = (cat: CategoryNode) => {
-    const ids = collectCategoryIds(cat).join("%");
-    router.push(`/buyer/products?categories=${ids}`, undefined, { shallow: true });
-    closeSidebar();
-  };
-
-  // Recursive render
-  const renderCategory = (cat: CategoryNode) => (
+  return (
     <li key={cat.id} className="space-y-1">
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => handleCategoryClick(cat)}
-          className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow text-left"
+        <a
+          href={`/buyer/products?categories=${collectCategoryIds(cat).join("%2C")}`}
+          onClick={handleClick}
+          className="font-medium text-[#3e2f25] hover:text-[#5a4436] transition-colors flex-grow"
         >
           {cat.title}
-        </button>
+        </a>
         {cat.children?.length ? (
           <button
             type="button"
@@ -105,6 +111,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
       )}
     </li>
   );
+};
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fdf8f3] text-[#3e2f25]">
