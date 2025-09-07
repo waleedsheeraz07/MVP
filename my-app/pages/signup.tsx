@@ -266,81 +266,108 @@ const validatePhoneNumber = (phone: string) => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
-      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sign Up</h1>
+ <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
 
-        {/* Progress Bar */}
-        <div className="relative mb-6">
-          <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
-          <div className="flex justify-between relative z-10">
-            {[0, 1, 2].map(s => (
-              <div key={s} className="flex flex-col items-center w-8">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                    s <= step ? "bg-[#3e2f25] text-[#fdf8f3]" : "bg-[#d4b996] text-[#3e2f25]"
-                  }`}
-                >
-                  {s}
-                </div>
-              </div>
-            ))}
+  {/* Company Logo */}
+  <div className="flex justify-center mb-6">
+    <img
+      src="/logo.png"       // Replace with your logo path
+      alt="Company Logo"
+      className="h-24 w-auto"
+    />
+  </div>
+
+  <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
+    <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sign Up</h1>
+
+    {/* Progress Bar */}
+    <div className="relative mb-6">
+      <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
+      <div className="flex justify-between relative z-10">
+        {[0, 1, 2].map(s => (
+          <div key={s} className="flex flex-col items-center w-8">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                s <= step ? "bg-[#3e2f25] text-[#fdf8f3]" : "bg-[#d4b996] text-[#3e2f25]"
+              }`}
+            >
+              {s}
+            </div>
           </div>
-        </div>
-
-        {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
-
-        <div className="flex flex-col gap-4">{stepContent()}</div>
-
-        <div className="flex justify-between mt-6">
-          {step > 0 && (
-            <button
-              onClick={handlePrev}
-              className="px-4 py-2 bg-[#d4b996] text-[#3e2f25] rounded-lg hover:bg-[#c4a57e] transition"
-            >
-              Back
-            </button>
-          )}
-          {step < 2 ? (
-            <button
-              onClick={handleNext}
-              className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto"
-            >
-              Next
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={loading || confirmPassword !== password}
-              className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Signing Up..." : "Sign Up"}
-            </button>
-          )}
-        </div>
-
-        <p className="text-center text-sm mt-4">
-          Already have an account?{" "}
-          <Link href="/login" className="text-[#3e2f25] font-semibold underline">
-            Login
-          </Link>
-        </p>
+        ))}
       </div>
-
-      <style jsx>{`
-        .input {
-          padding: 0.75rem;
-          border-radius: 0.75rem;
-          border: 1px solid #ccc;
-          width: 100%;
-          background-color: #fff;
-          color: #000;
-        }
-        .peer:focus + span,
-        .peer:not(:placeholder-shown) + span {
-          display: none;
-        }
-      `}</style>
     </div>
+
+    {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
+
+    {/* Form Fields */}
+    <div className="flex flex-col gap-4">
+      {stepContent().map((field, idx) => (
+        <input
+          key={idx}
+          type={field.type}
+          name={field.name}
+          placeholder={field.placeholder}
+          value={field.value}
+          onChange={field.onChange}
+          required
+          className="input"
+        />
+      ))}
+    </div>
+
+    {/* Navigation Buttons */}
+    <div className="flex justify-between mt-6">
+      {step > 0 && (
+        <button
+          onClick={handlePrev}
+          className="px-4 py-2 bg-[#d4b996] text-[#3e2f25] rounded-lg hover:bg-[#c4a57e] transition"
+        >
+          Back
+        </button>
+      )}
+
+      {step < 2 ? (
+        <button
+          onClick={handleNext}
+          className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto"
+        >
+          Next
+        </button>
+      ) : (
+        <button
+          onClick={handleSubmit}
+          disabled={loading || confirmPassword !== password}
+          className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? "Signing Up..." : "Sign Up"}
+        </button>
+      )}
+    </div>
+
+    <p className="text-center text-sm mt-4">
+      Already have an account?{" "}
+      <Link href="/login" className="text-[#3e2f25] font-semibold underline">
+        Login
+      </Link>
+    </p>
+  </div>
+
+  <style jsx>{`
+    .input {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ccc;
+      width: 100%;
+      background-color: #fff;
+      color: #000;
+    }
+    .input:focus {
+      border-color: #3e2f25;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(62, 47, 37, 0.2);
+    }
+  `}</style>
+</div>
   );
 }
