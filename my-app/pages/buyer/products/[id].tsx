@@ -8,7 +8,6 @@ import { authOptions } from "../../api/auth/[...nextauth]";
 import Layout from "../../../components/header";
 import { useCart } from "../../../context/CartContext";
 import SwipeableGallery from "../../../components/SwipeableGallery";
-import { useState, useRef } from "react";
 import { useSwipeable } from "react-swipeable";
 
 interface Category { id: string; title: string; order: number; parentId?: string | null; }
