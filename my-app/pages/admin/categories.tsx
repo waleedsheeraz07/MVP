@@ -1,4 +1,6 @@
+// pages/admin/categories.tsx:
 'use client'
+import Head from 'next/head'
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import Layout from "../../components/header";
@@ -194,32 +196,6 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
-  // ---------------- Optimistic CRUD ----------------
-  /*const handleCreate = async () => {
-    if (!inputTitle.trim()) return
-    setIsProcessing(true)
-    const parentId = selectedId || null
-    const tempId = 'temp-' + Math.random().toString(36).substring(2)
-
-    setCategories(prev => [
-      ...prev,
-      { id: tempId, title: inputTitle, parentId, order: prev.filter(c => c.parentId === parentId).length }
-    ])
-    setInputTitle('')
-
-    try {
-      const res = await fetch('/api/categories/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: inputTitle, parentId }),
-      })
-      const newCategory: Category = await res.json()
-      setCategories(prev => prev.map(c => c.id === tempId ? newCategory : c))
-    } finally {
-      setIsProcessing(false)
-    }
-  }*/
-
 const handleCreate = async () => {
   if (!inputTitle.trim()) return
   setIsProcessing(true)
@@ -321,6 +297,10 @@ const handleCreate = async () => {
 
   return (
     <>
+<Head>
+  <title>Manage Categories | Vintage Marketplace</title>
+  <meta name="description" content="Organize product categories for easier browsing and selling." />
+</Head>
 <Layout categories={categories} user={user}>
  
       <div className={styles.container} ref={containerRef}>
