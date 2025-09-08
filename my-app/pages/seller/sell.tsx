@@ -316,7 +316,7 @@ export default function SellProductPage({ categories, categories2, user }: SellP
             className="input"
           >
             <option value="">Select Condition *</option>
-            {["Untouched", "Excellent", "Good", "Fair", "Slightly Damaged", "Damaged", "Highly Damaged"].map(c => (
+            {["Excellent", "Good", "Fair", "Slightly Damaged", "Highly Damaged"].map(c => (
               <option key={c} value={c.toLowerCase()}>
                 {c}
               </option>
