@@ -207,14 +207,14 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
           </div>
 
           <div className="flex-shrink-0 text-sm sm:text-base font-semibold text-[#3e2f25] ml-2">
-            ${item.product.price.toFixed(2)}
+            KWD {item.product.price.toFixed(2)}
           </div>
         </div>
       ))}
 
       <div className="flex flex-col sm:flex-row justify-between items-center mt-4 border-t pt-3 bg-[#fffdfb] p-3 rounded-2xl shadow-sm">
         <span className="text-lg sm:text-xl font-semibold text-[#3e2f25]">
-          Total: ${total.toFixed(2)}
+          Total: KWD {total.toFixed(2)}
         </span>
         <button
           onClick={() => router.push("/buyer/checkout")}
