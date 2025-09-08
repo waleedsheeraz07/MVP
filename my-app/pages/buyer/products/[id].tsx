@@ -32,7 +32,8 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product, categories, user, session }: ProductDetailProps) {
-  const validSizes = product.sizes.filter(s => s && s.trim() !== "");
+ const [galleryOpen, setGalleryOpen] = useState(false);
+ const validSizes = product.sizes.filter(s => s && s.trim() !== "");
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { refreshCart } = useCart();
