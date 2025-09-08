@@ -24,19 +24,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Cannot block yourself" });
     }
 
-    // 1️⃣ Set all of this user's products quantity to 0
-    await prisma.product.updateMany({
-      where: { ownerId: id },
-      data: { quantity: 0 },
+    const result = await prisma.$transaction(async (tx) => {
+      // 1️⃣ Set all of this user's products quantity to 0
+      await tx.product.updateMany({
+        where: { ownerId: id },
+        data: { quantity: 0 },
+      });
+
+      // 2️⃣ Delete all userItems in cart or wishlist
+      await tx.userItem.deleteMany({
+        where: {
+          userId: id,
+          status: { in: ["cart", "wishlist"] },
+        },
+      });
+
+      // 3️⃣ Update user's role to BLOCKED
+      await tx.user.update({
+        where: { id },
+        data: { role: "BLOCKED" },
+      });
+
+      return { success: true };
     });
 
-    // 2️⃣ Update user's role to BLOCKED
-    await prisma.user.update({
-      where: { id },
-      data: { role: "BLOCKED" },
-    });
-
-    return res.status(200).json({ success: true });
+    return res.status(200).json(result);
   } catch (err) {
     console.error("Block user failed:", err);
     return res.status(500).json({ error: "Failed to block user" });
