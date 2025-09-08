@@ -1,21 +1,13 @@
 // pages/api/auth/[...nextauth].ts
-// pages/api/auth/[...nextauth].ts
-import NextAuth, { type AuthOptions, type Session } from "next-auth";
+Ok now this is my very very important api do not change anything else in this just make sure that if user logs in and their role is blocked or deleted do not let the user login or maybe log out him immediately:
+
+import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { compare } from "bcryptjs";
-import { JWT as NextAuthJWT } from "next-auth/jwt";
 
 const prisma = new PrismaClient();
-
-// Extend JWT type
-interface ExtendedJWT extends NextAuthJWT {
-  id: string;
-  role: string;
-  name: string;
-  email: string | null;
-}
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -39,20 +31,16 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid email or password");
         }
 
-        if (user.role === "BLOCKED" || user.role === "DELETED") {
-          throw new Error("Your account is not active");
-        }
-
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) {
           throw new Error("Invalid email or password");
         }
 
+        // Build a safe name
         const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
-
         return {
           id: user.id,
-          name: name || user.email.split("@")[0],
+          name: name || user.email.split("@")[0], // fallback to email if no name
           email: user.email,
           role: user.role,
         };
@@ -63,35 +51,19 @@ export const authOptions: AuthOptions = {
   pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }): Promise<ExtendedJWT> {
-      // On login
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
-        token.email = user.email ?? null; // ✅ force string | null
       }
-
-      // Dynamically check role
-      if (token.id) {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id } });
-        if (!dbUser || dbUser.role === "BLOCKED" || dbUser.role === "DELETED") {
-          throw new Error("Your account is no longer active");
-        }
-        token.role = dbUser.role;
-        token.email = dbUser.email ?? null; // ✅ keep consistent with type
-      }
-
       return token;
     },
-    async session({ session, token }): Promise<Session> {
+    async session({ session, token }) {
       if (token) {
-        session.user = {
-          id: token.id,
-          name: token.name,
-          email: token.email ?? "", // ✅ ensures string
-          role: token.role,
-        };
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.name = token.name as string; // full name or fallback
       }
       return session;
     },
