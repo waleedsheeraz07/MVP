@@ -1,4 +1,5 @@
 // pages/buyer/orders.tsx:
+import Head from 'next/head'
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
@@ -70,6 +71,11 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function OrdersPage({ orders, categories, user }: OrdersPageProps) {
   return (
+<>
+<Head>
+  <title>My Orders | Vintage Marketplace</title>
+  <meta name="description" content="Track and manage your orders for vintage items." />
+</Head>
     <Layout categories={categories} user={user}>
       <div className="min-h-screen bg-[#fdf8f3] p-4">
         <div className="max-w-4xl mx-auto">
@@ -155,6 +161,7 @@ export default function OrdersPage({ orders, categories, user }: OrdersPageProps
         </div>
       </div>
     </Layout>
+</>
   );
 }
 
