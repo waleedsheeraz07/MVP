@@ -173,7 +173,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   return (
     <div
       key={cond}
-      className="flex flex-col items-center relative z-10 text-center w-1/5"
+      className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
     >
       {/* Dot */}
       <div
@@ -187,7 +187,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       ></div>
 
       {/* Label */}
-      <span className="text-xs mt-3 max-w-[70px] leading-tight break-words">
+      <span className="text-xs mt-3 max-w-[75px] leading-tight break-words">
         {cond}
       </span>
     </div>
