@@ -1,5 +1,5 @@
 // components/ForceLogout.tsx
-"use client";
+/*"use client";
 
 import { useSession, signOut } from "next-auth/react";
 import { useEffect } from "react";
@@ -17,4 +17,4 @@ export default function ForceLogout() {
   }, [session]);
 
   return null; // this component does not render anything
-}
+}*/
