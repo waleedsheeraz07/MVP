@@ -83,44 +83,27 @@ const initialQuerySynced = useRef(false);
     return roots;
   }, [categories]);
  
-// --- sync state from router query ---
+// --- sync state from router query only once ---
 useEffect(() => {
-  if (!router.isReady) return;
+  if (!router.isReady || initialQuerySynced.current) return;
 
-  const query = router.query;
-
-  const qSearch = (query.search as string) || "";
-  const qColors = query.colors ? (query.colors as string).split(",") : [];
-  const qSizes = query.sizes ? (query.sizes as string).split(",") : [];
-  const qCategories = query.categories ? (query.categories as string).split(",") : [];
-  const qSortBy = (query.sortBy as SortOption) || "relevance";
+  setSearch((router.query.search as string) || "");
+  setSelectedColors(router.query.colors ? (router.query.colors as string).split(",") : []);
+  setSelectedSizes(router.query.sizes ? (router.query.sizes as string).split(",") : []);
+  setSelectedCategories(router.query.categories ? (router.query.categories as string).split(",") : []);
+  setSortBy((router.query.sortBy as SortOption) || "relevance");
 
   const prices = products.map(p => p.price);
-  const minPrice = query.priceMin ? Number(query.priceMin) : Math.min(...prices);
-  const maxPrice = query.priceMax ? Number(query.priceMax) : Math.max(...prices);
+  const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
+  const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
+  setPriceRange([min, max]);
 
-  // Only update state if different
-  if (
-    search !== qSearch ||
-    selectedColors.join(",") !== qColors.join(",") ||
-    selectedSizes.join(",") !== qSizes.join(",") ||
-    selectedCategories.join(",") !== qCategories.join(",") ||
-    sortBy !== qSortBy ||
-    priceRange[0] !== minPrice ||
-    priceRange[1] !== maxPrice
-  ) {
-    setSearch(qSearch);
-    setSelectedColors(qColors);
-    setSelectedSizes(qSizes);
-    setSelectedCategories(qCategories);
-    setSortBy(qSortBy);
-    setPriceRange([minPrice, maxPrice]);
-  }
+  initialQuerySynced.current = true; // mark done
 }, [router.query, router.isReady, products]);
 
-// --- update router query when filters change (internal) ---
+// --- update router query only after initial sync ---
 useEffect(() => {
-  if (!router.isReady) return;
+  if (!router.isReady || !initialQuerySynced.current) return;
 
   const query: Record<string, string> = {};
   if (search) query.search = search;
@@ -135,7 +118,7 @@ useEffect(() => {
   if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
   if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
 
-  // Compare with current router.query to prevent endless loop
+  // Compare current router.query with new query
   const currentQuery: Record<string, string> = {};
   Object.entries(router.query).forEach(([key, val]) => {
     if (typeof val === "string") currentQuery[key] = val;
