@@ -1,6 +1,7 @@
 // pages/admin/users.tsx:
 "use client";
 
+import Head from 'next/head'
 import { prisma } from "../../lib/prisma";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
@@ -138,6 +139,11 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
   });
 
   return (
+<>
+<Head>
+  <title>Manage Users | Vintage Marketplace</title>
+  <meta name="description" content="Admin dashboard for managing buyers and sellers on the marketplace." />
+</Head>
     <Layout categories={categories} user={{ id: currentUserId, name: userName, role: role}}>
 <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
   <div className="max-w-6xl mx-auto">
@@ -306,6 +312,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
   `}</style>
 </div>
     </Layout>
+</>
   );
 }
 
