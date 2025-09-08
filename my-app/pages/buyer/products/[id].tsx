@@ -352,6 +352,7 @@ const carouselHandlers = useSwipeable({
       images={product.images}
       activeIndex={activeIndex}
       setActiveIndex={setActiveIndex}
+      closeGallery={() => setGalleryOpen(false)}
     />
   </div>
 )}
