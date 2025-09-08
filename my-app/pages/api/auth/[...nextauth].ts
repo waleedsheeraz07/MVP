@@ -1,3 +1,4 @@
+// pages/api/[...nextAuth].ts:
 import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
@@ -28,6 +29,11 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid email or password");
         }
 
+        // 🚫 Block login if role is BLOCKED or DELETED
+        if (user.role === "BLOCKED" || user.role === "DELETED") {
+          throw new Error("Your account has been disabled. Please contact support.");
+        }
+
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) {
           throw new Error("Invalid email or password");
@@ -54,13 +60,22 @@ export const authOptions: AuthOptions = {
         token.role = user.role;
         token.name = user.name;
       }
+
+      // 🚫 In case the role changed after login, enforce logout
+      if (token.role === "BLOCKED" || token.role === "DELETED") {
+        return {}; // invalidate token
+      }
+
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && token.id) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.name = token.name as string; // full name or fallback
+        session.user.name = token.name as string;
+      } else {
+        // 🚫 Ensure blocked/deleted users have no session
+        session.user = null as any;
       }
       return session;
     },
