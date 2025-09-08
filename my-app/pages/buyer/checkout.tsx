@@ -1,4 +1,5 @@
 // pages/buyer/checkout.tsx:
+import Head from 'next/head'
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
@@ -114,6 +115,11 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
   };
 
   return (
+<>
+<Head>
+  <title>Checkout | Vintage Marketplace</title>
+  <meta name="description" content="Secure checkout for your vintage items purchase." />
+</Head>
  <Layout categories={categories} user={user}>
      
 <div className="max-w-4xl mx-auto p-4 min-h-screen bg-[#fdf8f3]">
@@ -291,6 +297,7 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
   )}
 </div>
 </Layout>
+</>
   );
 }
 
