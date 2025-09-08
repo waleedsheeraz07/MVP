@@ -1,5 +1,4 @@
 // pages/api/profile/delete.ts:
-// pages/api/users/self-delete.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 import { getServerSession } from "next-auth/next";
