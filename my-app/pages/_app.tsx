@@ -4,6 +4,7 @@ import Head from 'next/head'
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { CartProvider } from "../context/CartContext";
+import RouteLoader from "../components/RouteLoader";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -14,6 +15,7 @@ export default function App({ Component, pageProps }: AppProps) {
   
      </Head>
     <CartProvider>
+<RouteLoader />
       <Component {...pageProps} />
     </CartProvider>
 
