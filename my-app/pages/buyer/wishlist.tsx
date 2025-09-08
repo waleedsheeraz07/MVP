@@ -1,4 +1,5 @@
-// pages/wishlist.tsx
+// pages/buyer/wishlist.tsx
+import Head from 'next/head'
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
@@ -86,6 +87,11 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
   };
 
   return (
+<>
+<Head>
+  <title>Wishlist | Vintage Marketplace</title>
+  <meta name="description" content="Save your favorite vintage items to your wishlist and revisit them anytime." />
+</Head>
     <Layout categories={categories} user={user}>
  <div className="max-w-4xl mx-auto p-4 min-h-screen bg-[#fdf8f3]">
   <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
@@ -161,6 +167,7 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
   )}
 </div>
     </Layout>
+</>
   );
 }
 
