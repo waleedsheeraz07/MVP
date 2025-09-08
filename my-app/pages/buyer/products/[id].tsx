@@ -42,13 +42,18 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+
+// inside your component
 useEffect(() => {
   if (galleryOpen) {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden"; // disable scroll
   } else {
-    document.body.style.overflow = "auto";
+    document.body.style.overflow = ""; // restore scroll
   }
-  return () => { document.body.style.overflow = "auto"; }
+
+  return () => {
+    document.body.style.overflow = ""; // cleanup just in case
+  };
 }, [galleryOpen]);
 
 
@@ -340,14 +345,7 @@ const carouselHandlers = useSwipeable({
 </div>
 {/* Full-screen mobile gallery */}
 {galleryOpen && (
-  <div className="fixed inset-0 bg-transparent backdrop-blur-md z-50 flex items-center justify-center">
-    <button
-      className="absolute top-4 right-4 text-white text-2xl z-50"
-      onClick={() => setGalleryOpen(false)}
-    >
-      &times;
-    </button>
-
+  <div className="fixed inset-0 bg-black/20 backdrop-blur-3xl z-50 flex items-center justify-center overflow-hidden">
     <SwipeableGallery
       images={product.images}
       activeIndex={activeIndex}
