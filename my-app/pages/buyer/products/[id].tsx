@@ -146,8 +146,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
             <span><strong>Era:</strong> {product.era}</span>
             </div>
 
-// Add this inside Product Info section, instead of plain condition text
-<div className="mb-6">
+ <div className="mb-6">
   <p className="font-semibold mb-2">Condition:</p>
   <div className="flex items-center gap-2">
     {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
