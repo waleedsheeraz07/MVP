@@ -138,6 +138,18 @@ const moveTouch = (e: React.TouchEvent) => {
     touchStartX = touchEndX; // reset start
   }
 };
+
+
+const handlers = useSwipeable({
+  onSwipedLeft: () => {
+    if (activeIndex < product.images.length - 1) setActiveIndex(activeIndex + 1);
+  },
+  onSwipedRight: () => {
+    if (activeIndex > 0) setActiveIndex(activeIndex - 1);
+  },
+  preventDefaultTouchmoveEvent: true, // ⚠️ this is key
+  trackMouse: true, // optional: allow dragging with mouse on desktop
+});
   return (
     <Layout categories={categories} user={user}>
 
@@ -179,32 +191,32 @@ const moveTouch = (e: React.TouchEvent) => {
     )}
 
     {/* Swipeable Mobile Gallery */}
-    <div className="relative lg:cursor-auto">
-      <img
-        src={product.images[activeIndex]}
-        alt={`${product.title} ${activeIndex}`}
-        className="w-full h-[400px] object-cover rounded-lg cursor-pointer"
-        onClick={() => {
-          if (window.innerWidth < 1024) setGalleryOpen(true);
-        }}
-        // ⬇️ Swipe support for mobile
-        onTouchStart={(e) => startTouch(e)}
-        onTouchMove={(e) => moveTouch(e)}
-      />
+<div
+  {...handlers}
+  className="relative lg:cursor-auto"
+>
+  <img
+    src={product.images[activeIndex]}
+    alt={`${product.title} ${activeIndex}`}
+    className="w-full h-[400px] object-cover rounded-lg cursor-pointer"
+    onClick={() => {
+      if (window.innerWidth < 1024) setGalleryOpen(true);
+    }}
+  />
 
-      {/* Carousel Dots always visible on mobile */}
-      <div className="flex lg:hidden justify-center mt-3 gap-2">
-        {product.images.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveIndex(i)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"
-            }`}
-          />
-        ))}
-      </div>
-    </div>
+  {/* Carousel Dots always visible on mobile */}
+  <div className="flex lg:hidden justify-center mt-3 gap-2">
+    {product.images.map((_, i) => (
+      <button
+        key={i}
+        onClick={() => setActiveIndex(i)}
+        className={`h-2 rounded-full transition-all duration-300 ${
+          i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"
+        }`}
+      />
+    ))}
+  </div>
+</div>
   </div>
 
 
