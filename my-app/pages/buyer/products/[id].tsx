@@ -7,6 +7,9 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../api/auth/[...nextauth]";
 import Layout from "../../../components/header";
 import { useCart } from "../../../context/CartContext";
+import SwipeableGallery from "../../../components/SwipeableGallery";
+import { useState, useRef } from "react";
+import { useSwipeable } from "react-swipeable";
 
 interface Category { id: string; title: string; order: number; parentId?: string | null; }
 interface User { id: string; name?: string | null; role: string; }
@@ -119,9 +122,9 @@ export default function ProductDetail({ product, categories, user, session }: Pr
     </svg>
   </Link>
 
-{/* Responsive Image Carousel */}
+{/* Responsive Image Carousel with Full-Screen Mobile Gallery */}
 <div className="flex flex-col lg:flex-row gap-6">
-  {/* Thumbnails on desktop, hidden on mobile */}
+  {/* Thumbnails on desktop */}
   <div className="hidden lg:flex flex-col gap-2 lg:w-1/6">
     {product.images.map((img, idx) => (
       <img
@@ -145,17 +148,13 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       </div>
     )}
 
-    {/* Main Image Display */}
+    {/* Main Image */}
     <img
       src={product.images[activeIndex]}
       alt={`${product.title} ${activeIndex}`}
       className="w-full h-[400px] object-cover rounded-lg cursor-pointer lg:cursor-auto"
       onClick={() => {
-        if (window.innerWidth < 1024) {
-          // For mobile: open full-screen modal or gallery
-          // You can implement a lightbox here
-          alert("Open image in full screen");
-        }
+        if (window.innerWidth < 1024) setGalleryOpen(true);
       }}
     />
 
@@ -172,6 +171,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       ))}
     </div>
   </div>
+
 
     {/* Product Info */}
     <div className="flex-1 lg:w-1/2">
@@ -304,6 +304,23 @@ export default function ProductDetail({ product, categories, user, session }: Pr
     }
   `}</style>
 </div>
+{/* Full-screen mobile gallery */}
+{galleryOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+    <button
+      className="absolute top-4 right-4 text-white text-2xl z-50"
+      onClick={() => setGalleryOpen(false)}
+    >
+      &times;
+    </button>
+
+    <SwipeableGallery
+      images={product.images}
+      activeIndex={activeIndex}
+      setActiveIndex={setActiveIndex}
+    />
+  </div>
+)}
     </Layout>
   );
 }
