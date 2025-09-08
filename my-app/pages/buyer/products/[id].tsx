@@ -163,25 +163,33 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 <div className="mb-6">
   <p className="font-semibold mb-4">Condition:</p>
 
-  <div className="relative flex items-center justify-between w-full">
+  <div className="relative flex items-center justify-between w-full px-2">
     {/* Base Line */}
     <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-300 -translate-y-1/2 rounded"></div>
 
-    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx) => {
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
       const isCurrent = cond === product.condition;
 
       return (
-        <div key={cond} className="flex flex-col items-center relative z-10 w-1/5">
+        <div
+          key={cond}
+          className="flex flex-col items-center relative z-10 text-center w-1/5"
+        >
           {/* Dot */}
           <div
-            className={`rounded-full border-2 transition-all duration-300 ${
-              isCurrent
-                ? "w-6 h-6 bg-[#5a4436] border-[#5a4436]" // highlighted
-                : "w-4 h-4 bg-white border-gray-400" // normal
-            }`}
+            className={`transition-all duration-300 rounded-full border-2`}
+            style={{
+              width: isCurrent ? "20px" : "12px",
+              height: isCurrent ? "20px" : "12px",
+              backgroundColor: isCurrent ? "#5a4436" : "#fff",
+              borderColor: isCurrent ? "#5a4436" : "#9ca3af", // gray-400
+            }}
           ></div>
+
           {/* Label */}
-          <span className="text-xs mt-2 text-center text-[#3e2f25]">{cond}</span>
+          <span className="text-xs mt-2 max-w-[60px] leading-tight break-words">
+            {cond}
+          </span>
         </div>
       );
     })}
