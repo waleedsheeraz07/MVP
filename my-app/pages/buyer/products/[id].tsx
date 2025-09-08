@@ -135,15 +135,24 @@ const carouselHandlers = useSwipeable({
     <Layout categories={categories} user={user}>
 
 <div className="bg-[#fdf8f3] min-h-screen font-sans relative">
-  {/* Back Button */}
+{/* back button*/}
+ {!galleryOpen && (
   <Link
     href="/buyer/products"
     className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
     </svg>
   </Link>
+)}
 
 {/* Responsive Image Carousel with Full-Screen Mobile Gallery */}
 <div className="flex flex-col lg:flex-row gap-6">
