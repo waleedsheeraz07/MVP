@@ -1,4 +1,5 @@
 // pages/buyer/products/[id].tsx
+import Head from 'next/head'
 import { prisma } from "../../../lib/prisma";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
@@ -137,6 +138,11 @@ const carouselHandlers = useSwipeable({
 });
 
   return (
+<>
+<Head>
+  <title>{product?.title || "Vintage Item"} | Vintage Marketplace</title>
+  <meta name="description" content={`Discover details about ${product?.title || "this vintage item"} on Vintage Marketplace.`} />
+</Head>
     <Layout categories={categories} user={user}>
 
 <div className="bg-[#fdf8f3] min-h-screen font-sans relative">
