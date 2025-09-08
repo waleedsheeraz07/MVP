@@ -107,108 +107,148 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 
   return (
     <Layout categories={categories} user={user}>
-      <div className="bg-[#fdf8f3] min-h-screen font-sans relative">
-        {/* Back Button */}
-        <Link href="/buyer/products" className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </Link>
+<div className="bg-[#fdf8f3] min-h-screen font-sans relative">
+  {/* Back Button */}
+  <Link
+    href="/buyer/products"
+    className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+    </svg>
+  </Link>
 
-        {/* Image carousel */}
-        <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory relative" ref={scrollRef}>
-          {product.images.map((img, idx) => (
-            <img key={idx} src={img} alt={`${product.title} ${idx}`} className="inline-block w-full h-[400px] object-cover snap-center" />
-          ))}
+  {/* Image carousel */}
+  <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory relative" ref={scrollRef}>
+    {product.images.map((img, idx) => (
+      <img
+        key={idx}
+        src={img}
+        alt={`${product.title} ${idx}`}
+        className="inline-block w-full h-[400px] object-cover snap-center"
+      />
+    ))}
 
-          {/* Sold Out Ribbon */}
-          {product.quantity === 0 && (
-            <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
-              Sold Out
+    {/* Sold Out Ribbon */}
+    {product.quantity === 0 && (
+      <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
+        Sold Out
+      </div>
+    )}
+  </div>
+
+  {/* Carousel Dots */}
+  <div className="flex justify-center mt-3 gap-2">
+    {product.images.map((_, i) => (
+      <button
+        key={i}
+        onClick={() => handleDotClick(i)}
+        className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"}`}
+      />
+    ))}
+  </div>
+
+  {/* Product Info */}
+  <div className="max-w-4xl mx-auto p-6">
+    <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
+    <p className="text-2xl font-semibold text-[#5a4436] mb-4">${product.price.toFixed(2)}</p>
+    {product.description && <p className="text-gray-700 leading-relaxed mb-4">{product.description}</p>}
+
+    {/* Era */}
+    <div className="mb-4 text-[#3e2f25] font-medium">
+      <span><strong>Era:</strong> {product.era}</span>
+    </div>
+
+    {/* Condition Bar */}
+    <div className="mb-6 relative">
+      <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
+      <div className="flex justify-between relative z-10">
+        {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
+          const step = ["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].indexOf(product.condition);
+          const active = idx <= step;
+          return (
+            <div key={cond} className="flex flex-col items-center w-6">
+              <div
+                className={`w-3 h-3 rounded-full border-2 transition-colors ${active ? "bg-[#5a4436] border-[#5a4436]" : "bg-white border-gray-300"}`}
+              ></div>
+              {(idx === 0 || idx === arr.length - 1) && (
+                <span className="text-xs mt-1 text-center">{cond}</span>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })}
+      </div>
+    </div>
 
-        <div className="flex justify-center mt-3 gap-2">
-          {product.images.map((_, i) => (
-            <button key={i} onClick={() => handleDotClick(i)} className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"}`} />
+    {/* Colors */}
+    {product.colors.length > 0 && (
+      <div className="mb-4">
+        <p className="font-semibold mb-2">Available Colors:</p>
+        <div className="flex gap-2 flex-wrap">
+          {product.colors.map((c, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedColor(c)}
+              className={`px-3 py-1 rounded-full border text-sm transition ${
+                selectedColor === c ? "bg-[#3e2f25] text-white" : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {c}
+            </button>
           ))}
         </div>
+      </div>
+    )}
 
-        {/* Product Info */}
-        <div className="max-w-4xl mx-auto p-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
-          <p className="text-2xl font-semibold text-[#5a4436] mb-4">${product.price.toFixed(2)}</p>
-          {product.description && <p className="text-gray-700 leading-relaxed mb-4">{product.description}</p>}
-
-          {/* Era & Condition */}
-          <div className="flex gap-4 mb-6 text-[#3e2f25] font-medium">
-            <span><strong>Era:</strong> {product.era}</span>
-            </div>
-
- <div className="mb-6">
-  <p className="font-semibold mb-2">Condition:</p>
-  <div className="flex items-center gap-2">
-    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
-      const isActive = cond === product.condition;
-      return (
-        <div key={cond} className="flex flex-col items-center">
-          <span className={`w-3 h-3 rounded-full border-2 ${isActive ? "bg-[#5a4436] border-[#5a4436]" : "bg-white border-gray-300"}`}></span>
-          {idx === 0 && <span className="text-xs mt-1">{cond}</span>}
-          {idx === arr.length - 1 && <span className="text-xs mt-1">{cond}</span>}
+    {/* Sizes */}
+    {validSizes.length > 0 && (
+      <div className="mb-4">
+        <p className="font-semibold mb-2">Available Sizes:</p>
+        <div className="flex gap-2 flex-wrap">
+          {validSizes.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedSize(s)}
+              className={`px-3 py-1 rounded-full border text-sm transition ${
+                selectedSize === s ? "bg-[#3e2f25] text-white" : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
         </div>
-      );
-    })}
-    <div className="flex-1 h-1 bg-gray-200 relative -ml-1 -mr-1 mt-1">
-      {/* connecting line between dots */}
-      <div className="absolute top-0 left-0 h-1 bg-[#5a4436]" style={{ width: `${(["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].indexOf(product.condition) / 4) * 100}%` }} />
+      </div>
+    )}
+
+    {/* Action Buttons */}
+    <div className="flex flex-col sm:flex-row gap-4 mt-8">
+      <button
+        disabled={isAddToCartDisabled() || loading}
+        onClick={() => handleAddItem("cart")}
+        className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
+          isAddToCartDisabled() || loading
+            ? "bg-gray-300 cursor-not-allowed text-gray-500"
+            : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"
+        }`}
+      >
+        {loading ? "Adding..." : "Add to Cart"}
+      </button>
+      <button
+        disabled={loading}
+        onClick={() => handleAddItem("wishlist")}
+        className="flex-1 py-3 px-4 bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105 text-lg rounded-lg transition"
+      >
+        {loading ? "Adding..." : "Add to Wishlist"}
+      </button>
     </div>
   </div>
+
+  <style jsx>{`
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
 </div>
-
-          {/* Colors */}
-          {product.colors.length > 0 && (
-            <div className="mb-4">
-              <p className="font-semibold mb-2">Available Colors:</p>
-              <div className="flex gap-2 flex-wrap">
-                {product.colors.map((c, i) => (
-                  <button key={i} onClick={() => setSelectedColor(c)} className={`px-3 py-1 rounded-full border text-sm transition ${selectedColor === c ? "bg-[#3e2f25] text-white" : "bg-gray-100 text-gray-700"}`}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Sizes */}
-          {validSizes.length > 0 && (
-            <div className="mb-4">
-              <p className="font-semibold mb-2">Available Sizes:</p>
-              <div className="flex gap-2 flex-wrap">
-                {validSizes.map((s, i) => (
-                  <button key={i} onClick={() => setSelectedSize(s)} className={`px-3 py-1 rounded-full border text-sm transition ${selectedSize === s ? "bg-[#3e2f25] text-white" : "bg-gray-100 text-gray-700"}`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <button disabled={isAddToCartDisabled() || loading} onClick={() => handleAddItem("cart")} className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${isAddToCartDisabled() || loading ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"}`}>
-              {loading ? "Adding..." : "Add to Cart"}
-            </button>
-            <button disabled={loading} onClick={() => handleAddItem("wishlist")} className="flex-1 py-3 px-4 bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105 text-lg rounded-lg transition">
-              {loading ? "Adding..." : "Add to Wishlist"}
-            </button>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-        `}</style>
-      </div>
     </Layout>
   );
 }
