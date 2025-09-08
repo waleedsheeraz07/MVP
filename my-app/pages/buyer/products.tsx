@@ -6,6 +6,7 @@ import Layout from "../../components/header";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { useRouter } from "next/router";
+import { useRef } from "react"; // add at the top
 
 interface Product {
   id: string;
@@ -50,7 +51,10 @@ interface CategoryNode extends Category {
 }
 
 export default function ProductsPage({ products, categories, user }: ProductsPageProps) {
-  const router = useRouter();
+ // inside ProductsPage component
+const initialQuerySynced = useRef(false);
+
+ const router = useRouter();
   const [loadingProduct, setLoadingProduct] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -78,39 +82,44 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     });
     return roots;
   }, [categories]);
+ 
+// --- sync state from router query only once ---
+useEffect(() => {
+  if (!router.isReady || initialQuerySynced.current) return;
 
-  useEffect(() => {
-    if (!router.isReady) return;
+  setSearch((router.query.search as string) || "");
+  setSelectedColors(router.query.colors ? (router.query.colors as string).split(",") : []);
+  setSelectedSizes(router.query.sizes ? (router.query.sizes as string).split(",") : []);
+  setSelectedCategories(router.query.categories ? (router.query.categories as string).split(",") : []);
+  setSortBy((router.query.sortBy as SortOption) || "relevance");
 
-    setSearch((router.query.search as string) || "");
-    setSelectedColors(router.query.colors ? (router.query.colors as string).split(",") : []);
-    setSelectedSizes(router.query.sizes ? (router.query.sizes as string).split(",") : []);
-    setSelectedCategories(router.query.categories ? (router.query.categories as string).split(",") : []);
-    setSortBy((router.query.sortBy as SortOption) || "relevance");
+  const prices = products.map(p => p.price);
+  const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
+  const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
+  setPriceRange([min, max]);
 
-    const prices = products.map(p => p.price);
-    const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
-    const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
-    setPriceRange([min, max]);
-  }, [router.query, router.isReady, products]);
+  initialQuerySynced.current = true; // mark done
+}, [router.query, router.isReady, products]);
 
-  useEffect(() => {
-    if (!router.isReady) return;
+// --- update router query only after initial sync ---
+useEffect(() => {
+  if (!router.isReady || !initialQuerySynced.current) return;
 
-    const query: Record<string, string> = {};
-    if (search) query.search = search;
-    if (selectedColors.length) query.colors = selectedColors.join(",");
-    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
-    if (selectedCategories.length) query.categories = selectedCategories.join(",");
-    if (sortBy !== "relevance") query.sortBy = sortBy;
+  const query: Record<string, string> = {};
+  if (search) query.search = search;
+  if (selectedColors.length) query.colors = selectedColors.join(",");
+  if (selectedSizes.length) query.sizes = selectedSizes.join(",");
+  if (selectedCategories.length) query.categories = selectedCategories.join(",");
+  if (sortBy !== "relevance") query.sortBy = sortBy;
 
-    const minPrice = Math.min(...products.map(p => p.price));
-    const maxPrice = Math.max(...products.map(p => p.price));
-    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
-    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
+  const prices = products.map(p => p.price);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
+  if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
 
-    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
-  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange, products, router]);
+  router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+}, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange, products, router]);
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
     const val = Number(e.target.value);
