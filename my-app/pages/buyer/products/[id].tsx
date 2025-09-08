@@ -42,6 +42,16 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+useEffect(() => {
+  if (galleryOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "auto";
+  }
+  return () => { document.body.style.overflow = "auto"; }
+}, [galleryOpen]);
+
+
   useEffect(() => {
     if (validSizes.length === 1 && product.colors.length === 0) setSelectedSize(validSizes[0]);
     else if (product.colors.length === 1 && validSizes.length === 0) setSelectedColor(product.colors[0]);
@@ -108,6 +118,26 @@ export default function ProductDetail({ product, categories, user, session }: Pr
     }
   };
 
+
+let touchStartX = 0;
+
+const startTouch = (e: React.TouchEvent) => {
+  touchStartX = e.touches[0].clientX;
+};
+
+const moveTouch = (e: React.TouchEvent) => {
+  const touchEndX = e.touches[0].clientX;
+  const diff = touchStartX - touchEndX;
+
+  if (Math.abs(diff) > 50) { // swipe threshold
+    if (diff > 0 && activeIndex < product.images.length - 1) {
+      setActiveIndex(activeIndex + 1);
+    } else if (diff < 0 && activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
+    }
+    touchStartX = touchEndX; // reset start
+  }
+};
   return (
     <Layout categories={categories} user={user}>
 
@@ -148,29 +178,35 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       </div>
     )}
 
-    {/* Main Image */}
-    <img
-      src={product.images[activeIndex]}
-      alt={`${product.title} ${activeIndex}`}
-      className="w-full h-[400px] object-cover rounded-lg cursor-pointer lg:cursor-auto"
-      onClick={() => {
-        if (window.innerWidth < 1024) setGalleryOpen(true);
-      }}
-    />
+    {/* Swipeable Mobile Gallery */}
+    <div className="relative lg:cursor-auto">
+      <img
+        src={product.images[activeIndex]}
+        alt={`${product.title} ${activeIndex}`}
+        className="w-full h-[400px] object-cover rounded-lg cursor-pointer"
+        onClick={() => {
+          if (window.innerWidth < 1024) setGalleryOpen(true);
+        }}
+        // ⬇️ Swipe support for mobile
+        onTouchStart={(e) => startTouch(e)}
+        onTouchMove={(e) => moveTouch(e)}
+      />
 
-    {/* Carousel Dots for mobile */}
-    <div className="flex lg:hidden justify-center mt-3 gap-2">
-      {product.images.map((_, i) => (
-        <button
-          key={i}
-          onClick={() => setActiveIndex(i)}
-          className={`h-2 rounded-full transition-all duration-300 ${
-            i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"
-          }`}
-        />
-      ))}
+      {/* Carousel Dots always visible on mobile */}
+      <div className="flex lg:hidden justify-center mt-3 gap-2">
+        {product.images.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveIndex(i)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   </div>
+</div>
 
 
     {/* Product Info */}
