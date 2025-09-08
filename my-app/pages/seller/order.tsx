@@ -162,7 +162,7 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <p className="font-semibold text-[#3e2f25]">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            KWD {(item.price * item.quantity).toFixed(2)}
                           </p>
 <div className="flex flex-wrap gap-2 mt-1">
   {item.status === "PENDING" && (
@@ -200,7 +200,7 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
 
                   {/* Total */}
                   <div className="flex justify-end font-bold text-[#3e2f25] text-lg">
-                    Seller Total: ${order.total.toFixed(2)}
+                    Seller Total: KWD {order.total.toFixed(2)}
                   </div>
                 </div>
               ))}
