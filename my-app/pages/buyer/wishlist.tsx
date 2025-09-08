@@ -145,7 +145,7 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
           {/* Price & Move to Cart */}
           <div className="flex flex-col items-end ml-2 gap-1">
             <div className="text-sm sm:text-base font-semibold text-[#3e2f25]">
-              ${item.product.price.toFixed(2)}
+              KWD {item.product.price.toFixed(2)}
             </div>
             <button
               onClick={() => handleMoveToCart(item)}
