@@ -322,48 +322,38 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
       <Link
         key={product.id}
         href={`/buyer/products/${product.id}`}
-        className="block"
-        passHref
+        className={`
+          block bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden flex flex-col
+          border-2 border-[#5a4436] cursor-pointer
+          transition-transform transition-shadow duration-200
+          hover:shadow-xl hover:scale-105 active:scale-95
+          h-[340px]
+        `}
       >
-        <a
-          className={`
-            bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden flex flex-col
-            border-2 border-[#5a4436] cursor-pointer
-            transition-transform transition-shadow duration-200
-            hover:shadow-xl hover:scale-105 active:scale-95
-            h-[340px]
-          `}
-        >
-          {/* Product Image */}
-          {product.images[0] && (
-            <div className="relative overflow-hidden">
-              <img
-                src={product.images[0]}
-                alt={product.title}
-                className={`
-                  w-full h-48 object-cover
-                  transition-transform duration-200
-                  hover:scale-110
-                `}
-              />
-            </div>
-          )}
-
-          {/* Product Info */}
-          <div
-            className={`
-              p-4 flex-grow flex flex-col justify-between
-              transition-all duration-200
-            `}
-          >
-            <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-150">
-              {product.title}
-            </h2>
-            <p className="mt-2 font-bold text-[#5a4436] text-lg">
-              ${product.price.toFixed(2)}
-            </p>
+        {/* Product Image */}
+        {product.images[0] && (
+          <div className="relative overflow-hidden">
+            <img
+              src={product.images[0]}
+              alt={product.title}
+              className={`
+                w-full h-48 object-cover
+                transition-transform duration-200
+                hover:scale-110
+              `}
+            />
           </div>
-        </a>
+        )}
+
+        {/* Product Info */}
+        <div className="p-4 flex-grow flex flex-col justify-between transition-all duration-200">
+          <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-150">
+            {product.title}
+          </h2>
+          <p className="mt-2 font-bold text-[#5a4436] text-lg">
+            ${product.price.toFixed(2)}
+          </p>
+        </div>
       </Link>
     ))}
   </div>
