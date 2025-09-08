@@ -311,33 +311,47 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
       </div>
     )}
 
-    {/* Products Grid */}
 {/* Products Grid */}
 {filteredProducts.length === 0 ? (
   <p className="text-center text-[#3e2f25] font-medium mt-6">No products found.</p>
 ) : (
   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {filteredProducts.map(product => (
+    {filteredProducts.map((product) => (
       <Link key={product.id} href={`/buyer/products/${product.id}`} className="block">
         <div
-          className={`bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer transition-all duration-300
-                      hover:shadow-xl hover:scale-105 border border-transparent hover:border-[#5a4436] flex flex-col h-[340px]`}
+          className={`
+            bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden cursor-pointer flex flex-col
+            transition-transform transition-shadow duration-300
+            hover:shadow-xl hover:scale-105 active:scale-95
+            border border-transparent hover:border-[#5a4436] h-[340px]
+          `}
         >
           {/* Product Image */}
           {product.images[0] && (
             <img
               src={product.images[0]}
               alt={product.title}
-              className="w-full h-48 object-cover transition-transform duration-300 hover:scale-110"
+              className={`
+                w-full h-48 object-cover transition-transform duration-300
+                hover:scale-110
+              `}
             />
           )}
 
           {/* Product Info */}
-          <div className="p-4 flex-grow flex flex-col justify-between">
+          <div
+            className={`
+              p-4 flex-grow flex flex-col justify-between
+              transition-all duration-300
+              hover:h-[90px]
+            `}
+          >
             <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-200">
               {product.title}
             </h2>
-            <p className="mt-2 font-bold text-[#5a4436] text-lg">${product.price.toFixed(2)}</p>
+            <p className="mt-2 font-bold text-[#5a4436] text-lg">
+              ${product.price.toFixed(2)}
+            </p>
           </div>
         </div>
       </Link>
