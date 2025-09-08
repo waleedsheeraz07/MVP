@@ -1,28 +1,16 @@
 // pages/buyer/products.tsx
-import { prisma } from "../../lib/prisma";
-import Link from "next/link";
-import { GetServerSidePropsContext } from "next";
-import { useState, useMemo, ChangeEvent, useEffect } from "react";
+import { useState, useEffect, useMemo, ChangeEvent } from "react";
 import Layout from "../../components/header";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../api/auth/[...nextauth]";
 import { useRouter } from "next/router";
 
 interface Product {
   id: string;
   title: string;
-  description?: string;
   price: number;
   images: string[];
   colors: string[];
   sizes: string[];
-  condition: string;
-  era: string;
-  quantity: number;
-  ownerId: string;
   categories: { id: string; title: string }[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface Category {
@@ -30,30 +18,25 @@ interface Category {
   title: string;
   order: number;
   parentId?: string | null;
+  children?: Category[];
 }
 
 interface User {
   id: string;
-  name?: string | null;
+  name: string;
   role: string;
-}
-
-interface ProductsPageProps {
-  products: Product[];
-  categories: Category[];
-  user: User;
 }
 
 type SortOption = "alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance";
 
-interface CategoryNode extends Category {
-  children?: CategoryNode[];
-}
-
-export default function ProductsPage({ products, categories, user }: ProductsPageProps) {
+export default function ProductsPage({ user }: { user: User }) {
   const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingProduct, setLoadingProduct] = useState(false);
 
-  // Filters from URL
+  // Filters
   const [search, setSearch] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -62,127 +45,40 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [filtersVisible, setFiltersVisible] = useState(false);
 
-  const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
-  const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
+  // Fetch products/categories SPA-style
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/products")
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data.products);
+        setCategories(data.categories);
+        const prices = data.products.map((p: Product) => p.price);
+        setPriceRange([Math.min(...prices), Math.max(...prices)]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  // Build category tree
-  const categoryTree: CategoryNode[] = useMemo(() => {
-    const map: Map<string, CategoryNode> = new Map(
-      categories.map(c => [c.id, { ...c, children: [] }])
-    );
-    const roots: CategoryNode[] = [];
+  const allColors = useMemo(() => Array.from(new Set(products.flatMap(p => p.colors))), [products]);
+  const allSizes = useMemo(() => Array.from(new Set(products.flatMap(p => p.sizes))), [products]);
+
+  // Category tree
+  const categoryTree = useMemo(() => {
+    const map = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
+    const roots: Category[] = [];
     map.forEach(cat => {
       if (cat.parentId && map.has(cat.parentId)) {
         map.get(cat.parentId)!.children!.push(cat);
-      } else {
-        roots.push(cat);
-      }
+      } else roots.push(cat);
     });
     return roots;
   }, [categories]);
 
-  // Sync filters when URL changes
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    setSearch((router.query.search as string) || "");
-    setSelectedColors(
-      router.query.colors ? (router.query.colors as string).split(",") : []
-    );
-    setSelectedSizes(
-      router.query.sizes ? (router.query.sizes as string).split(",") : []
-    );
-    setSelectedCategories(
-      router.query.categories ? (router.query.categories as string).split(",") : []
-    );
-    setSortBy((router.query.sortBy as SortOption) || "relevance");
-
-    const prices = products.map(p => p.price);
-    const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
-    const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
-    setPriceRange([min, max]);
-  }, [router.query, router.isReady, products]);
-
-  // Update URL query when filters change
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    const query: Record<string, string> = {};
-    if (search) query.search = search;
-    if (selectedColors.length) query.colors = selectedColors.join(",");
-    if (selectedSizes.length) query.sizes = selectedSizes.join(",");
-    if (selectedCategories.length) query.categories = selectedCategories.join(",");
-    if (sortBy !== "relevance") query.sortBy = sortBy;
-
-    const minPrice = Math.min(...products.map(p => p.price));
-    const maxPrice = Math.max(...products.map(p => p.price));
-    if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
-    if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
-
-    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
-  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange, products, router]);
-
-  // Price change handler
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
     const val = Number(e.target.value);
     setPriceRange(prev => (index === 0 ? [val, prev[1]] : [prev[0], val]));
   };
 
-  // Recursive category checkbox
-  const CategoryCheckbox: React.FC<{
-    category: CategoryNode;
-    selected: string[];
-    setSelected: (ids: string[]) => void;
-  }> = ({ category, selected, setSelected }) => {
-    const [expanded, setExpanded] = useState(true);
-    const isChecked = selected.includes(category.id);
-
-    const allDescendantIds = useMemo(() => {
-      const ids: string[] = [];
-      const traverse = (node: CategoryNode) => {
-        ids.push(node.id);
-        node.children?.forEach(traverse);
-      };
-      traverse(category);
-      return ids;
-    }, [category]);
-
-    const toggle = () => {
-      if (isChecked) {
-        setSelected(selected.filter(id => !allDescendantIds.includes(id)));
-      } else {
-        setSelected([...new Set([...selected, ...allDescendantIds])]);
-      }
-    };
-
-    return (
-      <div className="ml-2">
-        <label className="flex items-center gap-1">
-          {category.children?.length ? (
-            <button type="button" className="mr-1 text-sm font-bold" onClick={() => setExpanded(p => !p)}>
-              {expanded ? "▼" : "►"}
-            </button>
-          ) : null}
-          <input type="checkbox" checked={isChecked} onChange={toggle} />
-          {category.title}
-        </label>
-        {expanded && category.children?.length ? (
-          <div className="ml-4 border-l border-gray-200 pl-2">
-            {category.children.map(child => (
-              <CategoryCheckbox
-                key={child.id}
-                category={child}
-                selected={selected}
-                setSelected={setSelected}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
-    );
-  };
-
-  // Filtering logic remains the same ...
   // Filter products
   const filteredProducts = useMemo(() => {
     let result = products
@@ -213,201 +109,107 @@ export default function ProductsPage({ products, categories, user }: ProductsPag
     return result;
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
+  // Recursive category checkbox
+  const CategoryCheckbox: React.FC<{ category: Category; selected: string[]; setSelected: (ids: string[]) => void }> = ({ category, selected, setSelected }) => {
+    const [expanded, setExpanded] = useState(true);
+    const isChecked = selected.includes(category.id);
+
+    const allDescendantIds = useMemo(() => {
+      const ids: string[] = [];
+      const traverse = (node: Category) => {
+        ids.push(node.id);
+        node.children?.forEach(traverse);
+      };
+      traverse(category);
+      return ids;
+    }, [category]);
+
+    const toggle = () => {
+      if (isChecked) setSelected(selected.filter(id => !allDescendantIds.includes(id)));
+      else setSelected([...new Set([...selected, ...allDescendantIds])]);
+    };
+
+    return (
+      <div className="ml-2">
+        <label className="flex items-center gap-1">
+          {category.children?.length ? (
+            <button type="button" className="mr-1 text-sm font-bold" onClick={() => setExpanded(p => !p)}>
+              {expanded ? "▼" : "►"}
+            </button>
+          ) : null}
+          <input type="checkbox" checked={isChecked} onChange={toggle} />
+          {category.title}
+        </label>
+        {expanded && category.children?.length ? (
+          <div className="ml-4 border-l border-gray-200 pl-2">
+            {category.children.map(child => (
+              <CategoryCheckbox key={child.id} category={child} selected={selected} setSelected={setSelected} />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  if (loading) return <div className="flex justify-center items-center min-h-screen"><div className="w-12 h-12 border-4 border-[#5a4436] border-t-transparent rounded-full animate-spin"></div></div>;
+
   return (
     <Layout categories={categories} user={user}>
-<div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
-  <div className="max-w-6xl mx-auto">
-    <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">
-      All Products
-    </h1>
+      <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans relative">
+        {loadingProduct && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="w-12 h-12 border-4 border-[#5a4436] border-t-transparent rounded-full animate-spin"></div></div>}
 
-    {/* Search Bar: Always Visible */}
-    {/* Search Bar + Reset Button */}
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-  <input
-    type="text"
-    placeholder="Search by title..."
-    value={search}
-    onChange={e => setSearch(e.target.value)}
-    className="input w-full sm:w-1/2 bg-white text-[#3e2f25]"
-  />
-  <button
-    onClick={() => {
-      // Reset state
-      setSearch("");
-      setSelectedColors([]);
-      setSelectedSizes([]);
-      setSelectedCategories([]);
-      setSortBy("relevance");
-      const prices = products.map(p => p.price);
-      setPriceRange([Math.min(...prices), Math.max(...prices)]);
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">All Products</h1>
 
-      // Reset URL query shallowly
-      router.replace(
-        { pathname: router.pathname, query: {} },
-        undefined,
-        { shallow: true }
-      );
-    }}
-    className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition"
-  >
-    Reset Filters
-  </button>
-</div>
+          {/* Search + Reset */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <input type="text" placeholder="Search by title..." value={search} onChange={e => setSearch(e.target.value)} className="input w-full sm:w-1/2 bg-white text-[#3e2f25]" />
+            <button onClick={() => { setSearch(""); setSelectedColors([]); setSelectedSizes([]); setSelectedCategories([]); setSortBy("relevance"); const prices = products.map(p => p.price); setPriceRange([Math.min(...prices), Math.max(...prices)]); }} className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition">Reset Filters</button>
+          </div>
 
-    {/* Toggle Filters Button */}
-    <button
-      className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl"
-      onClick={() => setFiltersVisible(prev => !prev)}
-    >
-      {filtersVisible ? "Hide Filters" : "Show Filters"}
-    </button>
+          {/* Toggle Filters */}
+          <button className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl" onClick={() => setFiltersVisible(prev => !prev)}>{filtersVisible ? "Hide Filters" : "Show Filters"}</button>
 
-    {/* Filters Panel */}
-    {filtersVisible && (
-      <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
-        {/* Sort */}
-        <select
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value as SortOption)}
-          className="input bg-white text-[#3e2f25]"
-        >
-          <option value="alpha">A → Z</option>
-          <option value="alphaDesc">Z → A</option>
-          <option value="priceAsc">Price ↑</option>
-          <option value="priceDesc">Price ↓</option>
-          <option value="relevance">Relevance</option>
-        </select>
+          {/* Filters Panel */}
+          {filtersVisible && <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className="input bg-white text-[#3e2f25]">
+              <option value="alpha">A → Z</option>
+              <option value="alphaDesc">Z → A</option>
+              <option value="priceAsc">Price ↑</option>
+              <option value="priceDesc">Price ↓</option>
+              <option value="relevance">Relevance</option>
+            </select>
+            <div className="flex gap-2 items-center">
+              <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e,0)} className="input w-20 bg-white text-[#3e2f25]" />
+              <span className="text-[#3e2f25]">-</span>
+              <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e,1)} className="input w-20 bg-white text-[#3e2f25]" />
+            </div>
+            <select multiple value={selectedColors} onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">{allColors.map(c => <option key={c} value={c}>{c}</option>)}</select>
+            <select multiple value={selectedSizes} onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">{allSizes.map(s => <option key={s} value={s}>{s}</option>)}</select>
+            <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">{categoryTree.map(cat => <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />)}</div>
+          </div>}
 
-        {/* Price Range */}
-        <div className="flex gap-2 items-center">
-          <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)}
-            className="input w-20 bg-white text-[#3e2f25]" />
-          <span className="text-[#3e2f25]">-</span>
-          <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)}
-            className="input w-20 bg-white text-[#3e2f25]" />
-        </div>
+          {/* Products Grid */}
+          {filteredProducts.length === 0 ? <p className="text-center text-[#3e2f25] font-medium mt-6">No products found.</p> : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredProducts.map(product => (
+                <div key={product.id} onClick={() => { setLoadingProduct(true); router.push(`/buyer/products/${product.id}`); }} className="block bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden flex flex-col border-2 border-[#5a4436] cursor-pointer transition-transform transition-shadow duration-200 hover:shadow-xl hover:scale-105 active:scale-95 h-[340px]">
+                  {product.images[0] && <div className="relative overflow-hidden"><img src={product.images[0]} alt={product.title} className="w-full h-48 object-cover transition-transform duration-200 hover:scale-110" /></div>}
+                  <div className="p-4 flex-grow flex flex-col justify-between transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-150">{product.title}</h2>
+                    <p className="mt-2 font-bold text-[#5a4436] text-lg">${product.price.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-        {/* Colors */}
-        <select multiple value={selectedColors} onChange={e =>
-          setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-          className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-          {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-
-        {/* Sizes */}
-        <select multiple value={selectedSizes} onChange={e =>
-          setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))}
-          className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-          {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-
-        {/* Category Tree */}
-        <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
-          {categoryTree.map(cat => (
-            <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
-          ))}
+          <style jsx>{`
+            .input { padding:0.5rem 0.75rem; border-radius:0.75rem; border:1px solid #ccc; transition:border 0.2s, box-shadow 0.2s; }
+            .input:focus { outline:none; border-color:#5a4436; box-shadow:0 0 0 2px rgba(90,68,54,0.2); }
+          `}</style>
         </div>
       </div>
-    )}
-
-{/* Products Grid */}
-{filteredProducts.length === 0 ? (
-  <p className="text-center text-[#3e2f25] font-medium mt-6">
-    No products found.
-  </p>
-) : (
-  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {filteredProducts.map((product) => (
-      <Link
-        key={product.id}
-        href={`/buyer/products/${product.id}`}
-        className={`
-          block bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden flex flex-col
-          border-2 border-[#5a4436] cursor-pointer
-          transition-transform transition-shadow duration-200
-          hover:shadow-xl hover:scale-105 active:scale-95
-          h-[340px]
-        `}
-      >
-        {/* Product Image */}
-        {product.images[0] && (
-          <div className="relative overflow-hidden">
-            <img
-              src={product.images[0]}
-              alt={product.title}
-              className={`
-                w-full h-48 object-cover
-                transition-transform duration-200
-                hover:scale-110
-              `}
-            />
-          </div>
-        )}
-
-        {/* Product Info */}
-        <div className="p-4 flex-grow flex flex-col justify-between transition-all duration-200">
-          <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-150">
-            {product.title}
-          </h2>
-          <p className="mt-2 font-bold text-[#5a4436] text-lg">
-            ${product.price.toFixed(2)}
-          </p>
-        </div>
-      </Link>
-    ))}
-  </div>
-)}
-
-    <style jsx>{`
-      .input {
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.75rem;
-        border: 1px solid #ccc;
-        transition: border 0.2s, box-shadow 0.2s;
-      }
-      .input:focus {
-        outline: none;
-        border-color: #5a4436;
-        box-shadow: 0 0 0 2px rgba(90, 68, 54, 0.2);
-      }
-    `}</style>
-  </div>
-</div>
     </Layout>
   );
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  if (!session || !session.user?.id) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { categories: { include: { category: { select: { id: true, title: true } } } } },
-  });
-
-  const categories = await prisma.category.findMany({
-    select: { id: true, title: true, order: true, parentId: true },
-    orderBy: { order: "asc" },
-  });
-
-  return {
-    props: {
-      products: products.map(p => ({
-        ...p,
-        categories: p.categories.map(pc => pc.category),
-        createdAt: p.createdAt.toISOString(),
-        updatedAt: p.updatedAt.toISOString(),
-      })),
-      categories,
-      user: {
-        id: session.user.id,
-        name: session.user.name || "Guest",
-        role: session.user.role,
-      },
-    },
-  };
 }
