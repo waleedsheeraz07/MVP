@@ -1,6 +1,7 @@
 // pages/seller/products/[id].tsx:
 "use client"
 
+import Head from 'next/head'
 import { useState, useMemo } from "react"
 import { useRouter } from "next/router"
 import { GetServerSidePropsContext } from "next"
@@ -345,6 +346,11 @@ const eraOptions = [
   ]
 
   return (
+<>
+<Head>
+  <title>Edit Product | Vintage Marketplace</title>
+  <meta name="description" content="Update details, images, and pricing for your listed vintage product." />
+</Head>
 <Layout categories={categories2} user={user}>
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
       <div className="w-full max-w-2xl bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
@@ -448,5 +454,6 @@ const eraOptions = [
       `}</style>
     </div>
 </Layout>
+</>
   )
 }
