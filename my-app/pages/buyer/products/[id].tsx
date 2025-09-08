@@ -183,8 +183,8 @@ export default function ProductDetail({ product, categories, user, session }: Pr
           <div
             className="rounded-full transition-all duration-300"
             style={{
-              width: isCurrent ? "20px" : "14px",
-              height: isCurrent ? "20px" : "14px",
+              width: isCurrent ? "16px" : "14px",
+              height: isCurrent ? "16px" : "14px",
               backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
               border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
             }}
