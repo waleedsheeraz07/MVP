@@ -165,7 +165,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 
   <div className="relative flex justify-between items-start w-full px-4 pt-6">
     {/* Base Line */}
-    <div className="absolute top-6 left-0 w-full h-1 bg-gray-300 rounded"></div>
+    <div className="absolute top-5 left-0 w-full h-1 bg-gray-300 rounded"></div>
 {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
   const isCurrent =
     cond.toLowerCase().trim() === product.condition.toLowerCase().trim();
