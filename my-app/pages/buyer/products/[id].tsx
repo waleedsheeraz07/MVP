@@ -166,33 +166,33 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   <div className="relative flex justify-between items-start w-full px-4 pt-6">
     {/* Base Line */}
     <div className="absolute top-6 left-0 w-full h-1 bg-gray-300 rounded"></div>
+{["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
+  const isCurrent =
+    cond.toLowerCase().trim() === product.condition.toLowerCase().trim();
 
-    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
-      const isCurrent = cond === product.condition;
+  return (
+    <div
+      key={cond}
+      className="flex flex-col items-center relative z-10 text-center w-1/5"
+    >
+      {/* Dot */}
+      <div
+        className="rounded-full transition-all duration-300"
+        style={{
+          width: isCurrent ? "20px" : "14px",
+          height: isCurrent ? "20px" : "14px",
+          backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
+          border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
+        }}
+      ></div>
 
-      return (
-        <div
-          key={cond}
-          className="flex flex-col items-center relative z-10 text-center w-1/5"
-        >
-          {/* Dot */}
-          <div
-            className={`rounded-full transition-all duration-300`}
-            style={{
-              width: isCurrent ? "20px" : "14px",
-              height: isCurrent ? "20px" : "14px",
-              backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
-              border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
-            }}
-          ></div>
-
-          {/* Label */}
-          <span className="text-xs mt-3 max-w-[70px] leading-tight break-words">
-            {cond}
-          </span>
-        </div>
-      );
-    })}
+      {/* Label */}
+      <span className="text-xs mt-3 max-w-[70px] leading-tight break-words">
+        {cond}
+      </span>
+    </div>
+  );
+})}
   </div>
 </div>
 
