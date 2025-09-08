@@ -119,26 +119,6 @@ useEffect(() => {
   };
 
 
-let touchStartX = 0;
-
-const startTouch = (e: React.TouchEvent) => {
-  touchStartX = e.touches[0].clientX;
-};
-
-const moveTouch = (e: React.TouchEvent) => {
-  const touchEndX = e.touches[0].clientX;
-  const diff = touchStartX - touchEndX;
-
-  if (Math.abs(diff) > 50) { // swipe threshold
-    if (diff > 0 && activeIndex < product.images.length - 1) {
-      setActiveIndex(activeIndex + 1);
-    } else if (diff < 0 && activeIndex > 0) {
-      setActiveIndex(activeIndex - 1);
-    }
-    touchStartX = touchEndX; // reset start
-  }
-};
-
 
 const handlers = useSwipeable({
   onSwipedLeft: () => {
