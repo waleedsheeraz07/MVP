@@ -1,4 +1,5 @@
 // pages/api/auth/[...nextauth].ts
+// pages/api/auth/[...nextauth].ts
 import NextAuth, { type AuthOptions, type Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
@@ -8,12 +9,12 @@ import { JWT as NextAuthJWT } from "next-auth/jwt";
 
 const prisma = new PrismaClient();
 
-// Extend JWT type to include custom fields
+// Extend JWT type
 interface ExtendedJWT extends NextAuthJWT {
   id: string;
   role: string;
   name: string;
-  email: string;
+  email: string | null;
 }
 
 export const authOptions: AuthOptions = {
@@ -38,7 +39,6 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid email or password");
         }
 
-        // Block login for BLOCKED or DELETED users
         if (user.role === "BLOCKED" || user.role === "DELETED") {
           throw new Error("Your account is not active");
         }
@@ -69,16 +69,17 @@ export const authOptions: AuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
-        token.email = user.email;
+        token.email = user.email ?? null; // ✅ force string | null
       }
 
-      // Dynamically check role on every request
+      // Dynamically check role
       if (token.id) {
         const dbUser = await prisma.user.findUnique({ where: { id: token.id } });
         if (!dbUser || dbUser.role === "BLOCKED" || dbUser.role === "DELETED") {
           throw new Error("Your account is no longer active");
         }
         token.role = dbUser.role;
+        token.email = dbUser.email ?? null; // ✅ keep consistent with type
       }
 
       return token;
@@ -88,7 +89,7 @@ export const authOptions: AuthOptions = {
         session.user = {
           id: token.id,
           name: token.name,
-          email: token.email ?? "",
+          email: token.email ?? "", // ✅ ensures string
           role: token.role,
         };
       }
