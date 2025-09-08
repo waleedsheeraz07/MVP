@@ -1,4 +1,5 @@
 // pages/profile.tsx:
+import Head from 'next/head'
 import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
@@ -76,6 +77,11 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
   };
 
   return (
+<>
+<Head>
+  <title>My Profile | Vintage Marketplace</title>
+  <meta name="description" content="Manage your account details and preferences on Vintage Marketplace." />
+</Head>
     <Layout categories={categories} user={user}>
       <div className="min-h-screen bg-[#fdf8f3] p-4">
         <div className="max-w-4xl mx-auto">
@@ -276,6 +282,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
         `}</style>
       </div>
     </Layout>
+</>
   );
 }
 
