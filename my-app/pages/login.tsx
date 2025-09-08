@@ -1,4 +1,5 @@
 // pages/login.tsx:
+import Head from 'next/head'
 import { getCsrfToken, signIn } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import { useState } from "react";
@@ -41,6 +42,11 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
   };
 
   return (
+<>
+<Head>
+  <title>Login | Vintage Marketplace</title>
+  <meta name="description" content="Access your Vintage Marketplace account and continue shopping." />
+</Head>
 <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
 
   {/* Company Logo - outside the form container */}
@@ -117,6 +123,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
     }
   `}</style>
 </div>
+</>
   );
 }
 
