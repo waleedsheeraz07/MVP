@@ -163,36 +163,45 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 <div className="mb-10 mt-8">
   <p className="font-semibold mb-4">Condition:</p>
 
-  <div className="relative flex justify-between items-start w-full px-4 pt-6">
+  {/* ⬇️ changed pt-6 → pt-4 to move dots up */}
+  <div className="relative flex justify-between items-start w-full px-4 pt-4">
     {/* Base Line */}
-    <div className="absolute top-5 left-0 w-full h-1 bg-gray-300 rounded"></div>
-{["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
-  const isCurrent =
-    cond.toLowerCase().trim() === product.condition.toLowerCase().trim();
+    {/* ⬇️ changed top-5 → top-4 to align line closer to dots */}
+    <div className="absolute top-4 left-0 w-full h-1 bg-gray-300 rounded"></div>
 
-  return (
-    <div
-      key={cond}
-      className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
-    >
-      {/* Dot */}
-      <div
-        className="rounded-full transition-all duration-300"
-        style={{
-          width: isCurrent ? "20px" : "14px",
-          height: isCurrent ? "20px" : "14px",
-          backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
-          border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
-        }}
-      ></div>
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
+      const isCurrent =
+        cond.toLowerCase().trim() === product.condition.toLowerCase().trim();
 
-      {/* Label */}
-      <span className="text-xs mt-3 max-w-[75px] leading-tight break-words">
-        {cond}
-      </span>
-    </div>
-  );
-})}
+      return (
+        <div
+          key={cond}
+          // ⬇️ added px-1 sm:px-2 for spacing, and text-center stays for alignment
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
+        >
+          {/* Dot */}
+          <div
+            className="rounded-full transition-all duration-300"
+            style={{
+              width: isCurrent ? "20px" : "14px",
+              height: isCurrent ? "20px" : "14px",
+              backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
+              border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
+            }}
+          ></div>
+
+          {/* Label */}
+          {/* ⬇️ added text-center and bold for active condition */}
+          <span
+            className={`text-xs mt-3 max-w-[80px] leading-tight break-words text-center ${
+              isCurrent ? "font-bold" : ""
+            }`}
+          >
+            {cond}
+          </span>
+        </div>
+      );
+    })}
   </div>
 </div>
 
