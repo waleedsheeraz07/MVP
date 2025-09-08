@@ -361,6 +361,7 @@ const carouselHandlers = useSwipeable({
   </div>
 )}
     </Layout>
+</>
   );
 }
 
