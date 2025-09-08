@@ -118,7 +118,19 @@ useEffect(() => {
   if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
   if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
 
-  router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+  // Compare current router.query with new query
+  const currentQuery: Record<string, string> = {};
+  Object.entries(router.query).forEach(([key, val]) => {
+    if (typeof val === "string") currentQuery[key] = val;
+  });
+
+  const isEqual =
+    Object.keys(query).length === Object.keys(currentQuery).length &&
+    Object.keys(query).every(key => query[key] === currentQuery[key]);
+
+  if (!isEqual) {
+    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+  }
 }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange, products, router]);
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
