@@ -1,7 +1,7 @@
 // pages/api/[...nextAuth].ts:
-import NextAuth, { type AuthOptions, type User } from "next-auth";
+import NextAuth, { type AuthOptions, type User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User as PrismaUser } from "@prisma/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { compare } from "bcryptjs";
 
@@ -12,6 +12,14 @@ interface JWT {
   role: string;
   name: string;
   email?: string;
+}
+
+// Type for user object returned by authorize
+interface AuthUser extends NextAuthUser {
+  id: string;
+  role: string;
+  name: string;
+  email: string;
 }
 
 export const authOptions: AuthOptions = {
@@ -28,7 +36,7 @@ export const authOptions: AuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        const user = await prisma.user.findUnique({
+        const user: PrismaUser | null = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
@@ -46,7 +54,7 @@ export const authOptions: AuthOptions = {
           name: [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email.split("@")[0],
           email: user.email,
           role: user.role,
-        } as User;
+        } as AuthUser;
       },
     }),
   ],
@@ -54,25 +62,24 @@ export const authOptions: AuthOptions = {
   pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }) {
-      // On login, attach user info
+    async jwt({ token, user }: { token: JWT; user?: AuthUser }) {
+      // Attach user info on login
       if (user) {
-        token.id = (user as any).id;
-        token.name = (user as any).name;
-        token.role = (user as any).role;
-        token.email = (user as any).email;
+        token.id = user.id;
+        token.name = user.name;
+        token.role = user.role;
+        token.email = user.email;
       }
 
-      // Always return a valid JWT
-      return token as JWT;
+      return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: JWT }) {
       if (token) {
         session.user = {
           id: token.id,
           name: token.name,
           role: token.role,
-          email: token.email || "",
+          email: token.email ?? "",
         };
       }
       return session;
