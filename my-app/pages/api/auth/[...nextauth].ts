@@ -1,6 +1,4 @@
 // pages/api/auth/[...nextauth].ts
-Ok now this is my very very important api do not change anything else in this just make sure that if user logs in and their role is blocked or deleted do not let the user login or maybe log out him immediately:
-
 import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
