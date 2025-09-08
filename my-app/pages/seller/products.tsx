@@ -310,7 +310,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
               {p.title}
             </h2>
             <p className="mt-2 font-bold text-[#5a4436] text-lg">
-              ${p.price.toFixed(2)}
+              KWD {p.price.toFixed(2)}
             </p>
           </div>
 
