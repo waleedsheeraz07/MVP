@@ -167,7 +167,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   <div className="relative flex justify-between items-start w-full px-4 pt-1">
     {/* Base Line */}
     {/* ⬇️ changed top-5 → top-1 to align line closer to dots */}
-    <div className="absolute top-1 left-0 w-full h-1 bg-gray-300 rounded"></div>
+    <div className="absolute top-2 left-0 w-full h-1 bg-gray-300 rounded"></div>
 
     {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
       const isCurrent =
@@ -177,7 +177,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
         <div
           key={cond}
           // ⬇️ added px-1 sm:px-2 for spacing, and text-center stays for alignment
-          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-3"
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
         >
           {/* Dot */}
           <div
