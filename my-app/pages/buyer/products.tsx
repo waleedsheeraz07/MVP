@@ -333,7 +333,7 @@ useEffect(() => {
             {product.title}
           </h2>
           <p className="mt-2 font-bold text-[#5a4436] text-lg">
-            ${product.price.toFixed(2)}
+            KWD {product.price.toFixed(2)}
           </p>
         </div>
       </div>
