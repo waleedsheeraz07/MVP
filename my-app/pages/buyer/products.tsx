@@ -18,7 +18,7 @@ interface Category {
   title: string;
   order: number;
   parentId?: string | null;
-  children?: Category[];
+  children?: Category[]; // <-- Add this explicitly
 }
 
 interface User {
@@ -65,7 +65,7 @@ export default function ProductsPage({ user }: { user: User }) {
   // Category tree
   const categoryTree = useMemo(() => {
     const map = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
-    const roots: Category[] = [];
+const roots: Category[] = [];
     map.forEach(cat => {
       if (cat.parentId && map.has(cat.parentId)) {
         map.get(cat.parentId)!.children!.push(cat);
