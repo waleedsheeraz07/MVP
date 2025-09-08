@@ -85,8 +85,8 @@ export const authOptions: AuthOptions = {
         session.user.name = token.name as string;
       } else {
         // 🚫 Blocked/deleted -> nuke the session
-        session.user = null as any;
-      }
+        session.user = undefined as unknown as typeof session.user;
+}
       return session;
     },
   },
