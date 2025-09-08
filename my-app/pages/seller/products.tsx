@@ -1,4 +1,5 @@
 // pages/seller/products.tsx
+import Head from 'next/head'
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
@@ -179,6 +180,11 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
   }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
   return (
+<>
+<Head>
+  <title>My Products | Vintage Marketplace</title>
+  <meta name="description" content="Manage and showcase your listed vintage items to potential buyers." />
+</Head>
     <Layout categories={categories} user={user}>
       <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
         <div className="max-w-5xl mx-auto">
@@ -336,6 +342,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
         </div>
       </div>
     </Layout>
+</>
   );
 }
 
