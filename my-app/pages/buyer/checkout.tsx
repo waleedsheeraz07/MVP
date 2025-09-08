@@ -235,7 +235,7 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
             </div>
 
             <div className="text-right font-semibold text-[#3e2f25] mt-2 sm:mt-0">
-              ${(item.product.price * item.quantity).toFixed(2)}
+              KWD {(item.product.price * item.quantity).toFixed(2)}
             </div>
           </div>
         ))}
@@ -244,7 +244,7 @@ export default function CheckoutPage({ user, cartItems, categories }: CheckoutPr
       {/* Summary */}
       <div className="border-t pt-4 text-right space-y-1">
         <p><strong>Total Products:</strong> {cartItems.reduce((sum, item) => sum + item.quantity, 0)}</p>
-        <p className="text-lg font-bold"><strong>Total Amount:</strong> ${cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0).toFixed(2)}</p>
+        <p className="text-lg font-bold"><strong>Total Amount:</strong> KWD {cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0).toFixed(2)}</p>
       </div>
 
       {/* Payment Options */}
