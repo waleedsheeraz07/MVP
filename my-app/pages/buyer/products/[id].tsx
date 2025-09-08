@@ -107,6 +107,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 
   return (
     <Layout categories={categories} user={user}>
+
 <div className="bg-[#fdf8f3] min-h-screen font-sans relative">
   {/* Back Button */}
   <Link
@@ -118,46 +119,52 @@ export default function ProductDetail({ product, categories, user, session }: Pr
     </svg>
   </Link>
 
-  {/* Image carousel */}
-  <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory relative" ref={scrollRef}>
-    {product.images.map((img, idx) => (
-      <img
-        key={idx}
-        src={img}
-        alt={`${product.title} ${idx}`}
-        className="inline-block w-full h-[400px] object-cover snap-center"
-      />
-    ))}
+  {/* Responsive container: vertical on mobile, horizontal on large screens */}
+  <div className="flex flex-col lg:flex-row max-w-6xl mx-auto mt-[100px] px-4 lg:px-0 gap-6">
+    
+    {/* Image carousel */}
+    <div className="flex-1 lg:w-1/2">
+      <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory relative" ref={scrollRef}>
+        {product.images.map((img, idx) => (
+          <img
+            key={idx}
+            src={img}
+            alt={`${product.title} ${idx}`}
+            className="inline-block w-full h-[400px] object-cover snap-center"
+          />
+        ))}
 
-    {/* Sold Out Ribbon */}
-    {product.quantity === 0 && (
-      <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
-        Sold Out
+        {/* Sold Out Ribbon */}
+        {product.quantity === 0 && (
+          <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
+            Sold Out
+          </div>
+        )}
       </div>
-    )}
-  </div>
 
-  {/* Carousel Dots */}
-  <div className="flex justify-center mt-3 gap-2">
-    {product.images.map((_, i) => (
-      <button
-        key={i}
-        onClick={() => handleDotClick(i)}
-        className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"}`}
-      />
-    ))}
-  </div>
-
-  {/* Product Info */}
-  <div className="max-w-4xl mx-auto p-6">
-    <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
-    <p className="text-2xl font-semibold text-[#5a4436] mb-4">${product.price.toFixed(2)}</p>
-    {product.description && <p className="text-gray-700 leading-relaxed mb-4">{product.description}</p>}
-
-    {/* Era */}
-    <div className="mb-4 text-[#3e2f25] font-medium">
-      <span><strong>Era:</strong> {product.era}</span>
+      {/* Carousel Dots */}
+      <div className="flex justify-center mt-3 gap-2">
+        {product.images.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => handleDotClick(i)}
+            className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"}`}
+          />
+        ))}
+      </div>
     </div>
+
+    {/* Product Info */}
+    <div className="flex-1 lg:w-1/2">
+      <div className="p-6">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
+        <p className="text-2xl font-semibold text-[#5a4436] mb-4">${product.price.toFixed(2)}</p>
+        {product.description && <p className="text-gray-700 leading-relaxed mb-4">{product.description}</p>}
+
+        {/* Era */}
+        <div className="mb-4 text-[#3e2f25] font-medium">
+          <span><strong>Era:</strong> {product.era}</span>
+        </div>
 
 {/* Condition Bar */}
 <div className="mb-10 mt-8">
@@ -266,6 +273,10 @@ export default function ProductDetail({ product, categories, user, session }: Pr
         {loading ? "Adding..." : "Add to Wishlist"}
       </button>
     </div>
+
+         </div>
+    </div>
+
   </div>
 
   <style jsx>{`
