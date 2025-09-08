@@ -1,3 +1,5 @@
+// pages/signup.tsx:
+import Head from 'next/head'
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -266,6 +268,11 @@ const validatePhoneNumber = (phone: string) => {
   };
 
   return (
+<>
+<Head>
+  <title>Sign Up | Vintage Marketplace</title>
+  <meta name="description" content="Create your account to start buying and selling authentic vintage items." />
+</Head>
  <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
 
   {/* Company Logo */}
@@ -359,5 +366,6 @@ const validatePhoneNumber = (phone: string) => {
     }
   `}</style>
 </div>
+</>
   );
 }
