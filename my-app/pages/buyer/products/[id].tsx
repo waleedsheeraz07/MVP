@@ -144,7 +144,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
           {/* Era & Condition */}
           <div className="flex gap-4 mb-6 text-[#3e2f25] font-medium">
             <span><strong>Era:</strong> {product.era}</span>
-            /div>
+            </div>
 
 // Add this inside Product Info section, instead of plain condition text
 <div className="mb-6">
