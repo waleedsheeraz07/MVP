@@ -164,10 +164,10 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   <p className="font-semibold mb-4">Condition:</p>
 
   {/* ⬇️ changed pt-6 → pt-4 to move dots up */}
-  <div className="relative flex justify-between items-start w-full px-4 pt-4">
+  <div className="relative flex justify-between items-start w-full px-4 pt-3">
     {/* Base Line */}
     {/* ⬇️ changed top-5 → top-4 to align line closer to dots */}
-    <div className="absolute top-4 left-0 w-full h-1 bg-gray-300 rounded"></div>
+    <div className="absolute top-3 left-0 w-full h-1 bg-gray-300 rounded"></div>
 
     {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
       const isCurrent =
