@@ -206,7 +206,6 @@ const moveTouch = (e: React.TouchEvent) => {
       </div>
     </div>
   </div>
-</div>
 
 
     {/* Product Info */}
