@@ -120,16 +120,17 @@ useEffect(() => {
 
 
 
-const handlers = useSwipeable({
+const carouselHandlers = useSwipeable({
   onSwipedLeft: () => {
     if (activeIndex < product.images.length - 1) setActiveIndex(activeIndex + 1);
   },
   onSwipedRight: () => {
     if (activeIndex > 0) setActiveIndex(activeIndex - 1);
   },
-  preventDefaultTouchmoveEvent: true, // ⚠️ this is key
-  trackMouse: true, // optional: allow dragging with mouse on desktop
+  preventScrollOnSwipe: true, // ✅ replaces preventDefaultTouchmoveEvent
+  trackMouse: true, // optional: allow mouse dragging on desktop
 });
+
   return (
     <Layout categories={categories} user={user}>
 
@@ -171,10 +172,7 @@ const handlers = useSwipeable({
     )}
 
     {/* Swipeable Mobile Gallery */}
-<div
-  {...handlers}
-  className="relative lg:cursor-auto"
->
+<div {...carouselHandlers} className="relative lg:cursor-auto">
   <img
     src={product.images[activeIndex]}
     alt={`${product.title} ${activeIndex}`}
@@ -184,7 +182,7 @@ const handlers = useSwipeable({
     }}
   />
 
-  {/* Carousel Dots always visible on mobile */}
+  {/* Carousel Dots for mobile */}
   <div className="flex lg:hidden justify-center mt-3 gap-2">
     {product.images.map((_, i) => (
       <button
