@@ -39,11 +39,10 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid email or password");
         }
 
-        // Build a safe name
         const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
         return {
           id: user.id,
-          name: name || user.email.split("@")[0], // fallback to email if no name
+          name: name || user.email.split("@")[0],
           email: user.email,
           role: user.role,
         };
@@ -55,15 +54,26 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
+      // On login
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
       }
 
-      // 🚫 In case the role changed after login, enforce logout
-      if (token.role === "BLOCKED" || token.role === "DELETED") {
-        return {}; // invalidate token
+      // 🔎 Always check the database role (important for mid-session changes)
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
+
+        if (!dbUser || dbUser.role === "BLOCKED" || dbUser.role === "DELETED") {
+          // Invalidate token -> user will be logged out
+          return {};
+        }
+
+        token.role = dbUser.role;
       }
 
       return token;
@@ -74,7 +84,7 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role as string;
         session.user.name = token.name as string;
       } else {
-        // 🚫 Ensure blocked/deleted users have no session
+        // 🚫 Blocked/deleted -> nuke the session
         session.user = null as any;
       }
       return session;
