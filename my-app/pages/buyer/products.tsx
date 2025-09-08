@@ -1,4 +1,5 @@
 // pages/buyer/products.tsx
+import Head from 'next/head'
 import { prisma } from "../../lib/prisma";
 import { GetServerSidePropsContext } from "next";
 import { useState, useMemo, ChangeEvent, useEffect } from "react";
@@ -213,6 +214,11 @@ useEffect(() => {
   }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
   return (
+<>
+<Head>
+  <title>Shop Vintage Items | Vintage Marketplace</title>
+  <meta name="description" content="Browse a curated selection of authentic vintage items from trusted sellers." />
+</Head>
     <Layout categories={categories} user={user}>
       <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans relative">
         {loadingProduct && (
@@ -357,6 +363,7 @@ useEffect(() => {
         </div>
       </div>
     </Layout>
+</>
   );
 }
 
