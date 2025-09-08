@@ -63,13 +63,17 @@ export default function ProductsPage({ user }: { user: User }) {
   const allSizes = useMemo(() => Array.from(new Set(products.flatMap(p => p.sizes))), [products]);
 
   // Category tree
-  const categoryTree = useMemo(() => {
-    const map = new Map(categories.map(c => [c.id, { ...c, children: [] }]));
-const roots: Category[] = [];
+  const categoryTree: CategoryNode[] = useMemo(() => {
+    const map: Map<string, CategoryNode> = new Map(
+      categories.map(c => [c.id, { ...c, children: [] }])
+    );
+    const roots: CategoryNode[] = [];
     map.forEach(cat => {
       if (cat.parentId && map.has(cat.parentId)) {
         map.get(cat.parentId)!.children!.push(cat);
-      } else roots.push(cat);
+      } else {
+        roots.push(cat);
+      }
     });
     return roots;
   }, [categories]);
