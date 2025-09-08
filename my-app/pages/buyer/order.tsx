@@ -139,14 +139,14 @@ export default function OrdersPage({ orders, categories, user }: OrdersPageProps
                           </div>
                         </div>
                         <p className="font-semibold text-[#3e2f25]">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          KWD {(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     ))}
                   </div>
 
                   <div className="flex justify-end font-bold text-[#3e2f25] text-lg">
-                    Total: ${order.total.toFixed(2)}
+                    Total: KWD {order.total.toFixed(2)}
                   </div>
                 </div>
               ))}
