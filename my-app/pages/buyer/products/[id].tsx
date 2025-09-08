@@ -161,38 +161,26 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 
 {/* Condition Bar */}
 <div className="mb-6">
-  <p className="font-semibold mb-2">Condition:</p>
+  <p className="font-semibold mb-4">Condition:</p>
   <div className="relative flex items-center justify-between">
-    {/* Background Line */}
+    {/* Connecting Line */}
     <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-300 -translate-y-1/2 rounded"></div>
 
-    {/* Active Line */}
-    <div
-      className="absolute top-1/2 left-0 h-1 bg-[#5a4436] -translate-y-1/2 rounded transition-all duration-300"
-      style={{
-        width: `${
-          (["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].indexOf(product.condition) /
-            (["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].length - 1)) *
-          100
-        }%`,
-      }}
-    ></div>
-
-    {/* Dots */}
     {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
-      const currentIndex = arr.indexOf(product.condition);
-      const active = idx <= currentIndex;
+      const isCurrent = cond === product.condition;
+
       return (
-        <div key={cond} className="relative flex flex-col items-center">
+        <div key={cond} className="relative flex flex-col items-center w-1/5">
+          {/* Dot */}
           <div
-            className={`w-3 h-3 rounded-full border-2 z-10 transition-colors ${
-              active ? "bg-[#5a4436] border-[#5a4436]" : "bg-white border-gray-300"
+            className={`rounded-full transition-all duration-300 border-2 ${
+              isCurrent
+                ? "w-5 h-5 bg-[#5a4436] border-[#5a4436]"
+                : "w-3 h-3 bg-white border-gray-400"
             }`}
           ></div>
-          {/* Show labels only for first and last */}
-          {(idx === 0 || idx === arr.length - 1) && (
-            <span className="text-xs mt-2 text-center w-14">{cond}</span>
-          )}
+          {/* Label */}
+          <span className="text-xs mt-2 text-center">{cond}</span>
         </div>
       );
     })}
