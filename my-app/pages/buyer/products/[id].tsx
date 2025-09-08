@@ -119,40 +119,60 @@ export default function ProductDetail({ product, categories, user, session }: Pr
     </svg>
   </Link>
 
-  {/* Responsive container: vertical on mobile, horizontal on large screens */}
-  <div className="flex flex-col lg:flex-row max-w-6xl mx-auto mt-[100px] px-4 lg:px-0 gap-6">
-    
-    {/* Image carousel */}
-    <div className="flex-1 lg:w-1/2">
-      <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory relative" ref={scrollRef}>
-        {product.images.map((img, idx) => (
-          <img
-            key={idx}
-            src={img}
-            alt={`${product.title} ${idx}`}
-            className="inline-block w-full h-[400px] object-cover snap-center"
-          />
-        ))}
+{/* Responsive Image Carousel */}
+<div className="flex flex-col lg:flex-row gap-6">
+  {/* Thumbnails on desktop, hidden on mobile */}
+  <div className="hidden lg:flex flex-col gap-2 lg:w-1/6">
+    {product.images.map((img, idx) => (
+      <img
+        key={idx}
+        src={img}
+        alt={`${product.title} thumbnail ${idx}`}
+        className={`h-20 w-20 object-cover cursor-pointer border rounded transition-all ${
+          idx === activeIndex ? "border-[#5a4436] scale-105" : "border-gray-300"
+        }`}
+        onClick={() => setActiveIndex(idx)}
+      />
+    ))}
+  </div>
 
-        {/* Sold Out Ribbon */}
-        {product.quantity === 0 && (
-          <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
-            Sold Out
-          </div>
-        )}
+  {/* Main image */}
+  <div className="flex-1 relative">
+    {/* Sold Out Ribbon */}
+    {product.quantity === 0 && (
+      <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
+        Sold Out
       </div>
+    )}
 
-      {/* Carousel Dots */}
-      <div className="flex justify-center mt-3 gap-2">
-        {product.images.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => handleDotClick(i)}
-            className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"}`}
-          />
-        ))}
-      </div>
+    {/* Main Image Display */}
+    <img
+      src={product.images[activeIndex]}
+      alt={`${product.title} ${activeIndex}`}
+      className="w-full h-[400px] object-cover rounded-lg cursor-pointer lg:cursor-auto"
+      onClick={() => {
+        if (window.innerWidth < 1024) {
+          // For mobile: open full-screen modal or gallery
+          // You can implement a lightbox here
+          alert("Open image in full screen");
+        }
+      }}
+    />
+
+    {/* Carousel Dots for mobile */}
+    <div className="flex lg:hidden justify-center mt-3 gap-2">
+      {product.images.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setActiveIndex(i)}
+          className={`h-2 rounded-full transition-all duration-300 ${
+            i === activeIndex ? "bg-[#3e2f25] w-4" : "bg-gray-400 w-2"
+          }`}
+        />
+      ))}
     </div>
+  </div>
+</div>
 
     {/* Product Info */}
     <div className="flex-1 lg:w-1/2">
