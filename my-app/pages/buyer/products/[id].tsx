@@ -144,8 +144,28 @@ export default function ProductDetail({ product, categories, user, session }: Pr
           {/* Era & Condition */}
           <div className="flex gap-4 mb-6 text-[#3e2f25] font-medium">
             <span><strong>Era:</strong> {product.era}</span>
-            <span><strong>Condition:</strong> {product.condition}</span>
-          </div>
+            /div>
+
+// Add this inside Product Info section, instead of plain condition text
+<div className="mb-6">
+  <p className="font-semibold mb-2">Condition:</p>
+  <div className="flex items-center gap-2">
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
+      const isActive = cond === product.condition;
+      return (
+        <div key={cond} className="flex flex-col items-center">
+          <span className={`w-3 h-3 rounded-full border-2 ${isActive ? "bg-[#5a4436] border-[#5a4436]" : "bg-white border-gray-300"}`}></span>
+          {idx === 0 && <span className="text-xs mt-1">{cond}</span>}
+          {idx === arr.length - 1 && <span className="text-xs mt-1">{cond}</span>}
+        </div>
+      );
+    })}
+    <div className="flex-1 h-1 bg-gray-200 relative -ml-1 -mr-1 mt-1">
+      {/* connecting line between dots */}
+      <div className="absolute top-0 left-0 h-1 bg-[#5a4436]" style={{ width: `${(["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].indexOf(product.condition) / 4) * 100}%` }} />
+    </div>
+  </div>
+</div>
 
           {/* Colors */}
           {product.colors.length > 0 && (
