@@ -251,8 +251,8 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   return (
 <>
 <Head>
-  <title>My Products | Vintage Marketplace</title>
-  <meta name="description" content="Manage and showcase your listed vintage items to potential buyers." />
+  <title>Sell a Product | Vintage Marketplace</title>
+  <meta name="description" content="List your vintage product for sale on Vintage Marketplace." />
 </Head>
 <Layout categories={categories2} user={user}>
 
