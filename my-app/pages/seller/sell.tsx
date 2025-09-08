@@ -1,6 +1,7 @@
 // pages/seller/sell.tsx:
 "use client"
 
+import Head from 'next/head'
 import { useState, useMemo } from "react"
 import { useRouter } from "next/router"
 import { GetServerSidePropsContext } from "next"
@@ -248,6 +249,11 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   ]
 
   return (
+<>
+<Head>
+  <title>My Products | Vintage Marketplace</title>
+  <meta name="description" content="Manage and showcase your listed vintage items to potential buyers." />
+</Head>
 <Layout categories={categories2} user={user}>
 
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
@@ -420,5 +426,6 @@ export default function SellProductPage({ categories, categories2, user }: SellP
       `}</style>
     </div>
 </Layout>
+</>
   )
 }
