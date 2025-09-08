@@ -224,7 +224,7 @@ const handlers = useSwipeable({
     <div className="flex-1 lg:w-1/2">
       <div className="p-6">
         <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
-        <p className="text-2xl font-semibold text-[#5a4436] mb-4">${product.price.toFixed(2)}</p>
+        <p className="text-2xl font-semibold text-[#5a4436] mb-4">KWD {product.price.toFixed(2)}</p>
         {product.description && <p className="text-gray-700 leading-relaxed mb-4">{product.description}</p>}
 
         {/* Era */}
