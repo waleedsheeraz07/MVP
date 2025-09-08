@@ -1,5 +1,6 @@
 // pages/api/[...nextAuth].ts:
-import NextAuth, { type AuthOptions, type Session, type User as NextAuthUser, type JWT } from "next-auth";
+import NextAuth, { type AuthOptions, type Session, type User as NextAuthUser } from "next-auth";
+import { type JWT } from "next-auth/jwt"; // ✅ correct import
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
