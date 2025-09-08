@@ -162,25 +162,26 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 {/* Condition Bar */}
 <div className="mb-6">
   <p className="font-semibold mb-4">Condition:</p>
-  <div className="relative flex items-center justify-between">
-    {/* Connecting Line */}
+
+  <div className="relative flex items-center justify-between w-full">
+    {/* Base Line */}
     <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-300 -translate-y-1/2 rounded"></div>
 
-    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx) => {
       const isCurrent = cond === product.condition;
 
       return (
-        <div key={cond} className="relative flex flex-col items-center w-1/5">
+        <div key={cond} className="flex flex-col items-center relative z-10 w-1/5">
           {/* Dot */}
           <div
-            className={`rounded-full transition-all duration-300 border-2 ${
+            className={`rounded-full border-2 transition-all duration-300 ${
               isCurrent
-                ? "w-5 h-5 bg-[#5a4436] border-[#5a4436]"
-                : "w-3 h-3 bg-white border-gray-400"
+                ? "w-6 h-6 bg-[#5a4436] border-[#5a4436]" // highlighted
+                : "w-4 h-4 bg-white border-gray-400" // normal
             }`}
           ></div>
           {/* Label */}
-          <span className="text-xs mt-2 text-center">{cond}</span>
+          <span className="text-xs mt-2 text-center text-[#3e2f25]">{cond}</span>
         </div>
       );
     })}
