@@ -1,25 +1,15 @@
-// pages/buyer/products/[id].tsx:
+// pages/buyer/products/[id].tsx
 import { prisma } from "../../../lib/prisma";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../api/auth/[...nextauth]";
-import Layout from "../../../components/header"; // collapsible sidebar layout
+import Layout from "../../../components/header";
 import { useCart } from "../../../context/CartContext";
 
-interface Category {
-  id: string;
-  title: string;
-  order: number;
-  parentId?: string | null;
-}
-
-interface User {
-  id: string;
-  name?: string | null;
-  role: string;
-}
+interface Category { id: string; title: string; order: number; parentId?: string | null; }
+interface User { id: string; name?: string | null; role: string; }
 
 interface ProductDetailProps {
   product: {
@@ -30,20 +20,17 @@ interface ProductDetailProps {
     images: string[];
     colors: string[];
     sizes: (string | null)[];
+    condition: string;
+    era: string;
+    quantity: number;
   };
   categories: Category[];
   user: User;
-  session: {
-    user?: {
-      id: string;
-      name?: string;
-      email?: string;
-    };
-  } | null;
+  session: { user?: { id: string; name?: string; email?: string } } | null;
 }
 
 export default function ProductDetail({ product, categories, user, session }: ProductDetailProps) {
-  const validSizes = product.sizes.filter((s) => s && s.trim() !== "");
+  const validSizes = product.sizes.filter(s => s && s.trim() !== "");
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { refreshCart } = useCart();
@@ -79,6 +66,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   const isAddToCartDisabled = () => {
     if (validSizes.length > 1 && !selectedSize) return true;
     if (product.colors.length > 1 && !selectedColor) return true;
+    if (product.quantity === 0) return true; // disable if sold out
     return false;
   };
 
@@ -103,13 +91,11 @@ export default function ProductDetail({ product, categories, user, session }: Pr
           status,
         }),
       });
-      refreshCart(); 
+      refreshCart();
       localStorage.setItem("cartUpdate", Date.now().toString());
 
       const data: { error?: string } = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Failed to add item");
-
       alert(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
@@ -121,7 +107,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 
   return (
     <Layout categories={categories} user={user}>
-      <div className="bg-[#fdf8f3] min-h-screen font-sans">
+      <div className="bg-[#fdf8f3] min-h-screen font-sans relative">
         {/* Back Button */}
         <Link href="/buyer/products" className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -130,10 +116,17 @@ export default function ProductDetail({ product, categories, user, session }: Pr
         </Link>
 
         {/* Image carousel */}
-        <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory" ref={scrollRef}>
+        <div className="overflow-x-auto whitespace-nowrap scrollbar-hide snap-x snap-mandatory relative" ref={scrollRef}>
           {product.images.map((img, idx) => (
             <img key={idx} src={img} alt={`${product.title} ${idx}`} className="inline-block w-full h-[400px] object-cover snap-center" />
           ))}
+
+          {/* Sold Out Ribbon */}
+          {product.quantity === 0 && (
+            <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
+              Sold Out
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center mt-3 gap-2">
@@ -145,9 +138,16 @@ export default function ProductDetail({ product, categories, user, session }: Pr
         {/* Product Info */}
         <div className="max-w-4xl mx-auto p-6">
           <h1 className="text-3xl md:text-4xl font-bold text-[#3e2f25] mb-3">{product.title}</h1>
-          <p className="text-2xl font-semibold text-[#5a4436] mb-6">${product.price.toFixed(2)}</p>
-          {product.description && <p className="text-gray-700 leading-relaxed mb-6">{product.description}</p>}
+          <p className="text-2xl font-semibold text-[#5a4436] mb-4">${product.price.toFixed(2)}</p>
+          {product.description && <p className="text-gray-700 leading-relaxed mb-4">{product.description}</p>}
 
+          {/* Era & Condition */}
+          <div className="flex gap-4 mb-6 text-[#3e2f25] font-medium">
+            <span><strong>Era:</strong> {product.era}</span>
+            <span><strong>Condition:</strong> {product.condition}</span>
+          </div>
+
+          {/* Colors */}
           {product.colors.length > 0 && (
             <div className="mb-4">
               <p className="font-semibold mb-2">Available Colors:</p>
@@ -161,6 +161,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
             </div>
           )}
 
+          {/* Sizes */}
           {validSizes.length > 0 && (
             <div className="mb-4">
               <p className="font-semibold mb-2">Available Sizes:</p>
@@ -174,6 +175,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
             </div>
           )}
 
+          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-8">
             <button disabled={isAddToCartDisabled() || loading} onClick={() => handleAddItem("cart")} className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${isAddToCartDisabled() || loading ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"}`}>
               {loading ? "Adding..." : "Add to Cart"}
@@ -199,7 +201,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) return { notFound: true };
 
-  // Fetch categories for sidebar
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
     orderBy: { order: "asc" },
