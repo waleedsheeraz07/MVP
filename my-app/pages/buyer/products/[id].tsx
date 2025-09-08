@@ -163,11 +163,11 @@ export default function ProductDetail({ product, categories, user, session }: Pr
 <div className="mb-10 mt-8">
   <p className="font-semibold mb-4">Condition:</p>
 
-  {/* ⬇️ changed pt-6 → pt-4 to move dots up */}
+  {/* ⬇️ changed pt-1 to slightly move all dots up */}
   <div className="relative flex justify-between items-start w-full px-4 pt-1">
     {/* Base Line */}
-    {/* ⬇️ changed top-5 → top-4 to align line closer to dots */}
-    <div className="absolute top-2 left-0 w-full h-1 bg-gray-300 rounded"></div>
+    {/* ⬇️ changed top-1 to align line closer to dots */}
+    <div className="absolute top-1 left-0 w-full h-1 bg-gray-300 rounded"></div>
 
     {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
       const isCurrent =
@@ -176,7 +176,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       return (
         <div
           key={cond}
-          // ⬇️ added px-1 sm:px-2 for spacing, and text-center stays for alignment
+          // ⬇️ added px-1 sm:px-2 for spacing and text-center for alignment
           className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
         >
           {/* Dot */}
@@ -187,13 +187,15 @@ export default function ProductDetail({ product, categories, user, session }: Pr
               height: isCurrent ? "20px" : "14px",
               backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
               border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
+              // ⬇️ move active dot a bit up without affecting other dots
+              marginBottom: isCurrent ? "4px" : "0px",
             }}
           ></div>
 
           {/* Label */}
-          {/* ⬇️ added text-center and bold for active condition */}
+          {/* ⬇️ added text-center, bold for active condition, and extra margin-top for spacing */}
           <span
-            className={`text-xs mt-3 max-w-[80px] leading-tight break-words text-center ${
+            className={`text-xs mt-4 max-w-[80px] leading-tight break-words text-center ${
               isCurrent ? "font-bold" : ""
             }`}
           >
