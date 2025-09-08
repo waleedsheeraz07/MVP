@@ -1,4 +1,5 @@
 // pages/seller/orders.tsx:
+import Head from 'next/head'
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
@@ -98,6 +99,11 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
   };
 
   return (
+<>
+<Head>
+  <title>Manage Orders | Vintage Marketplace</title>
+  <meta name="description" content="View and process customer orders for your listed vintage products." />
+</Head>
     <Layout categories={categories} user={user}>
       <div className="min-h-screen bg-[#fdf8f3] p-4">
         <div className="max-w-5xl mx-auto">
@@ -209,6 +215,7 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
         </div>
       </div>
     </Layout>
+</>
   );
 }
 
