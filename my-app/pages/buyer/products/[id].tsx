@@ -172,7 +172,6 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       ))}
     </div>
   </div>
-</div>
 
     {/* Product Info */}
     <div className="flex-1 lg:w-1/2">
