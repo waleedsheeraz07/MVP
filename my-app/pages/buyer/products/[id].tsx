@@ -159,26 +159,45 @@ export default function ProductDetail({ product, categories, user, session }: Pr
       <span><strong>Era:</strong> {product.era}</span>
     </div>
 
-    {/* Condition Bar */}
-    <div className="mb-6 relative">
-      <div className="absolute top-1/2 w-full h-1 bg-[#d4b996] transform -translate-y-1/2 rounded"></div>
-      <div className="flex justify-between relative z-10">
-        {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
-          const step = ["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].indexOf(product.condition);
-          const active = idx <= step;
-          return (
-            <div key={cond} className="flex flex-col items-center w-6">
-              <div
-                className={`w-3 h-3 rounded-full border-2 transition-colors ${active ? "bg-[#5a4436] border-[#5a4436]" : "bg-white border-gray-300"}`}
-              ></div>
-              {(idx === 0 || idx === arr.length - 1) && (
-                <span className="text-xs mt-1 text-center">{cond}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
+{/* Condition Bar */}
+<div className="mb-6">
+  <p className="font-semibold mb-2">Condition:</p>
+  <div className="relative flex items-center justify-between">
+    {/* Background Line */}
+    <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-300 -translate-y-1/2 rounded"></div>
+
+    {/* Active Line */}
+    <div
+      className="absolute top-1/2 left-0 h-1 bg-[#5a4436] -translate-y-1/2 rounded transition-all duration-300"
+      style={{
+        width: `${
+          (["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].indexOf(product.condition) /
+            (["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].length - 1)) *
+          100
+        }%`,
+      }}
+    ></div>
+
+    {/* Dots */}
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond, idx, arr) => {
+      const currentIndex = arr.indexOf(product.condition);
+      const active = idx <= currentIndex;
+      return (
+        <div key={cond} className="relative flex flex-col items-center">
+          <div
+            className={`w-3 h-3 rounded-full border-2 z-10 transition-colors ${
+              active ? "bg-[#5a4436] border-[#5a4436]" : "bg-white border-gray-300"
+            }`}
+          ></div>
+          {/* Show labels only for first and last */}
+          {(idx === 0 || idx === arr.length - 1) && (
+            <span className="text-xs mt-2 text-center w-14">{cond}</span>
+          )}
+        </div>
+      );
+    })}
+  </div>
+</div>
 
     {/* Colors */}
     {product.colors.length > 0 && (
