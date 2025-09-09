@@ -319,7 +319,7 @@ formData.append("categories", JSON.stringify(selectedCategories))
             </div>
           </div>
 
- {/* Condition Selector */}
+{/* Condition Selector */}
 <div className="mb-6">
   <p className="font-semibold mb-4">Condition <span className="text-red-500">*</span></p>
 
@@ -335,11 +335,13 @@ formData.append("categories", JSON.stringify(selectedCategories))
           type="button"
           key={cond}
           onClick={() => setCondition(cond.toLowerCase())}
-          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2 focus:outline-none"
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2 focus:outline-none cursor-pointer"
         >
           {/* Dot */}
           <div
-            className="rounded-full transition-all duration-300"
+            className={`rounded-full transition-all duration-300 transform ${
+              isCurrent ? "scale-110 shadow-md" : "hover:scale-110 hover:shadow-md"
+            }`}
             style={{
               width: isCurrent ? "16px" : "14px",
               height: isCurrent ? "16px" : "14px",
@@ -361,12 +363,8 @@ formData.append("categories", JSON.stringify(selectedCategories))
     })}
   </div>
 
-  {/* Validation message */}
-  {!condition && (
-    <span className="text-red-500 text-sm mt-2 block">
-      Please select a condition.
-    </span>
-  )}
+  {/* Hidden input to enforce required */}
+  <input type="hidden" name="condition" value={condition} required />
 </div>
 
           {/* Era */}
