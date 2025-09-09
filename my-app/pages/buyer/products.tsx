@@ -285,9 +285,42 @@ useEffect(() => {
                 <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)} className="input w-20 bg-white text-[#3e2f25]" />
               </div>
 
-              <select multiple value={selectedColors} onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-                {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <div className="flex flex-wrap gap-3 my-4">
+  {/* "All" option */}
+  <button
+    type="button"
+    onClick={() => setSelectedColors(["All"])}
+    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition 
+      ${selectedColors.includes("All") ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+    `}
+  >
+    All
+  </button>
+
+  {/* Color circles */}
+  {allColors.map((c) => (
+    <button
+      key={c}
+      type="button"
+      onClick={() => {
+        if (selectedColors.includes("All")) {
+          // remove "All" when choosing specific colors
+          setSelectedColors([c]);
+        } else if (selectedColors.includes(c)) {
+          // deselect if already selected
+          setSelectedColors(selectedColors.filter((col) => col !== c));
+        } else {
+          // select in addition
+          setSelectedColors([...selectedColors, c]);
+        }
+      }}
+      className={`w-10 h-10 rounded-full border-2 transition
+        ${selectedColors.includes(c) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+      `}
+      style={{ backgroundColor: c.toLowerCase() }}
+    />
+  ))}
+</div>
 
               <select multiple value={selectedSizes} onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
                 {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
