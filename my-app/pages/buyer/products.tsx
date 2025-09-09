@@ -323,7 +323,7 @@ useEffect(() => {
   {/* "All" circle */}
   <button
     type="button"
-    onClick={() => setSelectedSizes([])} // reset filter
+    onClick={() => setSelectedSizes([])}
     className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition 
       ${selectedSizes.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
     `}
@@ -331,27 +331,32 @@ useEffect(() => {
     All
   </button>
 
-  {/* Size circles */}
-  {allSizes.map((s) => (
-    <button
-      key={s}
-      type="button"
-      onClick={() => {
-        if (selectedSizes.includes(s)) {
-          // remove if selected
-          setSelectedSizes(selectedSizes.filter((size) => size !== s));
-        } else {
-          // add it
-          setSelectedSizes([...selectedSizes, s]);
-        }
-      }}
-      className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
-        ${selectedSizes.includes(s) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
-      `}
-    >
-      {s}
-    </button>
-  ))}
+  {/* Normalize sizes: trim, uppercase, remove blanks */}
+  {allSizes
+    .map((s) => s.trim().toUpperCase())
+    .filter((s) => s) // remove empty strings
+    .map((s) => (
+      <button
+        key={s}
+        type="button"
+        onClick={() => {
+          const normalizedSelected = selectedSizes.map((size) => size.trim().toUpperCase());
+
+          if (normalizedSelected.includes(s)) {
+            // remove if selected
+            setSelectedSizes(selectedSizes.filter((size) => size.trim().toUpperCase() !== s));
+          } else {
+            // add it
+            setSelectedSizes([...selectedSizes, s]);
+          }
+        }}
+        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
+          ${selectedSizes.map((size) => size.trim().toUpperCase()).includes(s) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+        `}
+      >
+        {s}
+      </button>
+    ))}
 </div>
 
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
