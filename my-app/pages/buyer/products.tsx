@@ -188,35 +188,51 @@ useEffect(() => {
 
 const filteredProducts = useMemo(() => {
   let result = products
+    // Price filter
     .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
-    .filter(p => 
-      selectedColors.length === 0 || 
-      p.colors.some(c => selectedColors.includes(c))
-    )
+
+    // Colors filter
+    .filter(p => {
+      if (selectedColors.length === 0) return true; // "All" selected
+
+      // Normalize product colors
+      const productColors = p.colors
+        .map(c => c.trim().toUpperCase())
+        .filter(Boolean); // remove empty strings
+
+      // Normalize selected colors
+      const selectedColorsNormalized = selectedColors.map(c => c.trim().toUpperCase());
+
+      // Check if at least one color matches
+      return productColors.some(c => selectedColorsNormalized.includes(c));
+    })
+
+    // Sizes filter
     .filter(p => {
       if (selectedSizes.length === 0) return true; // "All" selected
 
-      // Normalize product sizes
       const productSizes = p.sizes
         .map(s => s.trim().toUpperCase())
-        .filter(Boolean); // remove empty strings
+        .filter(Boolean);
 
-      // Normalize selected sizes
       const selectedSizesNormalized = selectedSizes.map(s => s.trim().toUpperCase());
 
-      // Check if at least one matches
       return productSizes.some(s => selectedSizesNormalized.includes(s));
     })
-    .filter(p => 
-      selectedCategories.length === 0 || 
+
+    // Categories filter
+    .filter(p =>
+      selectedCategories.length === 0 ||
       p.categories.some(cat => selectedCategories.includes(cat.id))
     );
 
+  // Search filter
   if (search.trim()) {
     const searchLower = search.toLowerCase();
     result = result.filter(p => p.title.toLowerCase().includes(searchLower));
   }
 
+  // Sorting
   switch (sortBy) {
     case "alpha": result.sort((a, b) => a.title.localeCompare(b.title)); break;
     case "alphaDesc": result.sort((a, b) => b.title.localeCompare(a.title)); break;
@@ -226,7 +242,9 @@ const filteredProducts = useMemo(() => {
       const searchLower = search.toLowerCase();
       result.sort((a, b) => {
         const score = (title: string) =>
-          title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
+          title === searchLower ? 3 :
+          title.startsWith(searchLower) ? 2 :
+          title.includes(searchLower) ? 1 : 0;
         return score(b.title.toLowerCase()) - score(a.title.toLowerCase());
       });
       break;
@@ -234,7 +252,8 @@ const filteredProducts = useMemo(() => {
 
   return result;
 }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
-  return (
+
+return (
 <>
 <Head>
   <title>Shop Vintage Items | Vintage Marketplace</title>
@@ -316,26 +335,37 @@ const filteredProducts = useMemo(() => {
     All
   </button>
 
-  {/* Color circles */}
-  {allColors.map((c) => (
-    <button
-      key={c}
-      type="button"
-      onClick={() => {
-        if (selectedColors.includes(c)) {
-          // remove if already selected
-          setSelectedColors(selectedColors.filter((col) => col !== c));
-        } else {
-          // add it
-          setSelectedColors([...selectedColors, c]);
-        }
-      }}
-      className={`w-10 h-10 rounded-full border-2 transition
-        ${selectedColors.includes(c) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
-      `}
-      style={{ backgroundColor: c.toLowerCase() }}
-    />
-  ))}
+  {/* Unique, normalized color circles */}
+  {Array.from(
+    new Set(allColors.map(c => c.trim().toUpperCase()).filter(Boolean))
+  ).map((c) => {
+    const isSelected = selectedColors
+      .map(sc => sc.trim().toUpperCase())
+      .includes(c);
+
+    return (
+      <button
+        key={c}
+        type="button"
+        onClick={() => {
+          const normalizedSelected = selectedColors.map(sc => sc.trim().toUpperCase());
+          if (isSelected) {
+            // Remove this color from selected
+            setSelectedColors(
+              selectedColors.filter(sc => sc.trim().toUpperCase() !== c)
+            );
+          } else {
+            // Add this color
+            setSelectedColors([...selectedColors, c]);
+          }
+        }}
+        className={`w-10 h-10 rounded-full border-2 transition flex items-center justify-center
+          ${isSelected ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+        `}
+        style={{ backgroundColor: c.toLowerCase() }}
+      />
+    );
+  })}
 </div>
 
 
