@@ -233,17 +233,18 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
               </div>
             </section>
 
-            {/* Save Button */}
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
-              >
-                {loading ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-  <div className="flex justify-between mt-4">
+{/* Buttons Container */}
+<div className="flex justify-end gap-4 mt-4">
+  {/* Save Button */}
+  <button
+    type="submit"
+    disabled={loading}
+    className="px-6 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    {loading ? "Saving..." : "Save Changes"}
+  </button>
+
+  {/* Delete Button */}
   <button
     onClick={async () => {
       if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
@@ -259,7 +260,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
         else alert("Unexpected error occurred");
       }
     }}
-    className="px-6 py-2 bg-[#b84a2f] text-[#fdf8f3] rounded-lg hover:bg-[#9e3e25] transition"
+    className="px-6 py-2 bg-[#b84a2f] text-[#fdf8f3] rounded-lg hover:bg-[#9e3e25] transition-all duration-200 cursor-pointer"
   >
     🗑️ Delete Account
   </button>
