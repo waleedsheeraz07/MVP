@@ -432,7 +432,7 @@ const filteredProducts = useMemo(() => {
     {filteredProducts.map((product) => (
       <Link
         key={product.id}
-        href={`/buyer/products/${product.id}`}
+        href={`/seller/products/${product.id}`}
         className="group block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden
           transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
       >
