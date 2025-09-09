@@ -75,8 +75,7 @@ const initialQuerySynced = useRef(false);
 
 const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
-  const [sort, setSort] = useState<SortOption>(initialSort)
-  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
+   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
   const [minInput, setMinInput] = useState(minPrice)
   const [maxInput, setMaxInput] = useState(maxPrice)
 
