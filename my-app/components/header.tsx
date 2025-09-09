@@ -207,7 +207,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         {/* Sign Out */}
         {user && (
           <div className="p-4 border-t bg-[#f9f4ec]">
-            <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition">
+            <button onClick={() => signOut({ callbackUrl: "/login" })} className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition cursor-pointer">
               Sign Out
             </button>
           </div>
