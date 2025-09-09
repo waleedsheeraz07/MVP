@@ -53,7 +53,7 @@ interface CategoryNode extends Category {
   children?: CategoryNode[];
 }
 
-export default function ProductsPage({ products, categories, user }: ProductsPageProps) {
+export default function ProductsPage({ products, categories, user, initialMinPrice= 0, initialMaxPrice= 100 }: ProductsPageProps) {
  // inside ProductsPage component
 const initialQuerySynced = useRef(false);
 
