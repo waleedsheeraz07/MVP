@@ -129,35 +129,72 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
     );
   };
 
-  // Filter products
-  const filteredProducts = useMemo(() => {
-    let result = products
-      .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
-      .filter(p => selectedColors.length === 0 || p.colors.some(c => selectedColors.includes(c)))
-      .filter(p => selectedSizes.length === 0 || p.sizes.some(s => selectedSizes.includes(s)))
-      .filter(p => selectedCategories.length === 0 || p.categories.some(cat => selectedCategories.includes(cat.id)));
+const filteredProducts = useMemo(() => {
+  let result = products
+    // Price filter
+    .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
 
-    if (search.trim()) {
+    // Colors filter
+    .filter(p => {
+      if (selectedColors.length === 0) return true; // "All" selected
+
+      // Normalize product colors
+      const productColors = p.colors
+        .map(c => c.trim().toUpperCase())
+        .filter(Boolean); // remove empty strings
+
+      // Normalize selected colors
+      const selectedColorsNormalized = selectedColors.map(c => c.trim().toUpperCase());
+
+      // Check if at least one color matches
+      return productColors.some(c => selectedColorsNormalized.includes(c));
+    })
+
+    // Sizes filter
+    .filter(p => {
+      if (selectedSizes.length === 0) return true; // "All" selected
+
+      const productSizes = p.sizes
+        .map(s => s.trim().toUpperCase())
+        .filter(Boolean);
+
+      const selectedSizesNormalized = selectedSizes.map(s => s.trim().toUpperCase());
+
+      return productSizes.some(s => selectedSizesNormalized.includes(s));
+    })
+
+    // Categories filter
+    .filter(p =>
+      selectedCategories.length === 0 ||
+      p.categories.some(cat => selectedCategories.includes(cat.id))
+    );
+
+  // Search filter
+  if (search.trim()) {
+    const searchLower = search.toLowerCase();
+    result = result.filter(p => p.title.toLowerCase().includes(searchLower));
+  }
+
+  // Sorting
+  switch (sortBy) {
+    case "alpha": result.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case "alphaDesc": result.sort((a, b) => b.title.localeCompare(a.title)); break;
+    case "priceAsc": result.sort((a, b) => a.price - b.price); break;
+    case "priceDesc": result.sort((a, b) => b.price - a.price); break;
+    case "relevance":
       const searchLower = search.toLowerCase();
-      result = result.filter(p => p.title.toLowerCase().includes(searchLower));
-    }
+      result.sort((a, b) => {
+        const score = (title: string) =>
+          title === searchLower ? 3 :
+          title.startsWith(searchLower) ? 2 :
+          title.includes(searchLower) ? 1 : 0;
+        return score(b.title.toLowerCase()) - score(a.title.toLowerCase());
+      });
+      break;
+  }
 
-    switch (sortBy) {
-      case "alpha": result.sort((a, b) => a.title.localeCompare(b.title)); break;
-      case "alphaDesc": result.sort((a, b) => b.title.localeCompare(a.title)); break;
-      case "priceAsc": result.sort((a, b) => a.price - b.price); break;
-      case "priceDesc": result.sort((a, b) => b.price - a.price); break;
-      case "relevance":
-        const searchLower = search.toLowerCase();
-        result.sort((a, b) => {
-          const score = (title: string) =>
-            title === searchLower ? 3 : title.startsWith(searchLower) ? 2 : title.includes(searchLower) ? 1 : 0;
-          return score(b.title.toLowerCase()) - score(a.title.toLowerCase());
-        });
-        break;
-    }
-    return result;
-  }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+  return result;
+}, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
     const val = Number(e.target.value);
