@@ -429,10 +429,6 @@ const eraOptions = [
     })}
   </div>
 
-  {/* Validation message */}
-  {!condition && submitted && (
-    <span className="text-red-500 text-sm mt-1">Please select a condition.</span>
-  )}
 </div>
 
           {/* Era */}
