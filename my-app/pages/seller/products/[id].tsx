@@ -410,7 +410,55 @@ const eraOptions = [
           </div>
 
           <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
-          <input type="text" placeholder="Sizes (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)} className="input" />
+          
+<div className="flex flex-col gap-2">
+  <label className="text-gray-700 font-semibold">
+    Available Sizes <span className="text-red-500">*</span>
+  </label>
+
+  <div className="flex flex-wrap gap-3">
+    {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => {
+      // Normalize saved sizes string -> array of uppercase values
+      const selectedArray = sizes
+        ? sizes.split(",").map(s => s.trim().toUpperCase()).filter(Boolean)
+        : [];
+
+      const isSelected = selectedArray.includes(size);
+
+      return (
+        <button
+          key={size}
+          type="button"
+          onClick={() => {
+            let updated = [...selectedArray];
+            if (isSelected) {
+              updated = updated.filter(s => s !== size);
+            } else {
+              updated.push(size);
+            }
+            setSizes(updated.join(",")); // keep as comma-separated string
+          }}
+          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+            ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+            hover:scale-110 hover:shadow-md cursor-pointer
+          `}
+        >
+          {size}
+        </button>
+      );
+    })}
+  </div>
+
+  {/* Hidden field for form validation */}
+  <input
+    type="text"
+    name="sizes"
+    value={sizes}
+    required
+    readOnly
+    hidden
+  />
+</div>
 
 <div className="flex gap-4">
   <button
