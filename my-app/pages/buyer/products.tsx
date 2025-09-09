@@ -9,6 +9,8 @@ import { authOptions } from "../api/auth/[...nextauth]";
 import { useRouter } from "next/router";
 import { useRef } from "react"; // add at the top
 import Link from 'next/link'
+import Image from 'next/image'
+
 interface Product {
   id: string;
   title: string;
