@@ -86,8 +86,8 @@ export default function SellProductPage({ categories, categories2, user }: SellP
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [colors, setColors] = useState("")
-  const [sizes, setSizes] = useState("")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [sizes, setSizes] = useState<string[]>([]);
+const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [condition, setCondition] = useState("")
   const [era, setEra] = useState("")
   const [before1900, setBefore1900] = useState("")
@@ -203,8 +203,8 @@ export default function SellProductPage({ categories, categories2, user }: SellP
       formData.append("price", price)
       formData.append("quantity", quantity)
       formData.append("colors", colors)
-      formData.append("sizes", sizes)
-      formData.append("categories", JSON.stringify(selectedCategories))
+      formData.append("sizes", sizes.join(",")) 
+formData.append("categories", JSON.stringify(selectedCategories))
       formData.append("condition", condition)
       formData.append("era", era === "before1900" ? before1900 : era)
 
@@ -407,12 +407,12 @@ export default function SellProductPage({ categories, categories2, user }: SellP
           key={size}
           type="button"
           onClick={() => {
-            if (isSelected) {
-              setSizes(sizes.filter(s => s.trim().toUpperCase() !== size));
-            } else {
-              setSizes([...sizes, size]);
-            }
-          }}
+  if (isSelected) {
+    setSizes(sizes.filter(s => s.toUpperCase() !== size));
+  } else {
+    setSizes([...sizes, size.toUpperCase()]);
+  }
+}}
           className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
             ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
             hover:scale-110 hover:shadow-md cursor-pointer
