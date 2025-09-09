@@ -353,12 +353,18 @@ return (
 
 </div>
 
-    {/* Color Circles */}
-    <div className="flex flex-wrap gap-3 my-4">
+{/* Filters Panel */}
+<div className="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-6 mb-6">
+
+  {/* Color Filter */}
+  <div className="flex flex-col gap-2">
+    <h3 className="text-[#3e2f25] font-semibold">Colors</h3>
+    <div className="flex flex-wrap gap-3">
+      {/* "All" circle */}
       <button
         type="button"
         onClick={() => setSelectedColors([])}
-        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200 
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
           ${selectedColors.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
           hover:scale-110 hover:shadow-md cursor-pointer
         `}
@@ -366,23 +372,16 @@ return (
         All
       </button>
 
-      {Array.from(
-        new Set(allColors.map(c => c.trim().toUpperCase()).filter(Boolean))
-      ).map(c => {
-        const isSelected = selectedColors
-          .map(sc => sc.trim().toUpperCase())
-          .includes(c);
-
+      {/* Color circles */}
+      {Array.from(new Set(allColors.map(c => c.trim().toUpperCase()).filter(Boolean))).map(c => {
+        const isSelected = selectedColors.map(sc => sc.trim().toUpperCase()).includes(c);
         return (
           <button
             key={c}
             type="button"
             onClick={() => {
-              if (isSelected) {
-                setSelectedColors(selectedColors.filter(sc => sc.trim().toUpperCase() !== c));
-              } else {
-                setSelectedColors([...selectedColors, c]);
-              }
+              if (isSelected) setSelectedColors(selectedColors.filter(sc => sc.trim().toUpperCase() !== c));
+              else setSelectedColors([...selectedColors, c]);
             }}
             className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center
               ${isSelected ? "border-[#3e2f25] scale-110 shadow-md" : "border-gray-300"}
@@ -393,13 +392,17 @@ return (
         );
       })}
     </div>
+  </div>
 
-    {/* Size Circles */}
-    <div className="flex flex-wrap gap-3 my-4">
+  {/* Size Filter */}
+  <div className="flex flex-col gap-2">
+    <h3 className="text-[#3e2f25] font-semibold">Sizes</h3>
+    <div className="flex flex-wrap gap-3">
+      {/* "All" circle */}
       <button
         type="button"
         onClick={() => setSelectedSizes([])}
-        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200 
+        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
           ${selectedSizes.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
           hover:scale-105 hover:shadow-md cursor-pointer
         `}
@@ -407,20 +410,16 @@ return (
         All
       </button>
 
-      {Array.from(
-        new Set(allSizes.map(s => s.trim().toUpperCase()).filter(Boolean))
-      ).map(size => {
+      {/* Size circles */}
+      {Array.from(new Set(allSizes.map(s => s.trim().toUpperCase()).filter(Boolean))).map(size => {
         const isSelected = selectedSizes.map(s => s.trim().toUpperCase()).includes(size);
         return (
           <button
             key={size}
             type="button"
             onClick={() => {
-              if (isSelected) {
-                setSelectedSizes(selectedSizes.filter(s => s.trim().toUpperCase() !== size));
-              } else {
-                setSelectedSizes([...selectedSizes, size]);
-              }
+              if (isSelected) setSelectedSizes(selectedSizes.filter(s => s.trim().toUpperCase() !== size));
+              else setSelectedSizes([...selectedSizes, size]);
             }}
             className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
               ${isSelected ? "border-[#3e2f25] scale-110 shadow-md" : "border-gray-300"}
@@ -432,9 +431,12 @@ return (
         );
       })}
     </div>
+  </div>
 
-    {/* Categories */}
-    <div className="flex flex-col gap-2 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
+  {/* Category Filter */}
+  <div className="flex flex-col gap-2">
+    <h3 className="text-[#3e2f25] font-semibold">Categories</h3>
+    <div className="flex flex-col gap-2 max-h-64 overflow-y-auto bg-white p-3 rounded-2xl border shadow-sm">
       {categoryTree.map(cat => (
         <CategoryCheckbox
           key={cat.id}
@@ -444,6 +446,9 @@ return (
         />
       ))}
     </div>
+  </div>
+
+</div>
   </div>
 )}
 
