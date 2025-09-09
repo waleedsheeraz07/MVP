@@ -145,7 +145,7 @@ const carouselHandlers = useSwipeable({
 </Head>
     <Layout categories={categories} user={user}>
 
-<div className="bg-[#fdf8f3] min-h-screen font-sans relative lg:mt-20">
+<div className="bg-[#fdf8f3] min-h-screen font-sans relative lg:mt-10">
 {/* back button*/}
  {!galleryOpen && (
   <Link
