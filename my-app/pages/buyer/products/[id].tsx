@@ -145,7 +145,7 @@ const carouselHandlers = useSwipeable({
 </Head>
     <Layout categories={categories} user={user}>
 
-<div className="bg-[#fdf8f3] min-h-screen font-sans relative lg:mt-10">
+<div className="bg-[#fdf8f3] min-h-screen font-sans relative lg:mt-20">
 {/* back button*/}
  {!galleryOpen && (
   <Link
@@ -196,7 +196,7 @@ const carouselHandlers = useSwipeable({
   <img
     src={product.images[activeIndex]}
     alt={`${product.title} ${activeIndex}`}
-    className="w-full h-[400px] object-cover rounded-lg cursor-pointer"
+    className="w-full h-[400px] lg:h-[600px] object-cover rounded-lg cursor-pointer"
     onClick={() => {
       if (window.innerWidth < 1024) setGalleryOpen(true);
     }}
