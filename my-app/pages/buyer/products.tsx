@@ -319,9 +319,40 @@ useEffect(() => {
   ))}
 </div>
 
-              <select multiple value={selectedSizes} onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-                {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+<div className="flex flex-wrap gap-3 my-4">
+  {/* "All" circle */}
+  <button
+    type="button"
+    onClick={() => setSelectedSizes([])} // reset filter
+    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition 
+      ${selectedSizes.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+    `}
+  >
+    All
+  </button>
+
+  {/* Size circles */}
+  {allSizes.map((s) => (
+    <button
+      key={s}
+      type="button"
+      onClick={() => {
+        if (selectedSizes.includes(s)) {
+          // remove if selected
+          setSelectedSizes(selectedSizes.filter((size) => size !== s));
+        } else {
+          // add it
+          setSelectedSizes([...selectedSizes, s]);
+        }
+      }}
+      className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
+        ${selectedSizes.includes(s) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+      `}
+    >
+      {s}
+    </button>
+  ))}
+</div>
 
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
                 {categoryTree.map(cat => (
