@@ -254,7 +254,7 @@ useEffect(() => {
                 setPriceRange([Math.min(...prices), Math.max(...prices)]);
                 router.replace({ pathname: router.pathname, query: {} }, undefined, { shallow: true });
               }}
-              className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition"
+              className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition cursor-pointer"
             >
               Reset Filters
             </button>
@@ -262,7 +262,7 @@ useEffect(() => {
 
           {/* Toggle Filters */}
           <button
-            className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl"
+            className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl cursor-pointer"
             onClick={() => setFiltersVisible(prev => !prev)}
           >
             {filtersVisible ? "Hide Filters" : "Show Filters"}
@@ -319,6 +319,7 @@ useEffect(() => {
   ))}
 </div>
 
+
 <div className="flex flex-wrap gap-3 my-4">
   {/* "All" circle */}
   <button
@@ -331,32 +332,35 @@ useEffect(() => {
     All
   </button>
 
-  {/* Normalize sizes: trim, uppercase, remove blanks */}
-  {allSizes
-    .map((s) => s.trim().toUpperCase())
-    .filter((s) => s) // remove empty strings
-    .map((s) => (
-      <button
-        key={s}
-        type="button"
-        onClick={() => {
-          const normalizedSelected = selectedSizes.map((size) => size.trim().toUpperCase());
+  {/* Normalize and deduplicate sizes */}
+  {Array.from(
+    new Set(
+      allSizes
+        .map((s) => s.trim().toUpperCase()) // trim and uppercase
+        .filter((s) => s) // remove empty
+    )
+  ).map((s) => (
+    <button
+      key={s}
+      type="button"
+      onClick={() => {
+        const normalizedSelected = selectedSizes.map((size) => size.trim().toUpperCase());
 
-          if (normalizedSelected.includes(s)) {
-            // remove if selected
-            setSelectedSizes(selectedSizes.filter((size) => size.trim().toUpperCase() !== s));
-          } else {
-            // add it
-            setSelectedSizes([...selectedSizes, s]);
-          }
-        }}
-        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
-          ${selectedSizes.map((size) => size.trim().toUpperCase()).includes(s) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
-        `}
-      >
-        {s}
-      </button>
-    ))}
+        if (normalizedSelected.includes(s)) {
+          // remove if selected
+          setSelectedSizes(selectedSizes.filter((size) => size.trim().toUpperCase() !== s));
+        } else {
+          // add it
+          setSelectedSizes([...selectedSizes, s]);
+        }
+      }}
+      className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
+        ${selectedSizes.map((size) => size.trim().toUpperCase()).includes(s) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+      `}
+    >
+      {s}
+    </button>
+  ))}
 </div>
 
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
