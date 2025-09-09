@@ -273,11 +273,14 @@ const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
   setLoading(true)
   setError("")
 
-if (sizes.length === 0) {
-    setError("Please select at least one size.");
-    setLoading(false);
-    return;
+if (sizes.length === 0 || !condition) {
+  if (sizes.length === 0) setError("Please select at least one size.");
+  else if (!condition) setError("Please select a condition.");
+
+  setLoading(false);
+  return;
 }
+
   try {
     const formData = new FormData()
     formData.append("title", title)
