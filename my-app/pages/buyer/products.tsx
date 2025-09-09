@@ -253,6 +253,52 @@ const filteredProducts = useMemo(() => {
   return result;
 }, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
 
+  // ----- Slider Handlers -----
+  const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
+    e.preventDefault()
+    setActiveThumb(thumb)
+
+    const move = (ev: MouseEvent | TouchEvent) => {
+      const slider = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
+      if (!slider) return
+      const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
+      let percent = ((clientX - slider.left) / slider.width) * 100
+      percent = Math.max(0, Math.min(100, percent))
+      percent = Math.round(percent)
+      if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
+      else setMaxPrice(Math.max(percent, minPrice))
+    }
+
+    const stop = () => {
+      setActiveThumb(null)
+      window.removeEventListener('mousemove', move)
+      window.removeEventListener('mouseup', stop)
+      window.removeEventListener('touchmove', move)
+      window.removeEventListener('touchend', stop)
+    }
+
+    window.addEventListener('mousemove', move)
+    window.addEventListener('mouseup', stop)
+    window.addEventListener('touchmove', move, { passive: false })
+    window.addEventListener('touchend', stop)
+  }
+
+  const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault()
+    const slider = e.currentTarget.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    let percent = ((clientX - slider.left) / slider.width) * 100
+    percent = Math.round(percent)
+    if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
+    else setMaxPrice(Math.max(percent, minPrice))
+  }
+
+  const minPercent = minPrice
+  const maxPercent = maxPrice
+
+  useEffect(() => setMinInput(minPrice), [minPrice])
+  useEffect(() => setMaxInput(maxPrice), [maxPrice])
+
 return (
 <>
 <Head>
@@ -324,23 +370,69 @@ return (
         <option value="relevance">Relevance</option>
       </select>
 
-      <div className="flex gap-2 items-center">
-        <input
-          type="number"
-          value={priceRange[0]}
-          min={0}
-          onChange={e => handlePriceChange(e, 0)}
-          className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
-        />
-        <span className="text-[#3e2f25]">-</span>
-        <input
-          type="number"
-          value={priceRange[1]}
-          min={0}
-          onChange={e => handlePriceChange(e, 1)}
-          className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
-        />
-      </div>
+
+{/* Price Range Slider */}
+<div className="flex flex-col gap-2 w-full max-w-md">
+  {/* Slider Track */}
+  <div
+    className="relative h-2 bg-gray-300 rounded-full cursor-pointer"
+    onMouseDown={handleSliderClick}
+    onTouchStart={handleSliderClick}
+  >
+    {/* Active Range */}
+    <div
+      className="absolute h-2 bg-[#5a4436] rounded-full"
+      style={{
+        left: `${priceRange[0]}%`,
+        right: `${100 - priceRange[1]}%`,
+      }}
+    />
+
+    {/* Min Thumb */}
+    <div
+      className={`absolute w-5 h-5 bg-white border-2 border-[#3e2f25] rounded-full -top-1 cursor-pointer`}
+      style={{ left: `${priceRange[0]}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
+      onMouseDown={e => startDrag(e, 'min')}
+      onTouchStart={e => startDrag(e, 'min')}
+    />
+
+    {/* Max Thumb */}
+    <div
+      className={`absolute w-5 h-5 bg-white border-2 border-[#3e2f25] rounded-full -top-1 cursor-pointer`}
+      style={{ left: `${priceRange[1]}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
+      onMouseDown={e => startDrag(e, 'max')}
+      onTouchStart={e => startDrag(e, 'max')}
+    />
+  </div>
+
+  {/* Input fields */}
+  <div className="flex gap-2 items-center mt-2">
+    <input
+      type="number"
+      min={0}
+      max={100}
+      value={priceRange[0]}
+      onChange={e => setPriceRange([Math.min(Number(e.target.value), priceRange[1]), priceRange[1]])}
+      onBlur={() => setPriceRange([Math.max(0, Math.min(priceRange[0], priceRange[1])), priceRange[1]])}
+      className="input w-20 p-2 border rounded-lg text-[#3e2f25] bg-white"
+    />
+    <span className="text-[#3e2f25]">-</span>
+    <input
+      type="number"
+      min={0}
+      max={100}
+      value={priceRange[1]}
+      onChange={e => setPriceRange([priceRange[0], Math.max(Number(e.target.value), priceRange[0])])}
+      onBlur={() => setPriceRange([priceRange[0], Math.min(priceRange[1], 100)])}
+      className="input w-20 p-2 border rounded-lg text-[#3e2f25] bg-white"
+    />
+  </div>
+</div>
+
+
+
+
+
     </div>
 
     {/* Color Circles */}
