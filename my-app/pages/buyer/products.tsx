@@ -336,29 +336,32 @@ useEffect(() => {
   {Array.from(
     new Set(
       allSizes
-        .map((s) => s.trim().toUpperCase()) // trim and uppercase
-        .filter((s) => s) // remove empty
+        .map((s) => s.trim().toUpperCase()) // trim whitespace and capitalize
+        .filter((s) => s) // remove empty strings
     )
-  ).map((s) => (
+  ).map((size) => (
     <button
-      key={s}
+      key={size}
       type="button"
       onClick={() => {
-        const normalizedSelected = selectedSizes.map((size) => size.trim().toUpperCase());
+        // Normalize currently selected sizes
+        const normalizedSelected = selectedSizes.map((s) => s.trim().toUpperCase());
 
-        if (normalizedSelected.includes(s)) {
-          // remove if selected
-          setSelectedSizes(selectedSizes.filter((size) => size.trim().toUpperCase() !== s));
+        if (normalizedSelected.includes(size)) {
+          // Remove size if it's already selected
+          setSelectedSizes(selectedSizes.filter((s) => s.trim().toUpperCase() !== size));
         } else {
-          // add it
-          setSelectedSizes([...selectedSizes, s]);
+          // Add size to selection
+          setSelectedSizes([...selectedSizes, size]);
         }
       }}
       className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
-        ${selectedSizes.map((size) => size.trim().toUpperCase()).includes(s) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+        ${selectedSizes
+          .map((s) => s.trim().toUpperCase())
+          .includes(size) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
       `}
     >
-      {s}
+      {size}
     </button>
   ))}
 </div>
