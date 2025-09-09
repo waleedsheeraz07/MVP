@@ -68,6 +68,19 @@ const initialQuerySynced = useRef(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [filtersVisible, setFiltersVisible] = useState(false);
 
+
+
+
+const [minPrice, setMinPrice] = useState(initialMinPrice)
+  const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
+  const [sort, setSort] = useState<SortOption>(initialSort)
+  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
+  const [minInput, setMinInput] = useState(minPrice)
+  const [maxInput, setMaxInput] = useState(maxPrice)
+
+
+
+
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
 
