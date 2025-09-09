@@ -310,38 +310,48 @@ return (
 {filtersVisible && (
   <div className="flex flex-col gap-4 mb-6 p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all">
     
-    {/* Sort & Price */}
-    <div className="flex flex-wrap gap-4 items-center">
-      <select
-        value={sortBy}
-        onChange={e => setSortBy(e.target.value as SortOption)}
-        className="input bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
-      >
-        <option value="alpha">A → Z</option>
-        <option value="alphaDesc">Z → A</option>
-        <option value="priceAsc">Price ↑</option>
-        <option value="priceDesc">Price ↓</option>
-        <option value="relevance">Relevance</option>
-      </select>
+{/* Sort & Price Section */}
+<div className="bg-white p-4 rounded-2xl shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
-      <div className="flex gap-2 items-center">
-        <input
-          type="number"
-          value={priceRange[0]}
-          min={0}
-          onChange={e => handlePriceChange(e, 0)}
-          className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
-        />
-        <span className="text-[#3e2f25]">-</span>
-        <input
-          type="number"
-          value={priceRange[1]}
-          min={0}
-          onChange={e => handlePriceChange(e, 1)}
-          className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
-        />
-      </div>
+  {/* Sort By */}
+  <div className="flex flex-col md:flex-row md:items-center gap-2">
+    <span className="text-[#3e2f25] font-semibold">Sort By:</span>
+    <select
+      value={sortBy}
+      onChange={e => setSortBy(e.target.value as SortOption)}
+      className="input bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2 shadow-sm hover:shadow-md transition"
+    >
+      <option value="alpha">A → Z</option>
+      <option value="alphaDesc">Z → A</option>
+      <option value="priceAsc">Price ↑</option>
+      <option value="priceDesc">Price ↓</option>
+      <option value="relevance">Relevance</option>
+    </select>
+  </div>
+
+  {/* Price Range */}
+  <div className="flex flex-col md:flex-row md:items-center gap-2">
+    <span className="text-[#3e2f25] font-semibold">Price Range:</span>
+    <div className="flex gap-2 items-center">
+      <input
+        type="number"
+        value={priceRange[0]}
+        min={0}
+        onChange={e => handlePriceChange(e, 0)}
+        className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2 shadow-sm hover:shadow-md transition"
+      />
+      <span className="text-[#3e2f25] font-semibold">-</span>
+      <input
+        type="number"
+        value={priceRange[1]}
+        min={0}
+        onChange={e => handlePriceChange(e, 1)}
+        className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2 shadow-sm hover:shadow-md transition"
+      />
     </div>
+  </div>
+
+</div>
 
     {/* Color Circles */}
     <div className="flex flex-wrap gap-3 my-4">
