@@ -108,7 +108,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
       <header className="bg-[#fffdfb] border-b shadow-sm flex items-center justify-between sticky top-0 z-10 relative px-4">
         <button
           onClick={() => setIsOpen(true)}
-          className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none my-4"
+          className="text-[#3e2f25] hover:text-[#5a4436] transition-colors focus:outline-none my-4 cursor-pointer"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
