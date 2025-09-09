@@ -45,6 +45,8 @@ interface ProductsPageProps {
   products: Product[];
   categories: Category[];
   user: User;
+  initialMinPrice: 0;
+  initialMaxPrice: 100;
 }
 
 type SortOption = "alpha" | "alphaDesc" | "priceAsc" | "priceDesc" | "relevance";
@@ -53,7 +55,7 @@ interface CategoryNode extends Category {
   children?: CategoryNode[];
 }
 
-export default function ProductsPage({ products, categories, user, initialMinPrice= 0, initialMaxPrice= 100 }: ProductsPageProps) {
+export default function ProductsPage({ products, categories, user, initialMinPrice, initialMaxPrice }: ProductsPageProps) {
  // inside ProductsPage component
 const initialQuerySynced = useRef(false);
 
