@@ -385,11 +385,55 @@ const eraOptions = [
             </div>
           </div>
 
-          {/* Condition */}
-          <select value={condition} onChange={e => setCondition(e.target.value)} required className="input">
-            <option value="">Select Condition *</option>
-            {["Untouched","Excellent","Good","Fair","Slightly Damaged","Damaged","Highly Damaged"].map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
-          </select>
+        {/* Condition Selector */}
+<div className="mb-6">
+  <label className="text-gray-700 font-semibold mb-2 block">Condition <span className="text-red-500">*</span></label>
+
+  {/* Hidden input for form submission */}
+  <input type="hidden" name="condition" value={condition} required />
+
+  <div className="relative flex justify-between items-start w-full px-4 pt-2">
+    {/* Base Line */}
+    <div className="absolute top-3 left-0 w-full h-1 bg-gray-300 rounded"></div>
+
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
+      const isCurrent = cond.toLowerCase().trim() === condition?.toLowerCase().trim();
+
+      return (
+        <div
+          key={cond}
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2 cursor-pointer"
+          onClick={() => setCondition(cond)}
+        >
+          {/* Dot */}
+          <div
+            className={`rounded-full transition-all duration-300 hover:scale-110`}
+            style={{
+              width: isCurrent ? "16px" : "14px",
+              height: isCurrent ? "16px" : "14px",
+              backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
+              border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
+            }}
+          ></div>
+
+          {/* Label */}
+          <span
+            className={`text-xs mt-3 max-w-[80px] leading-tight break-words text-center ${
+              isCurrent ? "font-bold" : ""
+            }`}
+          >
+            {cond}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+
+  {/* Validation message */}
+  {!condition && submitted && (
+    <span className="text-red-500 text-sm mt-1">Please select a condition.</span>
+  )}
+</div>
 
           {/* Era */}
           <div>
