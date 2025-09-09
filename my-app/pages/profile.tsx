@@ -125,16 +125,17 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
                   />
                 </div>
                 <div>
-                  <label className="text-gray-600 font-medium">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                  />
-                </div>
+  <label className="text-gray-600 font-medium">Email</label>
+  <input
+    type="email"
+    name="email"
+    value={form.email}
+    onChange={handleChange}
+    className="input bg-gray-100 text-gray-500 cursor-not-allowed"
+    disabled
+    required
+  />
+</div>
                 <div>
                   <label className="text-gray-600 font-medium">Phone Number</label>
                   <input
