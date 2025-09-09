@@ -124,14 +124,14 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
                     className="input"
                   />
                 </div>
-  <div>
-  <label className="text-gray-600 font-medium">Email</label>
+<div>
+  <label className="text-gray-600 font-medium mb-1 block">Email</label>
   <input
     type="email"
     name="email"
     value={form.email}
     onChange={handleChange}
-    className="input bg-gray-100 text-gray-500 cursor-not-allowed"
+    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed"
     disabled
     tabIndex={-1} // prevent tab focus
     required
