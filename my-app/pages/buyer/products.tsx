@@ -8,7 +8,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { useRouter } from "next/router";
 import { useRef } from "react"; // add at the top
-
+import Link from 'next/link'
 interface Product {
   id: string;
   title: string;
