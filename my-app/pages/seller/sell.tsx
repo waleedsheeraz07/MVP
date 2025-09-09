@@ -196,6 +196,11 @@ const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     setLoading(true)
     setError("")
 
+if (sizes.length === 0) {
+    setError("Please select at least one size.");
+    setLoading(false);
+    return;
+}
     try {
       const formData = new FormData()
       formData.append("title", title)
@@ -396,23 +401,26 @@ formData.append("categories", JSON.stringify(selectedCategories))
             className="input"
           />
 
-          <div className="flex flex-col gap-2">
-  <label className="text-gray-700 font-semibold">Available Sizes <span className="text-red-500">*</span></label>
+<div className="flex flex-col gap-2">
+  <label className="text-gray-700 font-semibold">
+    Available Sizes <span className="text-red-500">*</span>
+  </label>
+
   <div className="flex flex-wrap gap-3">
-    {["XXS","XS","S","M","L","XL","XXL"].map((size) => {
-      const isSelected = sizes.map(s => s.trim().toUpperCase()).includes(size);
+    {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => {
+      const isSelected = sizes.includes(size);
 
       return (
         <button
           key={size}
           type="button"
           onClick={() => {
-  if (isSelected) {
-    setSizes(sizes.filter(s => s.toUpperCase() !== size));
-  } else {
-    setSizes([...sizes, size.toUpperCase()]);
-  }
-}}
+            if (isSelected) {
+              setSizes(sizes.filter((s) => s !== size));
+            } else {
+              setSizes([...sizes, size]);
+            }
+          }}
           className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
             ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
             hover:scale-110 hover:shadow-md cursor-pointer
@@ -423,10 +431,16 @@ formData.append("categories", JSON.stringify(selectedCategories))
       );
     })}
   </div>
-  {/* Validation message */}
-  {sizes.length === 0 && (
-    <span className="text-red-500 text-sm mt-1">Please select at least one size.</span>
-  )}
+
+  {/* Hidden input to trigger required validation */}
+  <input
+    type="text"
+    name="sizes"
+    value={sizes.join(",")}
+    required
+    readOnly
+    hidden
+  />
 </div>
 
           <button
