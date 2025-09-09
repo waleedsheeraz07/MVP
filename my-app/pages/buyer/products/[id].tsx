@@ -296,25 +296,31 @@ const carouselHandlers = useSwipeable({
       </div>
     )}
 
-    {/* Sizes */}
-    {validSizes.length > 0 && (
-      <div className="mb-4">
-        <p className="font-semibold mb-2">Available Sizes:</p>
-        <div className="flex gap-2 flex-wrap">
-          {validSizes.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectedSize(s)}
-              className={`px-3 py-1 rounded-full border text-sm transition ${
-                selectedSize === s ? "bg-[#3e2f25] text-white" : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-    )}
+{/* Sizes */}
+{validSizes.length > 0 && (
+  <div className="mb-4">
+    <p className="font-semibold mb-2">Available Sizes:</p>
+    <div className="flex gap-3 flex-wrap">
+      {validSizes.map((s, i) => {
+        const isSelected = selectedSize === s;
+
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setSelectedSize(s)}
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+              ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+              hover:scale-110 hover:shadow-md cursor-pointer
+            `}
+          >
+            {s}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
 
     {/* Action Buttons */}
     <div className="flex flex-col sm:flex-row gap-4 mt-8">
