@@ -98,7 +98,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition"
+        className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition cursor-pointer"
       >
         {loading ? "Logging In..." : "Login"}
       </button>
