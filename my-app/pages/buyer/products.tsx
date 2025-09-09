@@ -299,29 +299,28 @@ useEffect(() => {
             </div>
           )}
 
- {/* Products Grid */}
+{/* Products Grid */}
 {filteredProducts.length === 0 ? (
   <p className="text-center text-[#3e2f25] font-medium mt-6">
     No products found.
   </p>
 ) : (
   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {filteredProducts.map(product => (
-      <div
+    {filteredProducts.map((product) => (
+      <Link
         key={product.id}
-        onClick={() => {
-          setLoadingProduct(true);
-          router.push(`/buyer/products/${product.id}`);
-        }}
-        className="relative block bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden flex flex-col border-2 border-[#5a4436] cursor-pointer transition-transform transition-shadow duration-200 hover:shadow-xl hover:scale-105 active:scale-95 h-[340px]"
+        href={`/buyer/products/${product.id}`}
+        className="group block bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-transform duration-200 hover:scale-105 active:scale-95"
       >
-        {/* Product Image */}
+        {/* Image Wrapper */}
         {product.images[0] && (
-          <div className="relative overflow-hidden">
+          <div className="relative w-full h-48 overflow-hidden">
             <img
               src={product.images[0]}
               alt={product.title}
-              className={`w-full h-48 object-cover transition-transform duration-200 hover:scale-110 ${product.quantity === 0 ? "opacity-70" : ""}`}
+              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 ${
+                product.quantity === 0 ? "opacity-70" : ""
+              }`}
             />
 
             {/* Sold Out Ribbon */}
@@ -333,16 +332,16 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Product Info */}
-        <div className="p-4 flex-grow flex flex-col justify-between transition-all duration-200">
-          <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-150">
+        {/* Card Content */}
+        <div className="p-4 text-center">
+          <h2 className="text-base md:text-lg font-semibold text-[#3e2f25] truncate group-hover:text-[#5a4436] transition-colors duration-200">
             {product.title}
           </h2>
-          <p className="mt-2 font-bold text-[#5a4436] text-lg">
+          <p className="mt-2 text-[#5a4436] font-bold text-sm md:text-base">
             KWD {product.price.toFixed(2)}
           </p>
         </div>
-      </div>
+      </Link>
     ))}
   </div>
 )}
