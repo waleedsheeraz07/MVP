@@ -147,7 +147,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
             <p className="font-bold text-lg text-[#3e2f25]">{user?.name || "Guest"}</p>
             <p className="text-sm text-gray-600">Welcome back</p>
           </div>
-          <button onClick={closeSidebar} className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold">✕</button>
+          <button onClick={closeSidebar} className="text-[#5a4436] hover:text-[#3e2f25] text-xl font-bold cursor-pointer">✕</button>
         </div>
 
         <nav className="p-4 space-y-6 overflow-y-auto flex-1">
