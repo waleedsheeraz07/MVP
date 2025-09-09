@@ -316,7 +316,7 @@ useEffect(() => {
       >
         {/* Image Wrapper */}
         {product.images[0] && (
-          <div className="relative w-full h-48 overflow-hidden">
+          <div className="relative w-full h-48 lg:h-80 overflow-hidden">
             <img
               src={product.images[0]}
               alt={product.title}
