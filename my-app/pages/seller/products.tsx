@@ -288,38 +288,40 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
   </p>
 ) : (
   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {filteredProducts.map(p => (
-      <Link key={p.id} href={`/seller/products/${p.id}`} className="relative block">
-        <div className="bg-[#fffdfb] rounded-2xl shadow-md overflow-hidden flex flex-col border-2 border-[#5a4436] cursor-pointer transition-transform transition-shadow duration-200 hover:shadow-xl hover:scale-105 active:scale-95 h-[340px]">
-          
-          {/* Product Image */}
-          {p.images[0] && (
-            <div className="relative overflow-hidden">
-              <img
-                src={p.images[0]}
-                alt={p.title}
-                className={`w-full h-48 object-cover transition-transform duration-200 hover:scale-110 ${p.quantity === 0 ? "opacity-70" : ""}`}
-              />
+    {filteredProducts.map((p) => (
+      <Link
+        key={p.id}
+        href={`/seller/products/${p.id}`}
+        className="group block bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-transform duration-200 hover:scale-105 active:scale-95"
+      >
+        {/* Image Wrapper */}
+        {p.images[0] && (
+          <div className="relative w-full h-48 lg:h-80 overflow-hidden">
+            <img
+              src={p.images[0]}
+              alt={p.title}
+              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 ${
+                p.quantity === 0 ? "opacity-70" : ""
+              }`}
+            />
 
-              {/* Sold Out Ribbon */}
-              {p.quantity === 0 && (
-                <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
-                  Sold Out
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Product Info */}
-          <div className="p-4 flex-grow flex flex-col justify-between transition-all duration-200">
-            <h2 className="text-lg font-semibold text-[#3e2f25] truncate hover:text-[#5a4436] transition-colors duration-150">
-              {p.title}
-            </h2>
-            <p className="mt-2 font-bold text-[#5a4436] text-lg">
-              KWD {p.price.toFixed(2)}
-            </p>
+            {/* Sold Out Ribbon */}
+            {p.quantity === 0 && (
+              <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
+                Sold Out
+              </div>
+            )}
           </div>
+        )}
 
+        {/* Card Content */}
+        <div className="p-4 text-center">
+          <h2 className="text-base md:text-lg font-semibold text-[#3e2f25] truncate group-hover:text-[#5a4436] transition-colors duration-200">
+            {p.title}
+          </h2>
+          <p className="mt-2 text-[#5a4436] font-bold text-sm md:text-base">
+            KWD {p.price.toFixed(2)}
+          </p>
         </div>
       </Link>
     ))}
