@@ -192,7 +192,7 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25]">My Products</h1>
             <Link href="/seller/sell">
-              <button className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition-all duration-150 active:scale-95">
+              <button className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition-all duration-150 active:scale-95 cursor-pointer">
                 Add New Product
               </button>
             </Link>
@@ -225,89 +225,194 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
         { shallow: true }
       );
     }}
-    className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition"
+    className="px-4 py-2 bg-[#b58b5a] text-white rounded-xl hover:bg-[#d4b996] transition cursor-pointer"
   >
     Reset Filters
   </button>
 </div>
 
-{/* Toggle Filters */}
-<button
-  className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl"
+          {/* Toggle Filters */}
+          <button
+  className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl transition-all duration-200 transform hover:bg-[#3e2f25] hover:scale-105 hover:shadow-lg cursor-pointer"
   onClick={() => setFiltersVisible(prev => !prev)}
 >
   {filtersVisible ? "Hide Filters" : "Show Filters"}
 </button>
 
-{/* Filters Panel */}
+{/* Full Filters & Sorting Panel */}
 {filtersVisible && (
-  <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
-    {/* Sort */}
-    <select
-      value={sortBy}
-      onChange={e => setSortBy(e.target.value as SortOption)}
-      className="input bg-white text-[#3e2f25]"
-    >
-      <option value="alpha">A → Z</option>
-      <option value="alphaDesc">Z → A</option>
-      <option value="priceAsc">Price ↑</option>
-      <option value="priceDesc">Price ↓</option>
-      <option value="relevance">Relevance</option>
-    </select>
+  <div className="flex flex-col gap-6 mb-6 p-6 bg-[#fffdfb] rounded-3xl shadow-lg transition-all">
 
-    {/* Price Range */}
-    <div className="flex gap-2 items-center">
-      <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)} className="input w-20 bg-white text-[#3e2f25]" />
-      <span className="text-[#3e2f25]">-</span>
-      <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)} className="input w-20 bg-white text-[#3e2f25]" />
+    {/* Sort & Price Section */}
+    <div className="bg-white p-5 rounded-2xl shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      
+      {/* Sort By */}
+      <div className="flex flex-col md:flex-row md:items-center gap-2">
+        <span className="text-[#3e2f25] font-semibold">Sort By:</span>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as SortOption)}
+          className="input bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2 shadow-sm hover:shadow-md transition"
+        >
+          <option value="alpha">A → Z</option>
+          <option value="alphaDesc">Z → A</option>
+          <option value="priceAsc">Price ↑</option>
+          <option value="priceDesc">Price ↓</option>
+          <option value="relevance">Relevance</option>
+        </select>
+      </div>
+
+      {/* Price Range */}
+      <div className="flex flex-col md:flex-row md:items-center gap-2">
+        <span className="text-[#3e2f25] font-semibold">Price Range:</span>
+        <div className="flex gap-2 items-center">
+          <input
+            type="number"
+            value={priceRange[0]}
+            min={0}
+            onChange={e => handlePriceChange(e, 0)}
+            className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2 shadow-sm hover:shadow-md transition"
+          />
+          <span className="text-[#3e2f25] font-semibold">-</span>
+          <input
+            type="number"
+            value={priceRange[1]}
+            min={0}
+            onChange={e => handlePriceChange(e, 1)}
+            className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2 shadow-sm hover:shadow-md transition"
+          />
+        </div>
+      </div>
+
     </div>
 
-    {/* Colors */}
-    <select multiple value={selectedColors} onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-      {allColors.map(c => <option key={c} value={c}>{c}</option>)}
-    </select>
+    {/* Filters Section */}
+    <div className="bg-white p-5 rounded-2xl shadow-md flex flex-col gap-6">
 
-    {/* Sizes */}
-    <select multiple value={selectedSizes} onChange={e => setSelectedSizes(Array.from(e.target.selectedOptions, o => o.value))} className="input flex-grow min-w-[100px] bg-white text-[#3e2f25]">
-      {allSizes.map(s => <option key={s} value={s}>{s}</option>)}
-    </select>
+      {/* Colors */}
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[#3e2f25] font-semibold text-lg">Colors</h3>
+        <div className="flex flex-wrap gap-3">
+          {/* All Circle */}
+          <button
+            type="button"
+            onClick={() => setSelectedColors([])}
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+              ${selectedColors.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+              hover:scale-110 hover:shadow-md cursor-pointer
+            `}
+          >
+            All
+          </button>
 
-    {/* Category Tree */}
-    <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
-      {categoryTree.map(cat => (
-        <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
-      ))}
+          {/* Color Circles */}
+          {Array.from(new Set(allColors.map(c => c.trim().toUpperCase()).filter(Boolean))).map(c => {
+            const isSelected = selectedColors.map(sc => sc.trim().toUpperCase()).includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => {
+                  if (isSelected) setSelectedColors(selectedColors.filter(sc => sc.trim().toUpperCase() !== c));
+                  else setSelectedColors([...selectedColors, c]);
+                }}
+                className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center
+                  ${isSelected ? "border-[#3e2f25] scale-110 shadow-md" : "border-gray-300"}
+                  hover:scale-110 hover:shadow-md cursor-pointer
+                `}
+                style={{ backgroundColor: c.toLowerCase() }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sizes */}
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[#3e2f25] font-semibold text-lg">Sizes</h3>
+        <div className="flex flex-wrap gap-3">
+          {/* All Circle */}
+          <button
+            type="button"
+            onClick={() => setSelectedSizes([])}
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+              ${selectedSizes.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+              hover:scale-110 hover:shadow-md cursor-pointer
+            `}
+          >
+            All
+          </button>
+
+          {/* Size Circles */}
+          {Array.from(new Set(allSizes.map(s => s.trim().toUpperCase()).filter(Boolean))).map(size => {
+            const isSelected = selectedSizes.map(s => s.trim().toUpperCase()).includes(size);
+            return (
+              <button
+                key={size}
+                type="button"
+                onClick={() => {
+                  if (isSelected) setSelectedSizes(selectedSizes.filter(s => s.trim().toUpperCase() !== size));
+                  else setSelectedSizes([...selectedSizes, size]);
+                }}
+                className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+                  ${isSelected ? "border-[#3e2f25] scale-110 shadow-md" : "border-gray-300"}
+                  hover:scale-110 hover:shadow-md cursor-pointer
+                `}
+              >
+                {size}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[#3e2f25] font-semibold text-lg">Categories</h3>
+        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto bg-white p-3 rounded-2xl border shadow-sm">
+          {categoryTree.map(cat => (
+            <CategoryCheckbox
+              key={cat.id}
+              category={cat}
+              selected={selectedCategories}
+              setSelected={setSelectedCategories}
+            />
+          ))}
+        </div>
+      </div>
+
     </div>
   </div>
 )}
 
 {/* Products Grid */}
 {filteredProducts.length === 0 ? (
-  <p className="text-center text-[#3e2f25] font-medium mt-6">
+  <p className="text-center text-[#3e2f25] font-medium mt-6 text-lg">
     No products found.
   </p>
 ) : (
   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {filteredProducts.map((p) => (
+    {filteredProducts.map((product) => (
       <Link
-        key={p.id}
-        href={`/seller/products/${p.id}`}
-        className="group block bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-transform duration-200 hover:scale-105 active:scale-95"
+        key={product.id}
+        href={`/buyer/products/${product.id}`}
+        className="group block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden
+          transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
       >
-        {/* Image Wrapper */}
-        {p.images[0] && (
-          <div className="relative w-full h-48 lg:h-80 overflow-hidden">
+        {/* Product Image */}
+        {product.images[0] && (
+          <div className="relative w-full h-56 lg:h-72 overflow-hidden rounded-t-2xl">
             <img
-              src={p.images[0]}
-              alt={p.title}
+              src={product.images[0]}
+              alt={product.title}
               className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 ${
-                p.quantity === 0 ? "opacity-70" : ""
+                product.quantity === 0 ? "opacity-70" : ""
               }`}
             />
 
             {/* Sold Out Ribbon */}
-            {p.quantity === 0 && (
-              <div className="absolute top-2 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-lg z-10">
+            {product.quantity === 0 && (
+              <div className="absolute top-2 left-0 bg-[#7b5b40] text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-md z-10">
                 Sold Out
               </div>
             )}
@@ -315,12 +420,12 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
         )}
 
         {/* Card Content */}
-        <div className="p-4 text-center">
-          <h2 className="text-base md:text-lg font-semibold text-[#3e2f25] truncate group-hover:text-[#5a4436] transition-colors duration-200">
-            {p.title}
+        <div className="p-4 flex flex-col items-center justify-center">
+          <h2 className="text-sm md:text-base lg:text-lg font-semibold text-[#3e2f25] truncate text-center group-hover:text-[#5a4436] transition-colors duration-200">
+            {product.title}
           </h2>
           <p className="mt-2 text-[#5a4436] font-bold text-sm md:text-base">
-            KWD {p.price.toFixed(2)}
+            KWD {product.price.toFixed(2)}
           </p>
         </div>
       </Link>
