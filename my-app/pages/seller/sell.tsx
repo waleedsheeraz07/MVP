@@ -319,20 +319,55 @@ formData.append("categories", JSON.stringify(selectedCategories))
             </div>
           </div>
 
-          {/* Condition */}
-          <select
-            value={condition}
-            onChange={e => setCondition(e.target.value)}
-            required
-            className="input"
+ {/* Condition Selector */}
+<div className="mb-6">
+  <p className="font-semibold mb-4">Condition <span className="text-red-500">*</span></p>
+
+  <div className="relative flex justify-between items-start w-full px-4 pt-1">
+    {/* Base Line */}
+    <div className="absolute top-2 left-0 w-full h-1 bg-gray-300 rounded"></div>
+
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
+      const isCurrent = condition.toLowerCase().trim() === cond.toLowerCase().trim();
+
+      return (
+        <button
+          type="button"
+          key={cond}
+          onClick={() => setCondition(cond.toLowerCase())}
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2 focus:outline-none"
+        >
+          {/* Dot */}
+          <div
+            className="rounded-full transition-all duration-300"
+            style={{
+              width: isCurrent ? "16px" : "14px",
+              height: isCurrent ? "16px" : "14px",
+              backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
+              border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
+            }}
+          ></div>
+
+          {/* Label */}
+          <span
+            className={`text-xs mt-3 max-w-[80px] leading-tight break-words text-center ${
+              isCurrent ? "font-bold text-[#5a4436]" : "text-gray-600"
+            }`}
           >
-            <option value="">Select Condition *</option>
-            {["Excellent", "Good", "Fair", "Slightly Damaged", "Highly Damaged"].map(c => (
-              <option key={c} value={c.toLowerCase()}>
-                {c}
-              </option>
-            ))}
-          </select>
+            {cond}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+
+  {/* Validation message */}
+  {!condition && (
+    <span className="text-red-500 text-sm mt-2 block">
+      Please select a condition.
+    </span>
+  )}
+</div>
 
           {/* Era */}
           <div>
