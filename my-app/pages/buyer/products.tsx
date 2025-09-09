@@ -285,13 +285,13 @@ useEffect(() => {
                 <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)} className="input w-20 bg-white text-[#3e2f25]" />
               </div>
 
-              <div className="flex flex-wrap gap-3 my-4">
-  {/* "All" option */}
+<div className="flex flex-wrap gap-3 my-4">
+  {/* "All" circle */}
   <button
     type="button"
-    onClick={() => setSelectedColors(["All"])}
+    onClick={() => setSelectedColors([])} // reset = no filter
     className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition 
-      ${selectedColors.includes("All") ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+      ${selectedColors.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
     `}
   >
     All
@@ -303,14 +303,11 @@ useEffect(() => {
       key={c}
       type="button"
       onClick={() => {
-        if (selectedColors.includes("All")) {
-          // remove "All" when choosing specific colors
-          setSelectedColors([c]);
-        } else if (selectedColors.includes(c)) {
-          // deselect if already selected
+        if (selectedColors.includes(c)) {
+          // remove if already selected
           setSelectedColors(selectedColors.filter((col) => col !== c));
         } else {
-          // select in addition
+          // add it
           setSelectedColors([...selectedColors, c]);
         }
       }}
