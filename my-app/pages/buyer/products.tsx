@@ -300,7 +300,7 @@ return (
 
           {/* Toggle Filters */}
           <button
-  className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl transition-all duration-200 transform hover:bg-[#3e2f25] hover:scale-105 hover:shadow-lg"
+  className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl transition-all duration-200 transform hover:bg-[#3e2f25] hover:scale-105 hover:shadow-lg cursor-pointer"
   onClick={() => setFiltersVisible(prev => !prev)}
 >
   {filtersVisible ? "Hide Filters" : "Show Filters"}
@@ -454,7 +454,7 @@ return (
 
 {/* Products Grid */}
 {filteredProducts.length === 0 ? (
-  <p className="text-center text-[#3e2f25] font-medium mt-6">
+  <p className="text-center text-[#3e2f25] font-medium mt-6 text-lg">
     No products found.
   </p>
 ) : (
@@ -463,11 +463,12 @@ return (
       <Link
         key={product.id}
         href={`/buyer/products/${product.id}`}
-        className="group block bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-transform duration-200 hover:scale-105 active:scale-95"
+        className="group block bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden cursor-pointer
+          transition-transform duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
       >
-        {/* Image Wrapper */}
+        {/* Image */}
         {product.images[0] && (
-          <div className="relative w-full h-48 lg:h-80 overflow-hidden">
+          <div className="relative w-full h-56 lg:h-72 overflow-hidden rounded-t-2xl">
             <img
               src={product.images[0]}
               alt={product.title}
@@ -486,13 +487,19 @@ return (
         )}
 
         {/* Card Content */}
-        <div className="p-4 text-center">
-          <h2 className="text-base md:text-lg font-semibold text-[#3e2f25] truncate group-hover:text-[#5a4436] transition-colors duration-200">
+        <div className="p-4 flex flex-col items-center justify-center">
+          <h2 className="text-sm md:text-base lg:text-lg font-semibold text-[#3e2f25] truncate text-center group-hover:text-[#5a4436] transition-colors duration-200">
             {product.title}
           </h2>
           <p className="mt-2 text-[#5a4436] font-bold text-sm md:text-base">
             KWD {product.price.toFixed(2)}
           </p>
+          {/* Optional: Add "Add to Cart" button */}
+          {product.quantity > 0 && (
+            <button className="mt-3 px-4 py-2 bg-[#5a4436] text-white rounded-lg text-sm md:text-base shadow-sm hover:bg-[#7b5b40] hover:shadow-md transition">
+              Add to Cart
+            </button>
+          )}
         </div>
       </Link>
     ))}
