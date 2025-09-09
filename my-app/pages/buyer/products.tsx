@@ -300,128 +300,142 @@ return (
 
           {/* Toggle Filters */}
           <button
-            className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl cursor-pointer"
-            onClick={() => setFiltersVisible(prev => !prev)}
-          >
-            {filtersVisible ? "Hide Filters" : "Show Filters"}
-          </button>
+  className="mb-4 px-4 py-2 bg-[#5a4436] text-white rounded-xl transition-all duration-200 transform hover:bg-[#3e2f25] hover:scale-105 hover:shadow-lg"
+  onClick={() => setFiltersVisible(prev => !prev)}
+>
+  {filtersVisible ? "Hide Filters" : "Show Filters"}
+</button>
 
-          {/* Filters Panel */}
-          {filtersVisible && (
-            <div className="flex flex-wrap gap-3 mb-6 items-start bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition">
-              <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className="input bg-white text-[#3e2f25]">
-                <option value="alpha">A → Z</option>
-                <option value="alphaDesc">Z → A</option>
-                <option value="priceAsc">Price ↑</option>
-                <option value="priceDesc">Price ↓</option>
-                <option value="relevance">Relevance</option>
-              </select>
+{/* Filters Panel */}
+{filtersVisible && (
+  <div className="flex flex-col gap-4 mb-6 p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all">
+    
+    {/* Sort & Price */}
+    <div className="flex flex-wrap gap-4 items-center">
+      <select
+        value={sortBy}
+        onChange={e => setSortBy(e.target.value as SortOption)}
+        className="input bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
+      >
+        <option value="alpha">A → Z</option>
+        <option value="alphaDesc">Z → A</option>
+        <option value="priceAsc">Price ↑</option>
+        <option value="priceDesc">Price ↓</option>
+        <option value="relevance">Relevance</option>
+      </select>
 
-              <div className="flex gap-2 items-center">
-                <input type="number" value={priceRange[0]} min={0} onChange={e => handlePriceChange(e, 0)} className="input w-20 bg-white text-[#3e2f25]" />
-                <span className="text-[#3e2f25]">-</span>
-                <input type="number" value={priceRange[1]} min={0} onChange={e => handlePriceChange(e, 1)} className="input w-20 bg-white text-[#3e2f25]" />
-              </div>
+      <div className="flex gap-2 items-center">
+        <input
+          type="number"
+          value={priceRange[0]}
+          min={0}
+          onChange={e => handlePriceChange(e, 0)}
+          className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
+        />
+        <span className="text-[#3e2f25]">-</span>
+        <input
+          type="number"
+          value={priceRange[1]}
+          min={0}
+          onChange={e => handlePriceChange(e, 1)}
+          className="input w-20 bg-white text-[#3e2f25] rounded-lg border border-gray-300 p-2"
+        />
+      </div>
+    </div>
 
-<div className="flex flex-wrap gap-3 my-4">
-  {/* "All" circle */}
-  <button
-    type="button"
-    onClick={() => setSelectedColors([])} // reset = no filter
-    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition 
-      ${selectedColors.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
-    `}
-  >
-    All
-  </button>
-
-  {/* Unique, normalized color circles */}
-  {Array.from(
-    new Set(allColors.map(c => c.trim().toUpperCase()).filter(Boolean))
-  ).map((c) => {
-    const isSelected = selectedColors
-      .map(sc => sc.trim().toUpperCase())
-      .includes(c);
-
-    return (
+    {/* Color Circles */}
+    <div className="flex flex-wrap gap-3 my-4">
       <button
-        key={c}
         type="button"
-        onClick={() => {
-          const normalizedSelected = selectedColors.map(sc => sc.trim().toUpperCase());
-          if (isSelected) {
-            // Remove this color from selected
-            setSelectedColors(
-              selectedColors.filter(sc => sc.trim().toUpperCase() !== c)
-            );
-          } else {
-            // Add this color
-            setSelectedColors([...selectedColors, c]);
-          }
-        }}
-        className={`w-10 h-10 rounded-full border-2 transition flex items-center justify-center
-          ${isSelected ? "border-[#3e2f25] scale-110" : "border-gray-300"}
+        onClick={() => setSelectedColors([])}
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200 
+          ${selectedColors.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+          hover:scale-110 hover:shadow-md cursor-pointer
         `}
-        style={{ backgroundColor: c.toLowerCase() }}
-      />
-    );
-  })}
-</div>
+      >
+        All
+      </button>
 
+      {Array.from(
+        new Set(allColors.map(c => c.trim().toUpperCase()).filter(Boolean))
+      ).map(c => {
+        const isSelected = selectedColors
+          .map(sc => sc.trim().toUpperCase())
+          .includes(c);
 
-<div className="flex flex-wrap gap-3 my-4">
-  {/* "All" circle */}
-  <button
-    type="button"
-    onClick={() => setSelectedSizes([])}
-    className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition 
-      ${selectedSizes.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
-    `}
-  >
-    All
-  </button>
+        return (
+          <button
+            key={c}
+            type="button"
+            onClick={() => {
+              if (isSelected) {
+                setSelectedColors(selectedColors.filter(sc => sc.trim().toUpperCase() !== c));
+              } else {
+                setSelectedColors([...selectedColors, c]);
+              }
+            }}
+            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center
+              ${isSelected ? "border-[#3e2f25] scale-110 shadow-md" : "border-gray-300"}
+              hover:scale-110 hover:shadow-md cursor-pointer
+            `}
+            style={{ backgroundColor: c.toLowerCase() }}
+          />
+        );
+      })}
+    </div>
 
-  {/* Normalize and deduplicate sizes */}
-  {Array.from(
-    new Set(
-      allSizes
-        .map((s) => s.trim().toUpperCase()) // trim whitespace and capitalize
-        .filter((s) => s) // remove empty strings
-    )
-  ).map((size) => (
-    <button
-      key={size}
-      type="button"
-      onClick={() => {
-        // Normalize currently selected sizes
-        const normalizedSelected = selectedSizes.map((s) => s.trim().toUpperCase());
+    {/* Size Circles */}
+    <div className="flex flex-wrap gap-3 my-4">
+      <button
+        type="button"
+        onClick={() => setSelectedSizes([])}
+        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200 
+          ${selectedSizes.length === 0 ? "border-[#3e2f25] bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+          hover:scale-105 hover:shadow-md cursor-pointer
+        `}
+      >
+        All
+      </button>
 
-        if (normalizedSelected.includes(size)) {
-          // Remove size if it's already selected
-          setSelectedSizes(selectedSizes.filter((s) => s.trim().toUpperCase() !== size));
-        } else {
-          // Add size to selection
-          setSelectedSizes([...selectedSizes, size]);
-        }
-      }}
-      className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition
-        ${selectedSizes
-          .map((s) => s.trim().toUpperCase())
-          .includes(size) ? "border-[#3e2f25] scale-110" : "border-gray-300"}
-      `}
-    >
-      {size}
-    </button>
-  ))}
-</div>
+      {Array.from(
+        new Set(allSizes.map(s => s.trim().toUpperCase()).filter(Boolean))
+      ).map(size => {
+        const isSelected = selectedSizes.map(s => s.trim().toUpperCase()).includes(size);
+        return (
+          <button
+            key={size}
+            type="button"
+            onClick={() => {
+              if (isSelected) {
+                setSelectedSizes(selectedSizes.filter(s => s.trim().toUpperCase() !== size));
+              } else {
+                setSelectedSizes([...selectedSizes, size]);
+              }
+            }}
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+              ${isSelected ? "border-[#3e2f25] scale-110 shadow-md" : "border-gray-300"}
+              hover:scale-110 hover:shadow-md cursor-pointer
+            `}
+          >
+            {size}
+          </button>
+        );
+      })}
+    </div>
 
-              <div className="flex flex-col gap-1 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
-                {categoryTree.map(cat => (
-                  <CategoryCheckbox key={cat.id} category={cat} selected={selectedCategories} setSelected={setSelectedCategories} />
-                ))}
-              </div>
-            </div>
-          )}
+    {/* Categories */}
+    <div className="flex flex-col gap-2 max-h-64 overflow-y-auto bg-white p-2 rounded-2xl border shadow-sm">
+      {categoryTree.map(cat => (
+        <CategoryCheckbox
+          key={cat.id}
+          category={cat}
+          selected={selectedCategories}
+          setSelected={setSelectedCategories}
+        />
+      ))}
+    </div>
+  </div>
+)}
 
 {/* Products Grid */}
 {filteredProducts.length === 0 ? (
