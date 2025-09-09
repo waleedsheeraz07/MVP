@@ -168,7 +168,7 @@ const carouselHandlers = useSwipeable({
 {/* Responsive Image Carousel with Full-Screen Mobile Gallery */}
 <div className="flex flex-col lg:flex-row gap-4">
   {/* Thumbnails on desktop */}
-  <div className="hidden lg:flex flex-col gap-2">
+  <div className="hidden lg:flex flex-col lg:ml-10 gap-2">
     {product.images.map((img, idx) => (
       <img
         key={idx}
