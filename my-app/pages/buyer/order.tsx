@@ -207,7 +207,11 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     props: {
       orders: formattedOrders,
       categories,
-      user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
+      user: { 
+id: session?.user?.id ?? "Guest",
+        name: session?.user?.name ?? "Guest",
+        role: session?.user?.role ?? "Guest",
+ },
     },
   };
 };
