@@ -169,10 +169,6 @@ export default function OrdersPage({ orders, categories, user }: OrdersPageProps
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (!session?.user?.id) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
   const ordersData = await prisma.order.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
