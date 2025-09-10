@@ -33,6 +33,15 @@ interface ProductDetailProps {
   session: { user?: { id: string; name?: string; email?: string } } | null;
 }
 
+type GuestCartItem = {
+  productId: string;
+  color: string | null;
+  size: string | null;
+  quantity: number;
+  price: number;
+  image: string | null;
+};
+
 export default function ProductDetail({ product, categories, user, session }: ProductDetailProps) {
  const [galleryOpen, setGalleryOpen] = useState(false);
  const validSizes = product.sizes.filter(s => s && s.trim() !== "");
@@ -90,15 +99,6 @@ useEffect(() => {
     return false;
   };
 
-type GuestCartItem = {
-  productId: string;
-  color: string | null;
-  size: string | null;
-  quantity: number;
-  price: number;
-  image: string | null;
-};
-
 const handleAddItem = async (status: "cart" | "wishlist") => {
   if (status === "cart" && !session?.user?.id) {
     // ===== Guest cart handling =====
@@ -124,20 +124,19 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
       });
     }
 
+    // Save to localStorage and trigger cross-tab updates
     localStorage.setItem("guestCart", JSON.stringify(localCart));
-    localStorage.setItem("cartUpdate", Date.now().toString()); // trigger cross-tab updates
+    localStorage.setItem("cartUpdate", Date.now().toString());
 
-    // Update cart badge / mini-cart in React state
-    if (typeof setCartCount === "function") {
-      const totalQty = localCart.reduce((sum, item) => sum + item.quantity, 0);
-      setCartCount(totalQty);
-    }
+    // Update cart badge / mini-cart in React state via CartContext
+    const totalQty = localCart.reduce((sum, item) => sum + item.quantity, 0);
+    setCartCount(totalQty);
 
     showToast("Product added to cart!");
     return;
   }
 
-  // ===== Logged-in user =====
+  // ===== Logged-in user handling =====
   if (status === "cart" && isAddToCartDisabled()) return;
 
   setLoading(true);
@@ -158,10 +157,10 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
     const data: { error?: string } = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to add item");
 
-    // Update DB cart
-    refreshCart();
+    // Update cart in context (fetch DB count)
+    await refreshCart();
 
-    // Update badge / mini-cart in localStorage for cross-tab sync
+    // Trigger cross-tab update for other tabs
     localStorage.setItem("cartUpdate", Date.now().toString());
 
     showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
@@ -172,7 +171,6 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
     setLoading(false);
   }
 };
-
 
 
 const carouselHandlers = useSwipeable({
