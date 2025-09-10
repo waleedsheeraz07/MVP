@@ -283,7 +283,9 @@ const filteredProducts = useMemo(() => {
 
   return selectedEras.some(era => {
     if (era === "before1900") {
-      return Number(p.era) < 1900; // any year before 1900
+      // ✅ Point 2: handle range/any single year before 1900
+      const productYear = Number(p.era.split("–")[0]); // get starting year
+      return productYear < 1900;
     } else {
       return p.era === era; // match exact decade string
     }
