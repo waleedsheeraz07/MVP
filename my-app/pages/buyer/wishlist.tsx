@@ -175,10 +175,6 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (!session?.user?.id) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
   // Fetch wishlist items
   const wishlistItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "wishlist" },
