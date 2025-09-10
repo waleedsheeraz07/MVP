@@ -247,10 +247,6 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (!session?.user?.id) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
   const cartItems = await prisma.userItem.findMany({
     where: { userId: session.user.id, status: "cart" },
     include: { product: true },
