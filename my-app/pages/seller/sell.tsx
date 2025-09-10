@@ -419,7 +419,6 @@ if (sizes.length === 0 || !condition || !era || (era === "before1900" && !before
     name="era"
     value={era === "before1900" ? before1900 : era}
     hidden
-    required
   />
 </div>
 
