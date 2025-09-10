@@ -169,11 +169,14 @@ export default function OrdersPage({ orders, categories, user }: OrdersPageProps
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  const ordersData = await prisma.order.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    include: { items: { include: { product: true } } },
-  });
+  // Only fetch orders if logged in
+  const ordersData = session
+    ? await prisma.order.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        include: { items: { include: { product: true } } },
+      })
+    : [];
 
   const formattedOrders: Order[] = ordersData.map((o) => ({
     id: o.id,
@@ -208,10 +211,10 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       orders: formattedOrders,
       categories,
       user: { 
-id: session?.user?.id ?? "Guest",
+        id: session?.user?.id ?? "Guest",
         name: session?.user?.name ?? "Guest",
         role: session?.user?.role ?? "Guest",
- },
+      },
     },
   };
 };
