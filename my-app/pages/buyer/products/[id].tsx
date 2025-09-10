@@ -92,7 +92,7 @@ useEffect(() => {
 
   const handleAddItem = async (status: "cart" | "wishlist") => {
     if (!session?.user?.id) {
-      alert("You need to log in first");
+      showToast("You need to log in first");
       return;
     }
     if (status === "cart" && isAddToCartDisabled()) return;
