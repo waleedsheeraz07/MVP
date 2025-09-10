@@ -10,6 +10,7 @@ import Layout from "../../../components/header";
 import { useCart } from "../../../context/CartContext";
 import SwipeableGallery from "../../../components/SwipeableGallery";
 import { useSwipeable } from "react-swipeable";
+import { showToast } from "../../../utils/toast";
 
 interface Category { id: string; title: string; order: number; parentId?: string | null; }
 interface User { id: string; name?: string | null; role: string; }
@@ -115,8 +116,8 @@ useEffect(() => {
 
       const data: { error?: string } = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to add item");
-      alert(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
-    } catch (err: unknown) {
+      showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
+ } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
       else alert("An unexpected error occurred");
     } finally {
