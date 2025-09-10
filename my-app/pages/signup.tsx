@@ -58,42 +58,67 @@ const validatePhoneNumber = (phone: string) => {
 
   const handlePrev = () => setStep(prev => Math.max(prev - 1, 0));
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/auth/signup", {
+const handleSubmit = async () => {
+  setLoading(true);
+  setError("");
+
+  try {
+    // 1️⃣ Signup API call
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        role,
+        firstName,
+        lastName,
+        email,
+        phoneNumber: phone,
+        dob,
+        gender,
+        address1,
+        address2,
+        state,
+        country,
+        postalCode,
+        password,
+      }),
+    });
+
+    const data: { error?: string; userId?: string } = await res.json();
+
+    if (!res.ok) throw data;
+    if (!data.userId) throw { error: "User ID not returned from signup" };
+
+    // 2️⃣ Check for guest cart in localStorage
+    const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
+
+    if (guestCart.length > 0) {
+      // 3️⃣ Merge guest cart with user DB cart
+      await fetch("/api/useritem/mergeCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role,
-          firstName,
-          lastName,
-          email,
-          phoneNumber: phone,
-          dob,
-          gender,
-          address1,
-          address2,
-          state,
-          country,
-          postalCode,
-          password,
+          userId: data.userId, // newly created user ID
+          guestCart,
         }),
       });
-      const data: { error?: string } = await res.json();
-      if (!res.ok) throw data;
-      router.push("/login");
-    } catch (err: unknown) {
-      if (typeof err === "object" && err !== null && "error" in err) {
-        setError((err as { error?: string }).error || "Signup failed, try again");
-      } else {
-        setError("Signup failed, try again");
-      }
-    } finally {
-      setLoading(false);
+
+      // 4️⃣ Clear localStorage guest cart after merging
+      localStorage.removeItem("guestCart");
     }
-  };
+
+    // 5️⃣ Redirect to login page
+    router.push("/login");
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "error" in err) {
+      setError((err as { error?: string }).error || "Signup failed, try again");
+    } else {
+      setError("Signup failed, try again");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const stepContent = () => {
     switch (step) {
