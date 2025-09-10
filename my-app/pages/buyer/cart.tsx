@@ -45,14 +45,19 @@ interface CartPageProps {
 
 export default function CartPage({ cartItems: initialCartItems, categories, user }: CartPageProps) {
   const [cart, setCart] = useState<CartItem[]>(initialCartItems);
+  const [hydrated, setHydrated] = useState(false);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const router = useRouter();
   const { refreshCart, setCartCount, setUserId } = useCart();
 
-  const isGuest = !user.id || user.id === "Guest";
+  const isGuest = !user || !user.id || user.id === "Guest";
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
+  // ✅ Ensure client hydration before accessing localStorage
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   // Fetch latest cart for signed-in users
   const fetchLatestCart = useCallback(async () => {
@@ -77,14 +82,16 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
 
   // Load guest cart from localStorage
   useEffect(() => {
-    if (isGuest) {
+    if (hydrated && isGuest) {
       const localCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
       setCart(localCart);
     }
-  }, [isGuest]);
+  }, [hydrated, isGuest]);
 
   // Cross-tab sync
   useEffect(() => {
+    if (!hydrated) return;
+
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "cartUpdate") {
         if (isGuest) {
@@ -98,9 +105,10 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
         }
       }
     };
+
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, [isGuest, fetchLatestCart, refreshCart, setCartCount]);
+  }, [hydrated, isGuest, fetchLatestCart, refreshCart, setCartCount]);
 
   // Handle quantity change
   const handleQuantityChange = async (itemId: string | undefined, newQty: number, productId: string) => {
@@ -117,7 +125,6 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
       return;
     }
 
-    // DB user flow
     if (!itemId) return;
     const item = cart.find((i) => i.id === itemId);
     if (!item || newQty < 1 || newQty > item.product.quantity) return;
@@ -154,7 +161,6 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
       return;
     }
 
-    // DB user flow
     if (!itemId) return;
     setCart((prev) => prev.filter((i) => i.id !== itemId));
     setLoadingIds((prev) => [...prev, itemId]);
@@ -187,7 +193,9 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
             Your Cart
           </h1>
 
-          {cart.length === 0 ? (
+          {!hydrated ? (
+            <p className="text-center text-gray-500">Loading cart...</p>
+          ) : cart.length === 0 ? (
             <p className="text-center text-gray-700">
               Your cart is empty.{" "}
               <Link
@@ -201,7 +209,7 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
             <div className="space-y-3">
               {cart.map((item) => (
                 <div
-                  key={item.id ?? item.product.id} // guest items have no DB id
+                  key={item.id ?? item.product.id}
                   className="relative flex flex-row items-center bg-[#fffdfb] rounded-2xl shadow-sm p-3 gap-3 hover:shadow-md transition-all w-full"
                 >
                   <button
@@ -215,7 +223,7 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
 
                   <div
                     onClick={() => router.push(`/buyer/products/${item.product.id}`)}
-                    className="cursor-pointer flex-shrink-0 transform transition-transform duration-150 active:scale-105 active:shadow-lg"
+                    className="cursor-pointer flex-shrink-0"
                   >
                     <img
                       src={item.product.images[0]}
@@ -228,7 +236,6 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
                     <h2 className="font-semibold text-sm sm:text-base text-[#3e2f25] truncate">
                       {item.product.title}
                     </h2>
-
                     <div className="flex flex-wrap gap-1 text-xs sm:text-sm text-gray-600 mt-0.5">
                       {item.color && <span>Color: {item.color}</span>}
                       {item.size && <span>Size: {item.size}</span>}
@@ -238,7 +245,7 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
                       <button
                         disabled={item.quantity <= 1 || (item.id ? loadingIds.includes(item.id) : false)}
                         onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.product.id)}
-                        className="px-3 py-1 bg-[#d4b996] text-[#3e2f25] rounded hover:bg-[#c4a57e] transition duration-150 active:scale-95"
+                        className="px-3 py-1 bg-[#d4b996] text-[#3e2f25] rounded hover:bg-[#c4a57e] transition"
                       >
                         -
                       </button>
@@ -248,7 +255,7 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
                       <button
                         disabled={item.quantity >= item.product.quantity || (item.id ? loadingIds.includes(item.id) : false)}
                         onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.product.id)}
-                        className={`px-3 py-1 rounded transition duration-150 active:scale-95 text-sm sm:text-base ${
+                        className={`px-3 py-1 rounded transition ${
                           item.quantity >= item.product.quantity
                             ? "bg-gray-300 cursor-not-allowed text-gray-400"
                             : "bg-[#d4b996] text-[#3e2f25] hover:bg-[#c4a57e]"
