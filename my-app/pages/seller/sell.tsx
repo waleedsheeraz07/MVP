@@ -195,8 +195,6 @@ const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
 
 
-Don’t show validation message instead create a hidden input field for this and mark it required and then in handlesubmit function we can add something like this:
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
