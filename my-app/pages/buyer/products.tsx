@@ -280,7 +280,14 @@ const filteredProducts = useMemo(() => {
 // Era filter
 .filter(p => {
   if (selectedEras.length === 0) return true; // no filter
-  return selectedEras.includes(p.era);
+
+  return selectedEras.some(era => {
+    if (era === "before1900") {
+      return Number(p.era) < 1900; // any year before 1900
+    } else {
+      return p.era === era; // match exact decade string
+    }
+  });
 })
 
     // Categories filter
