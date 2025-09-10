@@ -200,13 +200,14 @@ const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     setLoading(true)
     setError("")
 
-if (sizes.length === 0 || !condition) {
+if (sizes.length === 0 || !condition || !era || (era === "before1900" && !before1900)) {
   if (sizes.length === 0) setError("Please select at least one size.");
   else if (!condition) setError("Please select a condition.");
-
+  else if (!era || (era === "before1900" && !before1900)) setError("Please select an era.");
   setLoading(false);
   return;
 }
+
     try {
       const formData = new FormData()
       formData.append("title", title)
@@ -373,8 +374,8 @@ if (sizes.length === 0 || !condition) {
   <input type="hidden" name="condition" value={condition} required />
 </div>
 
-{/* Era */}
-<div className="flex flex-col gap-2">
+{/* Era Selector */}
+<div className="flex flex-col gap-2 mb-6">
   <label className="text-gray-700 font-semibold">
     Era <span className="text-red-500">*</span>
   </label>
@@ -385,6 +386,7 @@ if (sizes.length === 0 || !condition) {
 
       return (
         <div key={opt} className="flex items-center gap-2">
+          {/* Era Pill */}
           <button
             type="button"
             onClick={() => setEra(opt)}
@@ -395,6 +397,7 @@ if (sizes.length === 0 || !condition) {
             {opt === "before1900" ? "Before 1900" : opt}
           </button>
 
+          {/* Year input only for Before 1900 */}
           {opt === "before1900" && isSelected && (
             <input
               type="number"
@@ -402,6 +405,7 @@ if (sizes.length === 0 || !condition) {
               value={before1900}
               onChange={e => setBefore1900(e.target.value)}
               className="input w-24 mt-0"
+              min={0}
             />
           )}
         </div>
@@ -409,8 +413,14 @@ if (sizes.length === 0 || !condition) {
     })}
   </div>
 
-  {/* Hidden input to make era required */}
-  <input type="text" name="era" value={era} hidden required />
+  {/* Hidden input for validation */}
+  <input
+    type="text"
+    name="era"
+    value={era === "before1900" ? before1900 : era}
+    hidden
+    required
+  />
 </div>
 
           {/* Image Upload */}
