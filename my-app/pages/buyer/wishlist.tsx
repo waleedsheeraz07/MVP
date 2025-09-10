@@ -195,10 +195,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       })),
       categories,
       user: {
-        id: session.user.id,
-        name: session.user.name || "Guest",
-        role: session.user.role,
-      },
+        id: session?.user?.id ?? "Guest",
+        name: session?.user?.name ?? "Guest",
+        role: session?.user?.role ?? "Guest",
+},
     },
   };
 }
