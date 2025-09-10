@@ -68,6 +68,7 @@ const initialQuerySynced = useRef(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedEras, setSelectedEras] = useState<string[]>([]);
 
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
@@ -91,83 +92,76 @@ const initialQuerySynced = useRef(false);
 useEffect(() => {
   if (!router.isReady || initialQuerySynced.current) return;
 
-  // ✅ Search
+  // Search
   setSearch((router.query.search as string) || "");
 
-  // ✅ Colors
+  // Colors
   setSelectedColors(
     router.query.colors
       ? (router.query.colors as string).split(",").map(c => c.trim().toUpperCase())
       : []
   );
 
-  // ✅ Sizes
+  // Sizes
   setSelectedSizes(
     router.query.sizes
       ? (router.query.sizes as string).split(",").map(s => s.trim().toUpperCase())
       : []
   );
 
-  // ✅ Categories
+  // Categories
   setSelectedCategories(
     router.query.categories
       ? (router.query.categories as string).split(",")
       : []
   );
 
-  // ✅ Sort
+  // Sort
   setSortBy((router.query.sortBy as SortOption) || "relevance");
 
-  // ✅ Conditions
+  // Conditions
   setSelectedConditions(
     router.query.conditions
       ? (router.query.conditions as string).split(",").map(c => c.trim().toLowerCase())
       : []
   );
 
-  // ✅ Price
+  // ✅ Eras
+  setSelectedEras(
+    router.query.eras
+      ? (router.query.eras as string).split(",").map(e => e.trim())
+      : []
+  );
+
+  // Price
   const prices = products.map(p => p.price);
   const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
   const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
   setPriceRange([min, max]);
 
-  // ✅ Mark as synced
   initialQuerySynced.current = true;
 }, [router.query, router.isReady, products]);
 
-// --- update router query only after initial sync ---
 useEffect(() => {
   if (!router.isReady || !initialQuerySynced.current) return;
 
   const query: Record<string, string> = {};
 
-  // ✅ Search
   if (search) query.search = search;
-
-  // ✅ Colors
   if (selectedColors.length) query.colors = selectedColors.join(",");
-
-  // ✅ Sizes
   if (selectedSizes.length) query.sizes = selectedSizes.join(",");
-
-  // ✅ Categories
   if (selectedCategories.length) query.categories = selectedCategories.join(",");
-
-  // ✅ Sort
   if (sortBy !== "relevance") query.sortBy = sortBy;
-
-  // ✅ Conditions
   if (selectedConditions.length) query.conditions = selectedConditions.join(",");
+  if (selectedEras.length) query.eras = selectedEras.join(",");
 
-  // ✅ Price
   const prices = products.map(p => p.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
-
   if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
   if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
 
-  // ✅ Compare current router.query with new query
+  // Compare with current router.query
   const currentQuery: Record<string, string> = {};
   Object.entries(router.query).forEach(([key, val]) => {
     if (typeof val === "string") currentQuery[key] = val;
@@ -185,7 +179,8 @@ useEffect(() => {
   selectedColors,
   selectedSizes,
   selectedCategories,
-  selectedConditions, // ✅ included
+  selectedConditions,
+  selectedEras, // ✅ included
   sortBy,
   priceRange,
   products,
@@ -283,6 +278,12 @@ const filteredProducts = useMemo(() => {
   return selectedConditions.includes(p.condition.toLowerCase().trim());
 })
 
+// Era filter
+.filter(p => {
+  if (selectedEras.length === 0) return true; // no filter
+  const productEras = p.era.split(",").map(e => e.trim());
+  return productEras.some(e => selectedEras.includes(e));
+})
 
     // Categories filter
     .filter(p =>
@@ -315,7 +316,12 @@ const filteredProducts = useMemo(() => {
   }
 
   return result;
-}, [products, search, selectedColors, selectedSizes, selectedCategories, selectedConditions, sortBy, priceRange]);
+}, [products, search, selectedColors, selectedSizes, selectedCategories, selectedConditions, selectedEras, sortBy, priceRange]);
+
+const eras = [
+  "1900s", "1910s", "1920s", "1930s", "1940s", "1950s",
+  "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"
+];
 
 return (
 <>
@@ -549,6 +555,37 @@ return (
   </div>
 </div>
 
+
+
+
+<div className="flex flex-col gap-2 mb-4">
+  <label className="text-gray-700 font-semibold">Era</label>
+  <div className="flex flex-wrap gap-3">
+    {eras.map((era) => {
+      const isSelected = selectedEras.includes(era);
+
+      return (
+        <button
+          key={era}
+          type="button"
+          onClick={() => {
+            if (isSelected) {
+              setSelectedEras(selectedEras.filter(e => e !== era));
+            } else {
+              setSelectedEras([...selectedEras, era]);
+            }
+          }}
+          className={`px-3 py-1 rounded-full text-sm font-semibold border-2 transition-all duration-200
+            ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+            hover:scale-110 hover:shadow-md cursor-pointer
+          `}
+        >
+          {era}
+        </button>
+      );
+    })}
+  </div>
+</div>
 
 
 
