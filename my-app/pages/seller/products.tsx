@@ -17,6 +17,8 @@ interface Product {
   images: string[];
   colors: string[];
   sizes: string[];
+  condition: string;
+  era: string;
   quantity: number;
   categories: { id: string; title: string }[];
   createdAt: string;
