@@ -367,6 +367,8 @@ return (
                 setSelectedColors([]);
                 setSelectedSizes([]);
                 setSelectedCategories([]);
+                setSelectedConditions([]);
+                setSelectedEras([]);
                 setSortBy("relevance");
                 const prices = products.map(p => p.price);
                 setPriceRange([Math.min(...prices), Math.max(...prices)]);
