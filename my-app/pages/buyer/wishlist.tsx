@@ -175,11 +175,13 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  // Fetch wishlist items
-  const wishlistItems = await prisma.userItem.findMany({
-    where: { userId: session.user.id, status: "wishlist" },
-    include: { product: true },
-  });
+  // Fetch wishlist only if logged in
+  const wishlistItems = session
+    ? await prisma.userItem.findMany({
+        where: { userId: session.user.id, status: "wishlist" },
+        include: { product: true },
+      })
+    : [];
 
   // Fetch categories
   const categories = await prisma.category.findMany({
@@ -198,7 +200,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         id: session?.user?.id ?? "Guest",
         name: session?.user?.name ?? "Guest",
         role: session?.user?.role ?? "Guest",
-},
+      },
     },
   };
 }
