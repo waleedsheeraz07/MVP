@@ -48,6 +48,7 @@ export default function ProductDetail({ product, categories, user, session }: Pr
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { refreshCart } = useCart();
+  const { setCartCount, refreshCart } = useCart();
 
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
