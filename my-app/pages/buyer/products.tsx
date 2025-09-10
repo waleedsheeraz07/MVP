@@ -67,6 +67,7 @@ const initialQuerySynced = useRef(false);
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
   const allColors = Array.from(new Set(products.flatMap(p => p.colors)));
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
@@ -219,6 +220,14 @@ const filteredProducts = useMemo(() => {
 
       return productSizes.some(s => selectedSizesNormalized.includes(s));
     })
+
+
+// Condition filter (multi-select)
+.filter(p => {
+  if (selectedConditions.length === 0) return true; // no filter
+  return selectedConditions.includes(p.condition.toLowerCase().trim());
+})
+
 
     // Categories filter
     .filter(p =>
@@ -432,6 +441,63 @@ return (
           })}
         </div>
       </div>
+
+
+
+
+{/* Condition Filter */}
+<div className="flex flex-col gap-2">
+  <h3 className="text-[#3e2f25] font-semibold">Condition</h3>
+
+  <div className="relative flex justify-between items-start w-full px-4 pt-2">
+    {/* Base Line */}
+    <div className="absolute top-2 left-0 w-full h-1 bg-gray-300 rounded"></div>
+
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map(cond => {
+      const normalized = cond.toLowerCase().trim();
+      const isSelected = selectedConditions.includes(normalized);
+
+      return (
+        <div
+          key={cond}
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
+        >
+          {/* Dot */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isSelected) {
+                setSelectedConditions(selectedConditions.filter(c => c !== normalized));
+              } else {
+                setSelectedConditions([...selectedConditions, normalized]);
+              }
+            }}
+            className="rounded-full transition-all duration-300 cursor-pointer hover:scale-110"
+            style={{
+              width: isSelected ? "18px" : "14px",
+              height: isSelected ? "18px" : "14px",
+              backgroundColor: isSelected ? "#5a4436" : "#ffffff",
+              border: isSelected ? "2px solid #5a4436" : "2px solid #9ca3af",
+            }}
+          ></button>
+
+          {/* Label */}
+          <span
+            className={`text-xs mt-3 max-w-[80px] leading-tight break-words ${
+              isSelected ? "font-bold text-[#3e2f25]" : "text-gray-600"
+            }`}
+          >
+            {cond}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+
+
+
 
       {/* Categories */}
       <div className="flex flex-col gap-2">
