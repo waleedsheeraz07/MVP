@@ -90,40 +90,68 @@ useEffect(() => {
     return false;
   };
 
-  const handleAddItem = async (status: "cart" | "wishlist") => {
-    if (!session?.user?.id) {
-      showToast("You need to log in first");
-      return;
-    }
-    if (status === "cart" && isAddToCartDisabled()) return;
+const handleAddItem = async (status: "cart" | "wishlist") => {
+  if (status === "cart" && !session?.user?.id) {
+    // Guest cart handling
+    const localCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/useritem/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: session.user.id,
-          productId: product.id,
-          color: selectedColor,
-          size: selectedSize,
-          quantity: 1,
-          status,
-        }),
+    const existingIndex = localCart.findIndex(
+      (item: any) =>
+        item.productId === product.id &&
+        item.color === selectedColor &&
+        item.size === selectedSize
+    );
+
+    if (existingIndex !== -1) {
+      localCart[existingIndex].quantity += 1;
+    } else {
+      localCart.push({
+        productId: product.id,
+        color: selectedColor,
+        size: selectedSize,
+        quantity: 1,
+        price: product.price,
+        image: product.images[0] || null,
       });
-      refreshCart();
-      localStorage.setItem("cartUpdate", Date.now().toString());
-
-      const data: { error?: string } = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to add item");
-      showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
- } catch (err: unknown) {
-      if (err instanceof Error) alert(err.message);
-      else showToast("An unexpected error occurred");
-    } finally {
-      setLoading(false);
     }
-  };
+
+    localStorage.setItem("guestCart", JSON.stringify(localCart));
+    localStorage.setItem("cartUpdate", Date.now().toString());
+    showToast("Product added to cart!");
+    return;
+  }
+
+  // Logged-in user -> existing API logic
+  if (status === "cart" && isAddToCartDisabled()) return;
+
+  setLoading(true);
+  try {
+    const res = await fetch("/api/useritem/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: session.user.id,
+        productId: product.id,
+        color: selectedColor,
+        size: selectedSize,
+        quantity: 1,
+        status,
+      }),
+    });
+
+    refreshCart();
+    localStorage.setItem("cartUpdate", Date.now().toString());
+
+    const data: { error?: string } = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to add item");
+    showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
+  } catch (err: unknown) {
+    if (err instanceof Error) alert(err.message);
+    else showToast("An unexpected error occurred");
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
