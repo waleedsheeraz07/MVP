@@ -500,7 +500,7 @@ return (
 
 
 {/* Condition Filter */}
-<div className="flex flex-col gap-2">
+<div className="flex flex-col gap-4">
   <h3 className="text-[#3e2f25] font-semibold">Condition</h3>
 
   <div className="relative flex justify-between items-start w-full px-4 pt-2">
