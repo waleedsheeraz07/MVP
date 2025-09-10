@@ -700,7 +700,6 @@ return (
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
-  if (!session || !session.user?.id) return { redirect: { destination: "/login", permanent: false } };
 
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
