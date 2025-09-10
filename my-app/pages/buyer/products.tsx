@@ -481,7 +481,7 @@ return (
 
   <div className="relative flex justify-between items-start w-full px-4 pt-2">
     {/* Base Line */}
-    <div className="absolute top-1 left-0 w-full h-1 bg-gray-300 rounded"></div>
+    <div className="absolute top-3 left-0 w-full h-1 bg-gray-300 rounded"></div>
 
     {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map(cond => {
       const normalized = cond.toLowerCase().trim();
