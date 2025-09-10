@@ -90,13 +90,22 @@ useEffect(() => {
     return false;
   };
 
+type GuestCartItem = {
+  productId: string;
+  color: string | null;
+  size: string | null;
+  quantity: number;
+  price: number;
+  image: string | null;
+};
+
 const handleAddItem = async (status: "cart" | "wishlist") => {
   if (status === "cart" && !session?.user?.id) {
-    // Guest cart handling
-    const localCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
+    // ===== Guest cart handling =====
+    const localCart: GuestCartItem[] = JSON.parse(localStorage.getItem("guestCart") || "[]");
 
     const existingIndex = localCart.findIndex(
-      (item: any) =>
+      (item) =>
         item.productId === product.id &&
         item.color === selectedColor &&
         item.size === selectedSize
@@ -116,12 +125,19 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
     }
 
     localStorage.setItem("guestCart", JSON.stringify(localCart));
-    localStorage.setItem("cartUpdate", Date.now().toString());
+    localStorage.setItem("cartUpdate", Date.now().toString()); // trigger cross-tab updates
+
+    // Update cart badge / mini-cart in React state
+    if (typeof setCartCount === "function") {
+      const totalQty = localCart.reduce((sum, item) => sum + item.quantity, 0);
+      setCartCount(totalQty);
+    }
+
     showToast("Product added to cart!");
     return;
   }
 
-  // Logged-in user -> existing API logic
+  // ===== Logged-in user =====
   if (status === "cart" && isAddToCartDisabled()) return;
 
   setLoading(true);
@@ -139,11 +155,15 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
       }),
     });
 
-    refreshCart();
-    localStorage.setItem("cartUpdate", Date.now().toString());
-
     const data: { error?: string } = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to add item");
+
+    // Update DB cart
+    refreshCart();
+
+    // Update badge / mini-cart in localStorage for cross-tab sync
+    localStorage.setItem("cartUpdate", Date.now().toString());
+
     showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
   } catch (err: unknown) {
     if (err instanceof Error) alert(err.message);
