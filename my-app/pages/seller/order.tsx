@@ -223,18 +223,17 @@ export default function SellerOrdersPage({ orders: initialOrders, categories, us
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (!session?.user?.id) {
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
-  const orderItems = await prisma.orderItem.findMany({
-    where: { sellerId: session.user.id },
-    include: {
-      order: { include: { user: true } },
-      product: true,
-    },
-    orderBy: { order: { createdAt: "desc" } },
-  });
+  // Only fetch order items if logged in
+  const orderItems = session
+    ? await prisma.orderItem.findMany({
+        where: { sellerId: session.user.id },
+        include: {
+          order: { include: { user: true } },
+          product: true,
+        },
+        orderBy: { order: { createdAt: "desc" } },
+      })
+    : [];
 
   const orderMap: Record<string, SellerOrder> = {};
   for (const item of orderItems) {
@@ -276,7 +275,11 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     props: {
       orders: Object.values(orderMap),
       categories,
-      user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
+      user: {
+        id: session?.user?.id ?? "Guest",
+        name: session?.user?.name ?? "Guest",
+        role: session?.user?.role ?? "Guest",
+      },
     },
   };
 };
