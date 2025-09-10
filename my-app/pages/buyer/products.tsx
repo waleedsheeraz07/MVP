@@ -496,11 +496,27 @@ return (
           <button
             type="button"
             onClick={() => {
+              let updated: string[];
               if (isSelected) {
-                setSelectedConditions(selectedConditions.filter(c => c !== normalized));
+                updated = selectedConditions.filter(c => c !== normalized);
               } else {
-                setSelectedConditions([...selectedConditions, normalized]);
+                updated = [...selectedConditions, normalized];
               }
+
+              // update local state
+              setSelectedConditions(updated);
+
+              // ✅ update URL query
+              const query = {
+                ...router.query,
+                conditions: updated.length > 0 ? updated.join(",") : undefined, // remove from URL if empty
+              };
+
+              router.push(
+                { pathname: router.pathname, query },
+                undefined,
+                { shallow: true }
+              );
             }}
             className="rounded-full transition-all duration-300 cursor-pointer hover:scale-110"
             style={{
