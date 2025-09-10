@@ -260,7 +260,7 @@ const filteredProducts = useMemo(() => {
   }
 
   return result;
-}, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+}, [products, search, selectedColors, selectedSizes, selectedCategories, selectedConditions, sortBy, priceRange]);
 
 return (
 <>
