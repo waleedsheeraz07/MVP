@@ -196,13 +196,15 @@ const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     setLoading(true)
     setError("")
 
-if (sizes.length === 0 || !condition) {
+if (sizes.length === 0 || !condition || !era) {
   if (sizes.length === 0) setError("Please select at least one size.");
   else if (!condition) setError("Please select a condition.");
+  else if (!era) setError("Please select an era.");
 
   setLoading(false);
   return;
 }
+
     try {
       const formData = new FormData()
       formData.append("title", title)
@@ -369,31 +371,45 @@ formData.append("categories", JSON.stringify(selectedCategories))
   <input type="hidden" name="condition" value={condition} required />
 </div>
 
-          {/* Era */}
-          <div>
-            <select
-              value={era}
-              onChange={e => setEra(e.target.value)}
-              required
-              className="input"
-            >
-              <option value="">Select Era *</option>
-              {eraOptions.map(opt => (
-                <option key={opt} value={opt}>
-                  {opt === "before1900" ? "Before 1900" : opt}
-                </option>
-              ))}
-            </select>
-            {era === "before1900" && (
-              <input
-                type="number"
-                placeholder="Enter Year (before 1900)"
-                value={before1900}
-                onChange={e => setBefore1900(e.target.value)}
-                className="input mt-2"
-              />
-            )}
-          </div>
+{/* Era */}
+<div className="flex flex-col gap-2">
+  <label className="text-gray-700 font-semibold">
+    Era <span className="text-red-500">*</span>
+  </label>
+
+  <div className="flex flex-wrap gap-3">
+    {eraOptions.map(opt => {
+      const isSelected = era === opt;
+
+      return (
+        <div key={opt} className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEra(opt)}
+            className={`px-4 py-2 rounded-full border-2 font-semibold text-sm transition-all duration-200
+              ${isSelected ? "border-[#3e2f25] bg-[#fdf8f3] scale-105 shadow-md" : "border-gray-300 bg-white"}
+              hover:scale-105 hover:shadow-md cursor-pointer`}
+          >
+            {opt === "before1900" ? "Before 1900" : opt}
+          </button>
+
+          {opt === "before1900" && isSelected && (
+            <input
+              type="number"
+              placeholder="Enter Year"
+              value={before1900}
+              onChange={e => setBefore1900(e.target.value)}
+              className="input w-24 mt-0"
+            />
+          )}
+        </div>
+      );
+    })}
+  </div>
+
+  {/* Hidden input to make era required */}
+  <input type="text" name="era" value={era} hidden required />
+</div>
 
           {/* Image Upload */}
           <div>
