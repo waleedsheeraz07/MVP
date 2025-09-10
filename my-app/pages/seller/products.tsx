@@ -619,13 +619,19 @@ const eras = [
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
-  if (!session?.user?.id) return { redirect: { destination: "/login", permanent: false } };
 
-  const products = await prisma.product.findMany({
-    where: { ownerId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    include: { categories: { include: { category: { select: { id: true, title: true } } } } },
-  });
+  // Fetch products only if logged in
+  const products = session
+    ? await prisma.product.findMany({
+        where: { ownerId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        include: {
+          categories: {
+            include: { category: { select: { id: true, title: true } } },
+          },
+        },
+      })
+    : [];
 
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
@@ -634,14 +640,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      products: products.map(p => ({
+      products: products.map((p) => ({
         ...p,
-        categories: p.categories.map(pc => pc.category),
+        categories: p.categories.map((pc) => pc.category),
         createdAt: p.createdAt.toISOString(),
         updatedAt: p.updatedAt.toISOString(),
       })),
       categories,
-      user: { id: session.user.id, name: session.user.name || "Guest", role: session.user.role },
+      user: {
+        id: session?.user?.id ?? "Guest",
+        name: session?.user?.name ?? "Guest",
+        role: session?.user?.role ?? "Guest",
+      },
     },
   };
 }
