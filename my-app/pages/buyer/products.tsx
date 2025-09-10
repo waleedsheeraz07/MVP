@@ -140,19 +140,34 @@ useEffect(() => {
   if (!router.isReady || !initialQuerySynced.current) return;
 
   const query: Record<string, string> = {};
+
+  // ✅ Search
   if (search) query.search = search;
+
+  // ✅ Colors
   if (selectedColors.length) query.colors = selectedColors.join(",");
+
+  // ✅ Sizes
   if (selectedSizes.length) query.sizes = selectedSizes.join(",");
+
+  // ✅ Categories
   if (selectedCategories.length) query.categories = selectedCategories.join(",");
+
+  // ✅ Sort
   if (sortBy !== "relevance") query.sortBy = sortBy;
 
+  // ✅ Conditions
+  if (selectedConditions.length) query.conditions = selectedConditions.join(",");
+
+  // ✅ Price
   const prices = products.map(p => p.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
+
   if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
   if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
 
-  // Compare current router.query with new query
+  // ✅ Compare current router.query with new query
   const currentQuery: Record<string, string> = {};
   Object.entries(router.query).forEach(([key, val]) => {
     if (typeof val === "string") currentQuery[key] = val;
@@ -165,7 +180,17 @@ useEffect(() => {
   if (!isEqual) {
     router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
   }
-}, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange, products, router]);
+}, [
+  search,
+  selectedColors,
+  selectedSizes,
+  selectedCategories,
+  selectedConditions, // ✅ included
+  sortBy,
+  priceRange,
+  products,
+  router
+]);
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
     const val = Number(e.target.value);
@@ -474,7 +499,6 @@ return (
 
 
 
-
 {/* Condition Filter */}
 <div className="flex flex-col gap-2">
   <h3 className="text-[#3e2f25] font-semibold">Condition</h3>
@@ -496,27 +520,11 @@ return (
           <button
             type="button"
             onClick={() => {
-              let updated: string[];
               if (isSelected) {
-                updated = selectedConditions.filter(c => c !== normalized);
+                setSelectedConditions(selectedConditions.filter(c => c !== normalized));
               } else {
-                updated = [...selectedConditions, normalized];
+                setSelectedConditions([...selectedConditions, normalized]);
               }
-
-              // update local state
-              setSelectedConditions(updated);
-
-              // ✅ update URL query
-              const query = {
-                ...router.query,
-                conditions: updated.length > 0 ? updated.join(",") : undefined, // remove from URL if empty
-              };
-
-              router.push(
-                { pathname: router.pathname, query },
-                undefined,
-                { shallow: true }
-              );
             }}
             className="rounded-full transition-all duration-300 cursor-pointer hover:scale-110"
             style={{
