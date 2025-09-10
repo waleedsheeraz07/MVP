@@ -247,10 +247,13 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  const cartItems = await prisma.userItem.findMany({
-    where: { userId: session.user.id, status: "cart" },
-    include: { product: true },
-  });
+  // Only fetch cart if logged in
+  const cartItems = session
+    ? await prisma.userItem.findMany({
+        where: { userId: session.user.id, status: "cart" },
+        include: { product: true },
+      })
+    : [];
 
   const categories = await prisma.category.findMany({
     select: { id: true, title: true, order: true, parentId: true },
@@ -268,7 +271,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         id: session?.user?.id ?? "Guest",
         name: session?.user?.name ?? "Guest",
         role: session?.user?.role ?? "Guest",
-},
+      },
     },
   };
 }
