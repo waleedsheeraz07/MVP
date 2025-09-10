@@ -190,21 +190,25 @@ const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     )
   }
 
-  // SUBMIT
+
+
+
+
+
+Don’t show validation message instead create a hidden input field for this and mark it required and then in handlesubmit function we can add something like this:
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
-if (sizes.length === 0 || !condition || !era) {
+if (sizes.length === 0 || !condition) {
   if (sizes.length === 0) setError("Please select at least one size.");
   else if (!condition) setError("Please select a condition.");
-  else if (!era) setError("Please select an era.");
 
   setLoading(false);
   return;
 }
-
     try {
       const formData = new FormData()
       formData.append("title", title)
@@ -213,7 +217,7 @@ if (sizes.length === 0 || !condition || !era) {
       formData.append("quantity", quantity)
       formData.append("colors", colors)
       formData.append("sizes", sizes.join(",")) 
-formData.append("categories", JSON.stringify(selectedCategories))
+      formData.append("categories", JSON.stringify(selectedCategories))
       formData.append("condition", condition)
       formData.append("era", era === "before1900" ? before1900 : era)
 
