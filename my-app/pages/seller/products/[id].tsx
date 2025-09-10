@@ -157,8 +157,28 @@ export default function EditProductPage({ categories, categories2, product, user
   const [colors, setColors] = useState(product.colors.join(", "))
   const [sizes, setSizes] = useState(product.sizes.join(", "))
   const [condition, setCondition] = useState(product.condition)
-  const [era, setEra] = useState(product.era)
-  const [before1900, setBefore1900] = useState("")
+  
+
+
+// Determine initial era and before1900 input
+let initialEra = product.era;
+let initialBefore1900 = "";
+
+if (product.era) {
+  const match = product.era.match(/^(\d+)/); // get starting year
+  const startYear = match ? parseInt(match[1], 10) : null;
+
+  if (startYear && startYear < 1900) {
+    initialEra = "before1900";
+    initialBefore1900 = startYear.toString();
+  }
+}
+
+// State
+const [era, setEra] = useState(initialEra);
+const [before1900, setBefore1900] = useState(initialBefore1900);
+
+
 
   const [selectedCategories, setSelectedCategories] = useState(
     product.categories.map(c => c.categoryId)
@@ -432,11 +452,10 @@ const eraOptions = [
 
 </div>
 
-      {/* Era Selector */}
-<div className="flex flex-col gap-2 mb-6">
-  <label className="text-gray-700 font-semibold">
-    Era <span className="text-red-500">*</span>
-  </label>
+
+
+<div className="flex flex-col gap-2">
+  <label className="text-gray-700 font-semibold">Era <span className="text-red-500">*</span></label>
 
   <div className="flex flex-wrap gap-3">
     {eraOptions.map(opt => {
@@ -454,7 +473,6 @@ const eraOptions = [
             {opt === "before1900" ? "Before 1900" : opt}
           </button>
 
-          {/* If "Before 1900" selected, show year input */}
           {opt === "before1900" && isSelected && (
             <input
               type="number"
@@ -469,8 +487,8 @@ const eraOptions = [
     })}
   </div>
 
-  {/* Hidden input to ensure era value is submitted in form */}
-  <input type="text" name="era" value={era} hidden />
+  {/* Hidden input to enforce required */}
+  <input type="text" name="era" value={era === "before1900" ? before1900 : era} hidden required />
 </div>
 
           {/* Images */}
