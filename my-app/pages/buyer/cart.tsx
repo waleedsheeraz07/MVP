@@ -53,6 +53,20 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
+
+  // Fetch latest cart for signed-in users
+  const fetchLatestCart = useCallback(async () => {
+    if (isGuest) return;
+    try {
+      const res = await fetch("/api/useritem/cart-refresh");
+      if (!res.ok) return;
+      const latestCart: CartItem[] = await res.json();
+      setCart(latestCart);
+    } catch (err) {
+      console.error("Failed to fetch latest cart", err);
+    }
+  }, [isGuest]);
+
   // Initialize CartContext for signed-in users
   useEffect(() => {
     if (!isGuest) {
@@ -87,19 +101,6 @@ export default function CartPage({ cartItems: initialCartItems, categories, user
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, [isGuest, fetchLatestCart, refreshCart, setCartCount]);
-
-  // Fetch latest cart for signed-in users
-  const fetchLatestCart = useCallback(async () => {
-    if (isGuest) return;
-    try {
-      const res = await fetch("/api/useritem/cart-refresh");
-      if (!res.ok) return;
-      const latestCart: CartItem[] = await res.json();
-      setCart(latestCart);
-    } catch (err) {
-      console.error("Failed to fetch latest cart", err);
-    }
-  }, [isGuest]);
 
   // Handle quantity change
   const handleQuantityChange = async (itemId: string | undefined, newQty: number, productId: string) => {
