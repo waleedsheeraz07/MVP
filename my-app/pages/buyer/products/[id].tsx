@@ -100,8 +100,8 @@ useEffect(() => {
   };
 
 const handleAddItem = async (status: "cart" | "wishlist") => {
-  if (status === "cart" && !session?.user?.id) {
-    // ===== Guest cart handling =====
+  // ===== Guest user handling =====
+  if (status === "cart" && (!session || !session.user?.id)) {
     const localCart: GuestCartItem[] = JSON.parse(localStorage.getItem("guestCart") || "[]");
 
     const existingIndex = localCart.findIndex(
@@ -124,11 +124,11 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
       });
     }
 
-    // Save to localStorage and trigger cross-tab updates
+    // Save locally + notify other tabs
     localStorage.setItem("guestCart", JSON.stringify(localCart));
     localStorage.setItem("cartUpdate", Date.now().toString());
 
-    // Update cart badge / mini-cart in React state via CartContext
+    // Update badge/mini-cart in current tab
     const totalQty = localCart.reduce((sum, item) => sum + item.quantity, 0);
     setCartCount(totalQty);
 
@@ -145,7 +145,7 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: session.user.id,
+        userId: session!.user!.id, // safe here since guest handled above
         productId: product.id,
         color: selectedColor,
         size: selectedSize,
@@ -157,10 +157,10 @@ const handleAddItem = async (status: "cart" | "wishlist") => {
     const data: { error?: string } = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to add item");
 
-    // Update cart in context (fetch DB count)
+    // Refresh DB cart badge
     await refreshCart();
 
-    // Trigger cross-tab update for other tabs
+    // Cross-tab sync
     localStorage.setItem("cartUpdate", Date.now().toString());
 
     showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
@@ -439,8 +439,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
       categories,
       user: session?.user
-        ? { id: session.user.id, name: session.user.name || "Guest", role: session.user.role }
-        : { id: "", name: "Guest" },
+        ? { id: session.user.id, name: session.user.name ?? "Guest", role: session.user.role }
+        : { id: "", name: "Guest", role: "guest" }, // explicit role for guests
       session,
     },
   };
