@@ -54,7 +54,10 @@ export default function MyProductsPage({ products, categories, user }: MyProduct
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>("relevance");
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedEras, setSelectedEras] = useState<string[]>([]);
+
+const [sortBy, setSortBy] = useState<SortOption>("relevance");
   const [priceRange, setPriceRange] = useState<[number, number]>(() => {
     const prices = products.map(p => p.price);
     return [Math.min(...prices), Math.max(...prices)];
@@ -163,6 +166,27 @@ const filteredProducts = useMemo(() => {
       return productSizes.some(s => selectedSizesNormalized.includes(s));
     })
 
+//Condition filter (multi-select)
+.filter(p => {
+  if (selectedConditions.length === 0) return true; // no filter
+  return selectedConditions.includes(p.condition.toLowerCase().trim());
+})
+
+// Era filter
+.filter(p => {
+  if (selectedEras.length === 0) return true; // no filter
+
+  return selectedEras.some(era => {
+    if (era === "before1900") {
+      // ✅ Point 2: handle range/any single year before 1900
+      const productYear = Number(p.era.split("–")[0]); // get starting year
+      return productYear < 1900;
+    } else {
+      return p.era === era; // match exact decade string
+    }
+  });
+})
+
     // Categories filter
     .filter(p =>
       selectedCategories.length === 0 ||
@@ -194,7 +218,7 @@ const filteredProducts = useMemo(() => {
   }
 
   return result;
-}, [products, search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+}, [products, search, selectedColors, selectedSizes, selectedCategories, selectedConditions, selectedEras, sortBy, priceRange]);
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement>, index: 0 | 1) => {
     const val = Number(e.target.value);
@@ -208,13 +232,33 @@ const filteredProducts = useMemo(() => {
     if (selectedColors.length) query.colors = selectedColors.join(",");
     if (selectedSizes.length) query.sizes = selectedSizes.join(",");
     if (selectedCategories.length) query.categories = selectedCategories.join(",");
-    if (sortBy !== "relevance") query.sortBy = sortBy;
+    if (selectedConditions.length) query.conditions = selectedConditions.join(",");
+  if (selectedEras.length) query.eras = selectedEras.join(",");
+if (sortBy !== "relevance") query.sortBy = sortBy;
     const minPrice = Math.min(...products.map(p => p.price));
     const maxPrice = Math.max(...products.map(p => p.price));
     if (priceRange[0] !== minPrice) query.priceMin = String(priceRange[0]);
     if (priceRange[1] !== maxPrice) query.priceMax = String(priceRange[1]);
     router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
-  }, [search, selectedColors, selectedSizes, selectedCategories, sortBy, priceRange]);
+  }, [search, selectedColors, selectedSizes, selectedCategories, selectedConditions, selectedEras, sortBy, priceRange]);
+
+
+const eras = [
+    "before1900",
+    "1900–1909",
+    "1910–1919",
+    "1920–1929",
+    "1930–1939",
+    "1940–1949",
+    "1950–1959",
+    "1960–1969",
+    "1970–1979",
+    "1980–1989",
+    "1990–1999",
+    "2000–2009",
+    "2010–2019",
+    "2020–2025",
+];
 
   return (
 <>
@@ -402,6 +446,87 @@ const filteredProducts = useMemo(() => {
           })}
         </div>
       </div>
+
+
+{/* Condition Filter */}
+<div className="flex flex-col gap-4">
+  <h3 className="text-[#3e2f25] font-semibold">Condition</h3>
+
+  <div className="relative flex justify-between items-start w-full px-4 pt-2">
+    {/* Base Line */}
+    <div className="absolute top-3 left-0 w-full h-1 bg-gray-300 rounded"></div>
+
+    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map(cond => {
+      const normalized = cond.toLowerCase().trim();
+      const isSelected = selectedConditions.includes(normalized);
+
+      return (
+        <div
+          key={cond}
+          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2"
+        >
+          {/* Dot */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isSelected) {
+                setSelectedConditions(selectedConditions.filter(c => c !== normalized));
+              } else {
+                setSelectedConditions([...selectedConditions, normalized]);
+              }
+            }}
+            className="rounded-full transition-all duration-300 cursor-pointer hover:scale-110"
+            style={{
+              width: isSelected ? "18px" : "14px",
+              height: isSelected ? "18px" : "14px",
+              backgroundColor: isSelected ? "#5a4436" : "#ffffff",
+              border: isSelected ? "2px solid #5a4436" : "2px solid #9ca3af",
+            }}
+          ></button>
+
+          {/* Label */}
+          <span
+            className={`text-xs mt-3 max-w-[80px] leading-tight break-words ${
+              isSelected ? "font-bold text-[#3e2f25]" : "text-gray-600"
+            }`}
+          >
+            {cond}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+{/*Eras*/}
+<div className="flex flex-col gap-2">
+  <label className="text-gray-700 font-semibold">Era</label>
+  <div className="flex flex-wrap gap-3">
+    {eras.map((era) => {
+      const isSelected = selectedEras.includes(era);
+
+      return (
+        <button
+          key={era}
+          type="button"
+          onClick={() => {
+            if (isSelected) {
+              setSelectedEras(selectedEras.filter(e => e !== era));
+            } else {
+              setSelectedEras([...selectedEras, era]);
+            }
+          }}
+          className={`px-3 py-1 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
+            ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
+            hover:scale-110 hover:shadow-md cursor-pointer
+          `}
+        >
+          {era}
+        </button>
+      );
+    })}
+  </div>
+</div>
 
       {/* Categories */}
       <div className="flex flex-col gap-2">
