@@ -91,26 +91,48 @@ const initialQuerySynced = useRef(false);
 useEffect(() => {
   if (!router.isReady || initialQuerySynced.current) return;
 
+  // ✅ Search
   setSearch((router.query.search as string) || "");
-  setSelectedColors(router.query.colors ? (router.query.colors as string).split(",") : []);
-  setSelectedSizes(router.query.sizes ? (router.query.sizes as string).split(",") : []);
-  setSelectedCategories(router.query.categories ? (router.query.categories as string).split(",") : []);
+
+  // ✅ Colors
+  setSelectedColors(
+    router.query.colors
+      ? (router.query.colors as string).split(",").map(c => c.trim().toUpperCase())
+      : []
+  );
+
+  // ✅ Sizes
+  setSelectedSizes(
+    router.query.sizes
+      ? (router.query.sizes as string).split(",").map(s => s.trim().toUpperCase())
+      : []
+  );
+
+  // ✅ Categories
+  setSelectedCategories(
+    router.query.categories
+      ? (router.query.categories as string).split(",")
+      : []
+  );
+
+  // ✅ Sort
   setSortBy((router.query.sortBy as SortOption) || "relevance");
 
-  // ✅ Condition sync
+  // ✅ Conditions
   setSelectedConditions(
     router.query.conditions
       ? (router.query.conditions as string).split(",").map(c => c.trim().toLowerCase())
       : []
   );
 
-  // Price sync
+  // ✅ Price
   const prices = products.map(p => p.price);
   const min = router.query.priceMin ? Number(router.query.priceMin) : Math.min(...prices);
   const max = router.query.priceMax ? Number(router.query.priceMax) : Math.max(...prices);
   setPriceRange([min, max]);
 
-  initialQuerySynced.current = true; // mark done
+  // ✅ Mark as synced
+  initialQuerySynced.current = true;
 }, [router.query, router.isReady, products]);
 
 // --- update router query only after initial sync ---
