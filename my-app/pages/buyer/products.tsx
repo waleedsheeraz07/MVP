@@ -126,12 +126,11 @@ useEffect(() => {
       : []
   );
 
-  // ✅ Eras
-  setSelectedEras(
-    router.query.eras
-      ? (router.query.eras as string).split(",").map(e => e.trim())
-      : []
-  );
+setSelectedEras(
+  router.query.eras
+    ? (router.query.eras as string).split(",")
+    : []
+);
 
   // Price
   const prices = products.map(p => p.price);
@@ -281,8 +280,7 @@ const filteredProducts = useMemo(() => {
 // Era filter
 .filter(p => {
   if (selectedEras.length === 0) return true; // no filter
-  const productEras = p.era.split(",").map(e => e.trim());
-  return productEras.some(e => selectedEras.includes(e));
+  return selectedEras.includes(p.era);
 })
 
     // Categories filter
@@ -319,8 +317,18 @@ const filteredProducts = useMemo(() => {
 }, [products, search, selectedColors, selectedSizes, selectedCategories, selectedConditions, selectedEras, sortBy, priceRange]);
 
 const eras = [
-  "1900s", "1910s", "1920s", "1930s", "1940s", "1950s",
-  "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"
+  "1900-1910",
+  "1910-1920",
+  "1920-1930",
+  "1930-1940",
+  "1940-1950",
+  "1950-1960",
+  "1960-1970",
+  "1970-1980",
+  "1980-1990",
+  "1990-2000",
+  "2000-2010",
+  "2010-2020"
 ];
 
 return (
@@ -558,7 +566,7 @@ return (
 
 
 
-<div className="flex flex-col gap-2 mb-4">
+<div className="flex flex-col gap-2">
   <label className="text-gray-700 font-semibold">Era</label>
   <div className="flex flex-wrap gap-3">
     {eras.map((era) => {
@@ -575,7 +583,7 @@ return (
               setSelectedEras([...selectedEras, era]);
             }
           }}
-          className={`px-3 py-1 rounded-full text-sm font-semibold border-2 transition-all duration-200
+          className={`px-3 py-1 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
             ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
             hover:scale-110 hover:shadow-md cursor-pointer
           `}
