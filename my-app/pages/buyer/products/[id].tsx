@@ -119,7 +119,7 @@ useEffect(() => {
       showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
  } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
-      else alert("An unexpected error occurred");
+      else showToast("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
