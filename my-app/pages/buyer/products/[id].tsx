@@ -365,53 +365,63 @@ const carouselHandlers = useSwipeable({
 
 
 
-{/* All Products Grid */}
-{products.length === 0 ? (
-  <p className="text-center text-[#3e2f25] font-medium mt-6 text-lg">
-    No products available.
-  </p>
-) : (
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {products.map((product) => (
-      <Link
-        key={product.id}
-        href={`/buyer/products/${product.id}`}
-        className="group block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden
-          transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
-      >
-        {/* Product Image */}
-        {product.images[0] && (
-          <div className="relative w-full h-56 lg:h-72 overflow-hidden rounded-t-2xl">
-            <img
-              src={product.images[0]}
-              alt={product.title}
-              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 ${
-                product.quantity === 0 ? "opacity-70" : ""
-              }`}
-            />
+{/* All Products */}
+<section className="py-16 max-w-7xl mx-auto px-4">
+  <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">
+    All Products
+  </h2>
 
-            {/* Sold Out Ribbon */}
-            {product.quantity === 0 && (
-              <div className="absolute top-2 left-0 bg-[#7b5b40] text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-md z-10">
-                Sold Out
-              </div>
-            )}
+  {products.length === 0 ? (
+    <p className="text-center text-[#3e2f25] font-medium mt-6 text-lg">
+      No products available.
+    </p>
+  ) : (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {products.map((product) => (
+        <Link
+          key={product.id}
+          href={`/buyer/products/${product.id}`}
+          className="group block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden
+            transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
+        >
+          {/* Product Image */}
+          {product.images[0] ? (
+            <div className="relative w-full h-56 lg:h-72 overflow-hidden rounded-t-2xl">
+              <img
+                src={product.images[0]}
+                alt={product.title}
+                className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 ${
+                  product.quantity === 0 ? "opacity-70" : ""
+                }`}
+              />
+
+              {/* Sold Out Ribbon */}
+              {product.quantity === 0 && (
+                <div className="absolute top-2 left-0 bg-[#7b5b40] text-white text-xs font-bold px-3 py-1 rounded-br-lg transform -rotate-12 shadow-md z-10">
+                  Sold Out
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full h-56 lg:h-72 flex items-center justify-center bg-gray-200 text-gray-500 text-sm">
+              No Image
+            </div>
+          )}
+
+          {/* Card Content */}
+          <div className="p-4 flex flex-col items-center justify-center">
+            <h2 className="text-sm md:text-base lg:text-lg font-semibold text-[#3e2f25] truncate text-center group-hover:text-[#5a4436] transition-colors duration-200">
+              {product.title}
+            </h2>
+            <p className="mt-2 text-[#5a4436] font-bold text-sm md:text-base">
+              KWD {product.price.toFixed(2)}
+            </p>
           </div>
-        )}
-
-        {/* Card Content */}
-        <div className="p-4 flex flex-col items-center justify-center">
-          <h2 className="text-sm md:text-base lg:text-lg font-semibold text-[#3e2f25] truncate text-center group-hover:text-[#5a4436] transition-colors duration-200">
-            {product.title}
-          </h2>
-          <p className="mt-2 text-[#5a4436] font-bold text-sm md:text-base">
-            KWD {product.price.toFixed(2)}
-          </p>
-        </div>
-      </Link>
-    ))}
-  </div>
-)}
+        </Link>
+      ))}
+    </div>
+  )}
+</section>
 
 
 
