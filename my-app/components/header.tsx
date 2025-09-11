@@ -115,11 +115,15 @@ export default function Layout({ children, categories, user }: LayoutProps) {
           </svg>
         </button>
 
-        <div className="absolute left-1/2 transform -translate-x-1/2">
-          <Link href="/buyer/products" onClick={closeSidebar}>
-            <img src="/logo.png" alt="Logo" className="w-18 h-18 sm:w-12 sm:h-12 object-contain" />
-          </Link>
-        </div>
+      <div className="absolute left-1/2 transform -translate-x-1/2">
+  <Link href="/buyer/products" onClick={closeSidebar}>
+    <img 
+      src="/logo.png" 
+      alt="Logo" 
+      className="w-12 h-12 sm:w-14 sm:h-14 lg:w-20 lg:h-20 object-contain" 
+    />
+  </Link>
+</div>
 
         <Link href="/buyer/cart" className="relative inline-block text-[#3e2f25] hover:text-[#5a4436] transition-colors text-2xl sm:text-3xl my-4">
           <span role="img" aria-label="cart" className="transition-transform duration-200 hover:scale-110">🛒</span>
