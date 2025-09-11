@@ -120,7 +120,7 @@ export default function Layout({ children, categories, user }: LayoutProps) {
     <img 
       src="/logo.png" 
       alt="Logo" 
-      className="w-12 h-12 sm:w-14 sm:h-14 lg:w-20 lg:h-20 object-contain" 
+      className="w-14 h-14 sm:w-15 sm:h-15 lg:w-20 lg:h-20 object-contain" 
     />
   </Link>
 </div>
