@@ -128,7 +128,7 @@ export default function Home({ products }: Props) {
     <p className="mb-6 max-w-2xl mx-auto">
       Join our marketplace today and reach thousands of vintage enthusiasts.
     </p>
-    <Link href="/sell">
+    <Link href="/seller/sell">
       <a className="bg-[#3e2f25] text-[#fdf8f3] px-6 py-3 rounded-lg font-semibold hover:bg-[#5a4436] transition">
         Sell Now
       </a>
