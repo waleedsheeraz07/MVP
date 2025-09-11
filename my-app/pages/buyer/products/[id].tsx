@@ -39,7 +39,7 @@ interface ProductDetailProps {
   categories: Category[];
   user: User;
   session: { user?: { id: string; name?: string; email?: string } } | null;
-  products: Product;
+  products: Product[];
 }
 
 export default function ProductDetail({ product, categories, user, session, products }: ProductDetailProps) {
