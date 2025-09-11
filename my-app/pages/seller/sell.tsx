@@ -271,7 +271,7 @@ if (sizes.length === 0 || !condition || !era || (era === "before1900" && !before
 
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
   <Link
-    href="/buyer/products"
+    href="/seller/products"
     className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition"
   >
     <svg
