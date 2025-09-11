@@ -58,7 +58,7 @@ export default function Home({ products }: Props) {
     {featuredProducts.map((product) => (
       <div
         key={product.id}
-        className="group bg-[#fffdfb] shadow-md rounded-2xl overflow-hidden flex flex-col transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
+        className=" cursor-pointer group bg-[#fffdfb] shadow-md rounded-2xl overflow-hidden flex flex-col transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
       >
         {/* Product Image */}
         <div className="w-full h-56 sm:h-64 md:h-72 relative overflow-hidden">
@@ -84,7 +84,7 @@ export default function Home({ products }: Props) {
             ${product.price.toFixed(2)}
           </p>
 
-          <Link href={`/products/${product.id}`}>
+          <Link href={`/buyer/products/${product.id}`}>
             <a className="inline-block bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-[#5a4436] hover:shadow-md hover:scale-105 active:scale-95 self-start">
               View Product
             </a>
