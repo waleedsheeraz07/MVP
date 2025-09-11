@@ -33,21 +33,12 @@ interface ProductDetailProps {
   session: { user?: { id: string; name?: string; email?: string } } | null;
 }
 
-type GuestCartItem = {
-  productId: string;
-  color: string | null;
-  size: string | null;
-  quantity: number;
-  price: number;
-  image: string | null;
-};
-
 export default function ProductDetail({ product, categories, user, session }: ProductDetailProps) {
  const [galleryOpen, setGalleryOpen] = useState(false);
  const validSizes = product.sizes.filter(s => s && s.trim() !== "");
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { setCartCount, refreshCart } = useCart();
+  const { refreshCart } = useCart();
 
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -99,78 +90,41 @@ useEffect(() => {
     return false;
   };
 
-const handleAddItem = async (status: "cart" | "wishlist") => {
-  // ===== Guest user handling =====
-  if (status === "cart" && (!session || !session.user?.id)) {
-    const localCart: GuestCartItem[] = JSON.parse(localStorage.getItem("guestCart") || "[]");
-
-    const existingIndex = localCart.findIndex(
-      (item) =>
-        item.productId === product.id &&
-        item.color === selectedColor &&
-        item.size === selectedSize
-    );
-
-    if (existingIndex !== -1) {
-      localCart[existingIndex].quantity += 1;
-    } else {
-      localCart.push({
-        productId: product.id,
-        color: selectedColor,
-        size: selectedSize,
-        quantity: 1,
-        price: product.price,
-        image: product.images[0] || null,
-      });
+  const handleAddItem = async (status: "cart" | "wishlist") => {
+    if (!session?.user?.id) {
+      showToast("You need to log in first");
+      return;
     }
+    if (status === "cart" && isAddToCartDisabled()) return;
 
-    // Save locally + notify other tabs
-    localStorage.setItem("guestCart", JSON.stringify(localCart));
-    localStorage.setItem("cartUpdate", Date.now().toString());
+    setLoading(true);
+    try {
+      const res = await fetch("/api/useritem/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: session.user.id,
+          productId: product.id,
+          color: selectedColor,
+          size: selectedSize,
+          quantity: 1,
+          status,
+        }),
+      });
+      refreshCart();
+      localStorage.setItem("cartUpdate", Date.now().toString());
 
-    // Update badge/mini-cart in current tab
-    const totalQty = localCart.reduce((sum, item) => sum + item.quantity, 0);
-    setCartCount(totalQty);
+      const data: { error?: string } = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to add item");
+      showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
+ } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message);
+      else showToast("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    showToast("Product added to cart!");
-    return;
-  }
-
-  // ===== Logged-in user handling =====
-  if (status === "cart" && isAddToCartDisabled()) return;
-
-  setLoading(true);
-  try {
-    const res = await fetch("/api/useritem/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: session!.user!.id, // safe here since guest handled above
-        productId: product.id,
-        color: selectedColor,
-        size: selectedSize,
-        quantity: 1,
-        status,
-      }),
-    });
-
-    const data: { error?: string } = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to add item");
-
-    // Refresh DB cart badge
-    await refreshCart();
-
-    // Cross-tab sync
-    localStorage.setItem("cartUpdate", Date.now().toString());
-
-    showToast(status === "cart" ? "Product added to cart!" : "Product added to wishlist!");
-  } catch (err: unknown) {
-    if (err instanceof Error) alert(err.message);
-    else showToast("An unexpected error occurred");
-  } finally {
-    setLoading(false);
-  }
-};
 
 
 const carouselHandlers = useSwipeable({
@@ -439,8 +393,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
       categories,
       user: session?.user
-        ? { id: session.user.id, name: session.user.name ?? "Guest", role: session.user.role }
-        : { id: "", name: "Guest", role: "guest" }, // explicit role for guests
+        ? { id: session.user.id, name: session.user.name || "Guest", role: session.user.role }
+        : { id: "", name: "Guest" },
       session,
     },
   };
