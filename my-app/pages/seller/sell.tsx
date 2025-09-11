@@ -1,5 +1,6 @@
 // pages/seller/sell.tsx:
 "use client"
+import Link from "next/link";
 
 import Head from 'next/head'
 import { useState, useMemo } from "react"
