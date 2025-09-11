@@ -183,16 +183,18 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
 
     {/* Users Grid */}
     {filteredUsers.length === 0 ? (
-      <p className="text-center text-[#3e2f25] font-medium mt-6">No users found.</p>
+      <p className="text-center text-[#3e2f25] font-medium mt-6">
+        No users found.
+      </p>
     ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 auto-rows-auto">
         {filteredUsers.map((u) => (
           <div
             key={u.id}
             className="bg-[#fffdfb] rounded-2xl shadow-md p-4 border border-[#ccc] flex flex-col"
           >
             {/* Basic Info */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-lg font-semibold text-[#3e2f25]">
                   {u.firstName} {u.lastName || ""}
@@ -202,7 +204,8 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
                   <span className="font-medium">Role:</span> {u.role}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Gender:</span> {u.gender || "—"}
+                  <span className="font-medium">Gender:</span>{" "}
+                  {u.gender || "—"}
                 </p>
               </div>
               <button
@@ -217,26 +220,31 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
             {expanded === u.id && (
               <div className="mt-4 border-t border-[#ccc] pt-3 text-sm text-[#3e2f25] space-y-2">
                 <p>
-                  <span className="font-medium">Phone:</span> {u.phoneNumber || "—"}
+                  <span className="font-medium">Phone:</span>{" "}
+                  {u.phoneNumber || "—"}
                 </p>
                 <p>
                   <span className="font-medium">DOB:</span>{" "}
                   {u.dob ? new Date(u.dob).toLocaleDateString() : "—"}
                 </p>
                 <p>
-                  <span className="font-medium">Address 1:</span> {u.address1 || "—"}
+                  <span className="font-medium">Address 1:</span>{" "}
+                  {u.address1 || "—"}
                 </p>
                 <p>
-                  <span className="font-medium">Address 2:</span> {u.address2 || "—"}
+                  <span className="font-medium">Address 2:</span>{" "}
+                  {u.address2 || "—"}
                 </p>
                 <p>
                   <span className="font-medium">State:</span> {u.state || "—"}
                 </p>
                 <p>
-                  <span className="font-medium">Country:</span> {u.country || "—"}
+                  <span className="font-medium">Country:</span>{" "}
+                  {u.country || "—"}
                 </p>
                 <p>
-                  <span className="font-medium">Postal Code:</span> {u.postalCode || "—"}
+                  <span className="font-medium">Postal Code:</span>{" "}
+                  {u.postalCode || "—"}
                 </p>
                 <p>
                   <span className="font-medium">Created At:</span>{" "}
