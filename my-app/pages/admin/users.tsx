@@ -181,17 +181,17 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
       </button>
     </div>
 
-    {/* Users Grid */}
+    {/* Users List */}
     {filteredUsers.length === 0 ? (
       <p className="text-center text-[#3e2f25] font-medium mt-6">
         No users found.
       </p>
     ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 auto-rows-auto">
+      <div className="flex flex-wrap gap-4">
         {filteredUsers.map((u) => (
           <div
             key={u.id}
-            className="bg-[#fffdfb] rounded-2xl shadow-md p-4 border border-[#ccc] flex flex-col"
+            className="w-full sm:w-[calc(50%-0.5rem)] bg-[#fffdfb] rounded-2xl shadow-md p-4 border border-[#ccc] flex flex-col"
           >
             {/* Basic Info */}
             <div className="flex justify-between items-start">
