@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function Home({ products }: Props) {
-  const featuredProducts = products.slice(0, 2) // only 1-2 items
+  const featuredProducts = products.slice(0, 4) // only 1-2 items
 
   return (
     <>
@@ -47,38 +47,53 @@ export default function Home({ products }: Props) {
     </div>
   </section>
 
-  {/* Featured Products */}
-  <section className="py-20 max-w-6xl mx-auto px-4">
-    <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">Featured Items</h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {featuredProducts.map(product => (
-        <div key={product.id} className="bg-[#fffdfb] shadow-md rounded-2xl overflow-hidden hover:shadow-lg transition flex flex-col">
-          <div className="w-full h-60 sm:h-64 md:h-72 relative">
-            {product.images.length > 0 ? (
-              <img
-                src={product.images[0]}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="bg-gray-200 w-full h-full flex items-center justify-center text-gray-500">
-                No Image
-              </div>
-            )}
-          </div>
-          <div className="p-4 flex-1 flex flex-col justify-between">
-            <h3 className="text-lg sm:text-xl font-semibold text-[#3e2f25] truncate mb-2">{product.title}</h3>
-            <p className="text-[#5a4436] font-bold mb-2">${product.price.toFixed(2)}</p>
-            <Link href={`/products/${product.id}`}>
-              <a className="inline-block bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-medium hover:bg-[#5a4436] transition self-start">
-                View Product
-              </a>
-            </Link>
-          </div>
+{/* Featured Products */}
+<section className="py-20 max-w-6xl mx-auto px-4">
+  <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">
+    Featured Items
+  </h2>
+
+  {/* Responsive grid: 2 on mobile, 4 on large screens */}
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    {featuredProducts.map((product) => (
+      <div
+        key={product.id}
+        className="group bg-[#fffdfb] shadow-md rounded-2xl overflow-hidden flex flex-col transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
+      >
+        {/* Product Image */}
+        <div className="w-full h-56 sm:h-64 md:h-72 relative overflow-hidden">
+          {product.images.length > 0 ? (
+            <img
+              src={product.images[0]}
+              alt={product.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-hover:brightness-105"
+            />
+          ) : (
+            <div className="bg-gray-200 w-full h-full flex items-center justify-center text-gray-500">
+              No Image
+            </div>
+          )}
         </div>
-      ))}
-    </div>
-  </section>
+
+        {/* Product Details */}
+        <div className="p-4 flex-1 flex flex-col justify-between">
+          <h3 className="text-lg sm:text-xl font-semibold text-[#3e2f25] truncate mb-2">
+            {product.title}
+          </h3>
+          <p className="text-[#5a4436] font-bold mb-2">
+            ${product.price.toFixed(2)}
+          </p>
+
+          <Link href={`/products/${product.id}`}>
+            <a className="inline-block bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-[#5a4436] hover:shadow-md hover:scale-105 active:scale-95 self-start">
+              View Product
+            </a>
+          </Link>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
 
   {/* Our Vision */}
   <section className="py-20 bg-[#e6d9c6] text-center">
