@@ -328,7 +328,7 @@ const carouselHandlers = useSwipeable({
       <button
         disabled={isAddToCartDisabled() || loading}
         onClick={() => handleAddItem("cart")}
-        className={`flex-1 py-3 px-4 text-lg rounded-lg transition ${
+        className={`cursor-pointer flex-1 py-3 px-4 text-lg rounded-lg transition ${
           isAddToCartDisabled() || loading
             ? "bg-gray-300 cursor-not-allowed text-gray-500"
             : "bg-[#5a4436] text-[#fdf8f3] hover:bg-[#3e2f25] hover:shadow-lg hover:scale-105"
@@ -339,7 +339,7 @@ const carouselHandlers = useSwipeable({
       <button
         disabled={loading}
         onClick={() => handleAddItem("wishlist")}
-        className="flex-1 py-3 px-4 bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105 text-lg rounded-lg transition"
+        className="cursor-pointer flex-1 py-3 px-4 bg-[#3e2f25] text-[#fdf8f3] hover:bg-[#5a4436] hover:shadow-lg hover:scale-105 text-lg rounded-lg transition"
       >
         {loading ? "Adding..." : "Add to Wishlist"}
       </button>
