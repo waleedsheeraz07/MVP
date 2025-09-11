@@ -15,6 +15,14 @@ import { showToast } from "../../../utils/toast";
 interface Category { id: string; title: string; order: number; parentId?: string | null; }
 interface User { id: string; name?: string | null; role: string; }
 
+interface Product {
+  id: string
+  title: string
+  description?: string
+  price: number
+  images: string[]
+}
+
 interface ProductDetailProps {
   product: {
     id: string;
@@ -31,9 +39,10 @@ interface ProductDetailProps {
   categories: Category[];
   user: User;
   session: { user?: { id: string; name?: string; email?: string } } | null;
+  products: Product;
 }
 
-export default function ProductDetail({ product, categories, user, session }: ProductDetailProps) {
+export default function ProductDetail({ product, categories, user, session, products }: ProductDetailProps) {
  const [galleryOpen, setGalleryOpen] = useState(false);
  const validSizes = product.sizes.filter(s => s && s.trim() !== "");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -373,7 +382,20 @@ const carouselHandlers = useSwipeable({
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
+ 
+
+ const products = await prisma.product.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      price: true,
+      images: true,
+    },
+  })
+
+ const session = await getServerSession(context.req, context.res, authOptions);
   const { id } = context.params as { id: string };
 
   const product = await prisma.product.findUnique({ where: { id } });
@@ -396,6 +418,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ? { id: session.user.id, name: session.user.name || "Guest", role: session.user.role }
         : { id: "", name: "Guest" },
       session,
+      products,
     },
   };
 }
