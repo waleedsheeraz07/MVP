@@ -146,7 +146,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
 </Head>
     <Layout categories={categories} user={{ id: currentUserId, name: userName, role: role}}>
 <div className="min-h-screen p-4 bg-[#fdf8f3] font-sans">
-  <div className="max-w-6xl mx-auto">
+  <div className="max-w-4xl mx-auto">
     <h1 className="text-2xl sm:text-3xl font-bold text-[#3e2f25] mb-6 text-center sm:text-left">
       👥 All Users
     </h1>
@@ -175,7 +175,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
 
       <button
         onClick={resetFilters}
-        className="px-4 py-2 bg-[#5a4436] text-white rounded-xl hover:bg-[#3e2f25] transition"
+        className="px-4 py-2 bg-[#5a4436] text-white rounded-xl hover:bg-[#3e2f25] transition cursor-pointer"
       >
         🔄 Reset
       </button>
@@ -187,11 +187,11 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
         No users found.
       </p>
     ) : (
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-col gap-4">
         {filteredUsers.map((u) => (
           <div
             key={u.id}
-            className="w-full sm:w-[calc(50%-0.5rem)] bg-[#fffdfb] rounded-2xl shadow-md p-4 border border-[#ccc] flex flex-col"
+            className="w-full bg-[#fffdfb] rounded-2xl shadow-md p-4 border border-[#ccc] flex flex-col"
           >
             {/* Basic Info */}
             <div className="flex justify-between items-start">
@@ -210,7 +210,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
               </div>
               <button
                 onClick={() => toggleExpand(u.id)}
-                className="text-sm text-[#5a4436] hover:underline ml-4"
+                className="text-sm text-[#5a4436] hover:underline ml-4 cursor-pointer"
               >
                 {expanded === u.id ? "Hide ▲" : "View ▼"}
               </button>
@@ -256,7 +256,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
                     <>
                       <button
                         onClick={() => handleDelete(u.id)}
-                        className="px-4 py-2 bg-[#5a4436] text-white rounded-xl hover:bg-[#3e2f25] transition"
+                        className="px-4 py-2 bg-[#5a4436] text-white rounded-xl hover:bg-[#3e2f25] transition cursor-pointer"
                       >
                         🗑️ Delete
                       </button>
@@ -264,14 +264,14 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
                       {u.role === "BLOCKED" ? (
                         <button
                           onClick={() => handleUnblock(u.id)}
-                          className="px-4 py-2 bg-[#d4a953] text-white rounded-xl hover:bg-[#b37a40] transition"
+                          className="px-4 py-2 bg-[#d4a953] text-white rounded-xl hover:bg-[#b37a40] transition cursor-pointer"
                         >
                           ✅ Unblock
                         </button>
                       ) : (
                         <button
                           onClick={() => handleBlock(u.id)}
-                          className="px-4 py-2 bg-[#d4a953] text-white rounded-xl hover:bg-[#b37a40] transition"
+                          className="px-4 py-2 bg-[#d4a953] text-white rounded-xl hover:bg-[#b37a40] transition cursor-pointer"
                         >
                           🚫 Block
                         </button>
@@ -280,7 +280,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
                       {u.role === "MANAGER" ? (
                         <button
                           onClick={() => handleDemote(u.id)}
-                          className="px-4 py-2 bg-[#8c6a4d] text-white rounded-xl hover:bg-[#6b4d37] transition"
+                          className="px-4 py-2 bg-[#8c6a4d] text-white rounded-xl hover:bg-[#6b4d37] transition cursor-pointer"
                         >
                           ⬇️ Demote
                         </button>
@@ -288,7 +288,7 @@ export default function UsersPage({ users, userName, currentUserId, categories, 
                         u.role !== "ADMIN" && (
                           <button
                             onClick={() => handlePromote(u.id)}
-                            className="px-4 py-2 bg-[#9b59b6] text-white rounded-xl hover:bg-[#7b3d99] transition"
+                            className="px-4 py-2 bg-[#9b59b6] text-white rounded-xl hover:bg-[#7b3d99] transition cursor-pointer"
                           >
                             ⭐ Promote
                           </button>
