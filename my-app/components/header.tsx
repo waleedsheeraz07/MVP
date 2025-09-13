@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useCart } from "../context/CartContext";
+import { useRouter } from "next/router";
 
 interface Category {
   id: string;
@@ -28,7 +29,8 @@ interface CategoryNode extends Category {
 }
 
 export default function Layout({ children, categories, user }: LayoutProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const { cartCount, refreshCart, setUserId } = useCart();
 
@@ -209,23 +211,23 @@ export default function Layout({ children, categories, user }: LayoutProps) {
         </nav>
 
         {/* Sign Out */}
-    <div className="p-4 border-t bg-[#f9f4ec]">
-  {user && user.role && user.role.toLowerCase() !== "guest" ? (
-    <button
-      onClick={() => signOut({ callbackUrl: "/login" })}
-      className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition cursor-pointer"
-    >
-      Sign Out
-    </button>
-  ) : (
-    <button
-      onClick={() => signIn(undefined, { callbackUrl: "/" })}
-      className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition cursor-pointer"
-    >
-      Login
-    </button>
-  )}
-</div>
+<div className="p-4 border-t bg-[#f9f4ec]">
+      {user && user.role && user.role.toLowerCase() !== "guest" ? (
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition cursor-pointer"
+        >
+          Sign Out
+        </button>
+      ) : (
+        <button
+          onClick={() => router.push("/login")}
+          className="w-full bg-[#3e2f25] text-[#fdf8f3] px-4 py-2 rounded-lg font-semibold hover:bg-[#5a4436] transition cursor-pointer"
+        >
+          Login
+        </button>
+      )}
+    </div>
       </aside>
 
       <main className="flex-1">{children}</main>
