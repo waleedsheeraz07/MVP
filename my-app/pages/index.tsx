@@ -248,7 +248,7 @@ return (
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4">Why Collectors Trust Us</h2>
           <p className="text-lg text-[#5a4436] text-center mb-16 max-w-2xl mx-auto">
-            We're passionate about preserving history and connecting people with meaningful pieces
+            We&apos;re passionate about preserving history and connecting people with meaningful pieces
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
