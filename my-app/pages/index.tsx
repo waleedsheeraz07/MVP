@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '../lib/prisma'
 import { useState, useEffect } from 'react'
 
@@ -37,25 +38,21 @@ export default function Home({ products }: Props) {
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-amber-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
-              <Link href="/">
-                <a className="text-2xl font-serif font-bold text-amber-900 hover:text-amber-700 transition-colors">
-                  VintageCurated
-                </a>
+              <Link href="/" className="text-2xl font-serif font-bold text-amber-900 hover:text-amber-700 transition-colors">
+                VintageCurated
               </Link>
               <div className="flex items-center space-x-8">
-                <Link href="/buyer/products">
-                  <a className="text-amber-900 hover:text-amber-700 font-medium transition-colors">Shop</a>
+                <Link href="/buyer/products" className="text-amber-900 hover:text-amber-700 font-medium transition-colors">
+                  Shop
                 </Link>
-                <Link href="/seller/products">
-                  <a className="text-amber-900 hover:text-amber-700 font-medium transition-colors">Sell</a>
+                <Link href="/seller/products" className="text-amber-900 hover:text-amber-700 font-medium transition-colors">
+                  Sell
                 </Link>
-                <Link href="/about">
-                  <a className="text-amber-900 hover:text-amber-700 font-medium transition-colors">About</a>
+                <Link href="/about" className="text-amber-900 hover:text-amber-700 font-medium transition-colors">
+                  About
                 </Link>
-                <Link href="/seller/sell">
-                  <a className="bg-amber-900 text-amber-50 px-6 py-2 rounded-full font-medium hover:bg-amber-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-900/25">
-                    List Item
-                  </a>
+                <Link href="/seller/sell" className="bg-amber-900 text-amber-50 px-6 py-2 rounded-full font-medium hover:bg-amber-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-900/25">
+                  List Item
                 </Link>
               </div>
             </div>
@@ -80,16 +77,12 @@ export default function Home({ products }: Props) {
               Where every piece tells a story. Discover authentic vintage treasures with guaranteed provenance.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-12">
-              <Link href="/buyer/products">
-                <a className="group relative bg-amber-900 text-amber-50 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-800 transition-all duration-500 transform hover:scale-105 shadow-2xl hover:shadow-amber-900/30 overflow-hidden">
-                  <span className="relative z-10">Explore Collection</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-800 to-rose-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </a>
+              <Link href="/buyer/products" className="group relative bg-amber-900 text-amber-50 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-800 transition-all duration-500 transform hover:scale-105 shadow-2xl hover:shadow-amber-900/30 overflow-hidden">
+                <span className="relative z-10">Explore Collection</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-800 to-rose-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </Link>
-              <Link href="/seller/products">
-                <a className="group border-2 border-amber-900 text-amber-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-900 hover:text-amber-50 transition-all duration-500 transform hover:scale-105">
-                  Start Selling
-                </a>
+              <Link href="/seller/products" className="group border-2 border-amber-900 text-amber-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-900 hover:text-amber-50 transition-all duration-500 transform hover:scale-105">
+                Start Selling
               </Link>
             </div>
             <div className="flex justify-center items-center space-x-8 text-amber-700/70">
@@ -141,10 +134,12 @@ export default function Home({ products }: Props) {
                 {/* Product Image */}
                 <div className="relative h-80 overflow-hidden">
                   {product.images.length > 0 ? (
-                    <img
+                    <Image
                       src={product.images[0]}
                       alt={product.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-amber-100 to-rose-100 flex items-center justify-center">
@@ -165,16 +160,14 @@ export default function Home({ products }: Props) {
                     {product.title}
                   </h3>
                   <p className="text-amber-700/70 text-sm mb-4 line-clamp-2">
-                    {product.description || 'A beautiful vintage piece waiting for a new home'}
+                    {product.description || `A beautiful vintage piece waiting for a new home`}
                   </p>
                   
-                  <Link href={`/buyer/products/${product.id}`}>
-                    <a className="inline-flex items-center justify-center w-full bg-amber-900 text-amber-50 px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-amber-800 hover:shadow-lg hover:scale-105 group/btn">
-                      <span>View Details</span>
-                      <svg className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    </a>
+                  <Link href={`/buyer/products/${product.id}`} className="inline-flex items-center justify-center w-full bg-amber-900 text-amber-50 px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-amber-800 hover:shadow-lg hover:scale-105 group/btn">
+                    <span>View Details</span>
+                    <svg className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                   </Link>
                 </div>
               </div>
@@ -182,13 +175,11 @@ export default function Home({ products }: Props) {
           </div>
 
           <div className="text-center mt-12">
-            <Link href="/buyer/products">
-              <a className="inline-flex items-center text-amber-900 hover:text-amber-700 font-semibold text-lg group">
-                View All Treasures
-                <svg className="w-5 h-5 ml-2 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </a>
+            <Link href="/buyer/products" className="inline-flex items-center text-amber-900 hover:text-amber-700 font-semibold text-lg group">
+              View All Treasures
+              <svg className="w-5 h-5 ml-2 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </div>
         </section>
@@ -201,26 +192,26 @@ export default function Home({ products }: Props) {
                 Why Choose VintageCurated?
               </h2>
               <p className="text-xl text-amber-100/80 max-w-3xl mx-auto">
-                We're revolutionizing the way you discover and collect vintage treasures
+                We&apos;re revolutionizing the way you discover and collect vintage treasures
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  icon: '🔍',
-                  title: 'Expert Authentication',
-                  description: 'Every item is verified by our team of vintage experts to ensure authenticity and quality.'
+                  icon: `🔍`,
+                  title: `Expert Authentication`,
+                  description: `Every item is verified by our team of vintage experts to ensure authenticity and quality.`
                 },
                 {
-                  icon: '🛡️',
-                  title: 'Secure Transactions',
-                  description: 'Shop with confidence using our protected payment system and buyer guarantees.'
+                  icon: `🛡️`,
+                  title: `Secure Transactions`,
+                  description: `Shop with confidence using our protected payment system and buyer guarantees.`
                 },
                 {
-                  icon: '🌍',
-                  title: 'Global Community',
-                  description: 'Connect with collectors and enthusiasts from around the world who share your passion.'
+                  icon: `🌍`,
+                  title: `Global Community`,
+                  description: `Connect with collectors and enthusiasts from around the world who share your passion.`
                 }
               ].map((item, index) => (
                 <div key={index} className="text-center p-8 bg-white/10 rounded-3xl backdrop-blur-sm hover:bg-white/15 transition-all duration-500 transform hover:-translate-y-2">
@@ -247,15 +238,11 @@ export default function Home({ products }: Props) {
               Join thousands of collectors and sellers in our curated vintage marketplace
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
-              <Link href="/seller/sell">
-                <a className="group bg-amber-900 text-amber-50 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-800 transition-all duration-500 transform hover:scale-105 shadow-2xl hover:shadow-amber-900/30">
-                  Start Selling Today
-                </a>
+              <Link href="/seller/sell" className="group bg-amber-900 text-amber-50 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-800 transition-all duration-500 transform hover:scale-105 shadow-2xl hover:shadow-amber-900/30">
+                Start Selling Today
               </Link>
-              <Link href="/about">
-                <a className="group border-2 border-amber-900 text-amber-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-900 hover:text-amber-50 transition-all duration-500">
-                  Learn More
-                </a>
+              <Link href="/about" className="group border-2 border-amber-900 text-amber-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-amber-900 hover:text-amber-50 transition-all duration-500">
+                Learn More
               </Link>
             </div>
           </div>
@@ -266,16 +253,14 @@ export default function Home({ products }: Props) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div className="md:col-span-2">
-                <Link href="/">
-                  <a className="text-3xl font-serif font-bold text-amber-50 hover:text-amber-200 transition-colors">
-                    VintageCurated
-                  </a>
+                <Link href="/" className="text-3xl font-serif font-bold text-amber-50 hover:text-amber-200 transition-colors">
+                  VintageCurated
                 </Link>
                 <p className="mt-4 text-amber-100/80 max-w-md leading-relaxed">
                   Your trusted marketplace for authentic vintage treasures. Connecting collectors with timeless pieces since 2024.
                 </p>
                 <div className="flex space-x-4 mt-6">
-                  {['Twitter', 'Instagram', 'Pinterest'].map((social) => (
+                  {[`Twitter`, `Instagram`, `Pinterest`].map((social) => (
                     <a key={social} href="#" className="w-10 h-10 bg-amber-800/30 rounded-full flex items-center justify-center hover:bg-amber-700/50 transition-colors">
                       <span className="text-sm font-medium">{social[0]}</span>
                     </a>
@@ -286,7 +271,7 @@ export default function Home({ products }: Props) {
               <div>
                 <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                 <ul className="space-y-2">
-                  {['Shop Vintage', 'Sell Items', 'About Us', 'Authentication'].map((link) => (
+                  {[`Shop Vintage`, `Sell Items`, `About Us`, `Authentication`].map((link) => (
                     <li key={link}>
                       <a href="#" className="text-amber-100/80 hover:text-amber-200 transition-colors">
                         {link}
@@ -299,7 +284,7 @@ export default function Home({ products }: Props) {
               <div>
                 <h4 className="text-lg font-semibold mb-4">Support</h4>
                 <ul className="space-y-2">
-                  {['Help Center', 'Shipping Info', 'Returns', 'Contact'].map((link) => (
+                  {[`Help Center`, `Shipping Info`, `Returns`, `Contact`].map((link) => (
                     <li key={link}>
                       <a href="#" className="text-amber-100/80 hover:text-amber-200 transition-colors">
                         {link}
