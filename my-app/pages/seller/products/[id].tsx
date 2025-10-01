@@ -374,249 +374,358 @@ const eraOptions = [
     "1990–1999","2000–2009","2010–2019","2020–2025"
   ]
 
-  return (
-<>
-<Head>
-  <title>Edit Product | Vintage Marketplace</title>
-  <meta name="description" content="Update details, images, and pricing for your listed vintage product." />
-</Head>
-<Layout categories={categories2} user={user}>
-    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
-      <Link
-    href="/seller/products"
-    className="fixed top-[80px] left-4 z-[999] bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-      className="w-6 h-6"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-    </svg>
-  </Link>
- <div className="w-full max-w-3xl lg:max-w-4xl mx-auto bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
+return (
+  <>
+    <Head>
+      <title>Edit Your Vintage Treasure | Vintage Marketplace</title>
+      <meta name="description" content="Update details, images, and pricing for your listed vintage product." />
+    </Head>
     
- <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-          Edit Product
-        </h1>
-
-        {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input type="text" placeholder="Title *" value={title} onChange={e => setTitle(e.target.value)} required className="input" />
-          <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} className="input min-h-[100px]" />
-
-          <div className="flex gap-4 flex-wrap">
-            <input type="number" placeholder="Price *" value={price} onChange={e => setPrice(e.target.value)} required className="input flex-1" />
-            <input type="number" placeholder="Quantity *" value={quantity} onChange={e => setQuantity(e.target.value)} required className="input flex-1" />
-          </div>
-
-          {/* Category Tree */}
-          <div>
-            <h3 className="mb-2 font-medium">Categories *</h3>
-            <div className="border p-3 rounded-lg max-h-64 overflow-y-auto bg-[#fffaf5]">
-              {categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
-            </div>
-          </div>
-
-        {/* Condition Selector */}
-<div className="mb-6">
-  <label className="text-gray-700 font-semibold mb-2 block">Condition <span className="text-red-500">*</span></label>
-
-  {/* Hidden input for form submission */}
-  <input type="hidden" name="condition" value={condition} required />
-
-  <div className="relative flex justify-between items-start w-full px-4 pt-2">
-    {/* Base Line */}
-    <div className="absolute top-3 left-0 w-full h-1 bg-gray-300 rounded"></div>
-
-    {["Highly Damaged", "Slightly Damaged", "Fair", "Good", "Excellent"].map((cond) => {
-      const isCurrent = cond.toLowerCase().trim() === condition?.toLowerCase().trim();
-
-      return (
-        <div
-          key={cond}
-          className="flex flex-col items-center relative z-10 text-center w-1/5 px-1 sm:px-2 cursor-pointer"
-          onClick={() => setCondition(cond)}
+    <Layout categories={categories2} user={user}>
+      <div className="min-h-screen bg-[#fefaf5] py-8 px-4 sm:px-6">
+        {/* Back Button */}
+        <Link
+          href="/seller/products"
+          className="inline-flex items-center space-x-2 text-[#8b4513] hover:text-[#6b3410] transition-colors duration-300 mb-6 group"
         >
-          {/* Dot */}
-          <div
-            className={`rounded-full transition-all duration-300 hover:scale-110`}
-            style={{
-              width: isCurrent ? "16px" : "14px",
-              height: isCurrent ? "16px" : "14px",
-              backgroundColor: isCurrent ? "#5a4436" : "#ffffff",
-              border: isCurrent ? "2px solid #5a4436" : "2px solid #9ca3af",
-            }}
-          ></div>
+          <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span className="font-medium">Back to My Products</span>
+        </Link>
 
-          {/* Label */}
-          <span
-            className={`text-xs mt-3 max-w-[80px] leading-tight break-words text-center ${
-              isCurrent ? "font-bold" : ""
-            }`}
-          >
-            {cond}
-          </span>
-        </div>
-      );
-    })}
-  </div>
+        {/* Main Form Container */}
+        <div className="max-w-2xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#3e2f25] mb-4">
+              Edit Your Vintage Treasure
+            </h1>
+            <p className="text-lg text-[#5a4436] max-w-xl mx-auto">
+              Update your listing details and keep your vintage collection current.
+            </p>
+          </div>
 
-</div>
+          {/* Form Card */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 text-center">
+                {error}
+              </div>
+            )}
 
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Product Title *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Vintage 1950s Leather Jacket"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                />
+              </div>
 
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Description
+                </label>
+                <textarea
+                  placeholder="Tell the story behind this piece... Where did you find it? What makes it special?"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300 resize-none"
+                />
+              </div>
 
-<div className="flex flex-col gap-2">
-  <label className="text-gray-700 font-semibold">Era <span className="text-red-500">*</span></label>
-
-  <div className="flex flex-wrap gap-3">
-    {eraOptions.map(opt => {
-      const isSelected = era === opt;
-
-      return (
-        <div key={opt} className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setEra(opt)}
-            className={`px-4 py-2 rounded-full border-2 font-semibold text-sm transition-all duration-200
-              ${isSelected ? "border-[#3e2f25] bg-[#fdf8f3] scale-105 shadow-md" : "border-gray-300 bg-white"}
-              hover:scale-105 hover:shadow-md cursor-pointer`}
-          >
-            {opt === "before1900" ? "Before 1900" : opt}
-          </button>
-
-          {opt === "before1900" && isSelected && (
-            <input
-              type="number"
-              placeholder="Enter Year"
-              value={before1900}
-              onChange={e => setBefore1900(e.target.value)}
-              className="input w-24 mt-0"
-            />
-          )}
-        </div>
-      );
-    })}
-  </div>
-
-  {/* Hidden input to enforce required */}
-  <input type="text" name="era" value={era === "before1900" ? before1900 : era} hidden required />
-</div>
-
-          {/* Images */}
-          <div>
-            <h3 className="mb-2 font-medium">Images</h3>
-            <label className="block w-full p-3 border border-dashed border-[#d4b996] rounded-lg text-center cursor-pointer bg-[#fffaf5] text-[#3e2f25] hover:bg-[#f8efe4] transition">
-              Upload Images
-              <input type="file" accept="image/*" multiple onChange={e => handleImageChange(e.target.files)} className="hidden" />
-            </label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {previews.map((url, idx) => (
-                <div key={idx} className="relative">
-                  <img src={url} alt={`Preview ${idx}`} className="w-24 h-24 object-cover rounded-lg border" />
-                  <button type="button" onClick={() => removeImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">×</button>
+              {/* Price & Quantity */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                    Price (KWD) *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={price}
+                      onChange={e => setPrice(e.target.value)}
+                      required
+                      min="0"
+                      step="0.01"
+                      className="w-full pl-12 pr-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                    />
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#8b4513] font-medium">
+                      KWD
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                    Quantity *
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="1"
+                    value={quantity}
+                    onChange={e => setQuantity(e.target.value)}
+                    required
+                    min="0"
+                    className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                  />
+                </div>
+              </div>
+
+              {/* Categories */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Categories *
+                </label>
+                <div className="max-h-48 overflow-y-auto bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 space-y-2">
+                  {categoryTree.map(node => (
+                    <CategoryNodeItem key={node._id} node={node} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Condition */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-4">
+                  Condition *
+                </label>
+                <div className="space-y-3">
+                  {["Excellent", "Good", "Fair", "Slightly Damaged", "Highly Damaged"].map((cond) => {
+                    const isCurrent = condition?.toLowerCase().trim() === cond.toLowerCase().trim();
+                    return (
+                      <button
+                        type="button"
+                        key={cond}
+                        onClick={() => setCondition(cond.toLowerCase())}
+                        className={`w-full px-4 py-3 rounded-xl text-left transition-all duration-300 cursor-pointer
+                          ${isCurrent 
+                            ? "bg-[#8b4513] text-white shadow-md transform scale-105" 
+                            : "bg-[#fdf8f3] text-[#3e2f25] hover:bg-[#e6d9c6] hover:scale-105"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{cond}</span>
+                          {isCurrent && (
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <input type="hidden" name="condition" value={condition} required />
+              </div>
+
+              {/* Era */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Era *
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {eraOptions.map(opt => {
+                    const isSelected = era === opt;
+                    const displayName = opt === "before1900" ? "Before 1900" : opt;
+
+                    return (
+                      <div key={opt} className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEra(opt)}
+                          className={`px-4 py-2 rounded-full border-2 font-semibold text-sm transition-all duration-300
+                            ${isSelected 
+                              ? "border-[#8b4513] scale-110 shadow-md bg-[#fdf8f3] text-[#8b4513]" 
+                              : "border-gray-300 bg-white text-[#3e2f25] hover:scale-105"
+                            } cursor-pointer
+                          `}
+                        >
+                          {displayName}
+                        </button>
+
+                        {/* Year input only for Before 1900 */}
+                        {opt === "before1900" && isSelected && (
+                          <div className="relative">
+                            <input
+                              type="number"
+                              placeholder="Enter year"
+                              value={before1900}
+                              onChange={e => setBefore1900(e.target.value)}
+                              className="w-32 px-4 py-2 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                              min="0"
+                              max="1899"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <input type="text" name="era" value={era === "before1900" ? before1900 : era} hidden />
+              </div>
+
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Images
+                </label>
+                <label className="block w-full p-6 border-2 border-dashed border-[#d4b996] rounded-xl text-center cursor-pointer bg-[#fdf8f3] text-[#5a4436] hover:bg-[#f8efe4] hover:border-[#8b4513] transition-all duration-300 group">
+                  <div className="flex flex-col items-center space-y-2">
+                    <svg className="w-8 h-8 text-[#8b4513] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="font-medium">Update Images</span>
+                    <span className="text-sm text-[#9ca3af]">Add or replace images (PNG, JPG, WEBP)</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={e => handleImageChange(e.target.files)}
+                    className="hidden"
+                  />
+                </label>
+                
+                {/* Image Previews */}
+                {previews.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-[#3e2f25] mb-3">Current Images</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {previews.map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${idx + 1}`}
+                            className="w-20 h-20 object-cover rounded-lg border-2 border-[#e6d9c6] group-hover:border-[#8b4513] transition-all duration-300"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Colors */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Colors
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Red, Blue, Green (comma separated)"
+                  value={colors}
+                  onChange={e => setColors(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                />
+              </div>
+
+              {/* Sizes */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Available Sizes *
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => {
+                    const selectedArray = sizes
+                      ? sizes.split(",").map(s => s.trim().toUpperCase()).filter(Boolean)
+                      : [];
+                    const isSelected = selectedArray.includes(size);
+
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          let updated = [...selectedArray];
+                          if (isSelected) {
+                            updated = updated.filter(s => s !== size);
+                          } else {
+                            updated.push(size);
+                          }
+                          setSizes(updated.join(","));
+                        }}
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-300
+                          ${isSelected 
+                            ? "border-[#8b4513] scale-110 shadow-md bg-[#fdf8f3]" 
+                            : "border-gray-300 bg-white hover:scale-105"
+                          } cursor-pointer
+                        `}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                <input type="text" name="sizes" value={sizes} required readOnly hidden />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-4 bg-[#8b4513] text-white rounded-xl font-bold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Updating...</span>
+                    </div>
+                  ) : (
+                    "Update Product"
+                  )}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setModal({ type: "delete", open: true })}
+                  className="flex-1 py-4 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Delete Product
+                </button>
+              </div>
+            </form>
           </div>
+        </div>
 
-          <input type="text" placeholder="Colors (comma separated)" value={colors} onChange={e => setColors(e.target.value)} className="input" />
-          
-<div className="flex flex-col gap-2">
-  <label className="text-gray-700 font-semibold">
-    Available Sizes <span className="text-red-500">*</span>
-  </label>
+        {/* Confirmation Modals */}
+        {modal.open && modal.type === "update" && (
+          <ConfirmModal
+            message="Are you sure you want to update this product?"
+            onConfirm={() => handleSubmit()}
+            onCancel={() => setModal({ ...modal, open: false })}
+          />
+        )}
 
-  <div className="flex flex-wrap gap-3">
-    {["XXS", "XS", "S", "M", "L", "XL", "XXL"].map((size) => {
-      // Normalize saved sizes string -> array of uppercase values
-      const selectedArray = sizes
-        ? sizes.split(",").map(s => s.trim().toUpperCase()).filter(Boolean)
-        : [];
-
-      const isSelected = selectedArray.includes(size);
-
-      return (
-        <button
-          key={size}
-          type="button"
-          onClick={() => {
-            let updated = [...selectedArray];
-            if (isSelected) {
-              updated = updated.filter(s => s !== size);
-            } else {
-              updated.push(size);
-            }
-            setSizes(updated.join(",")); // keep as comma-separated string
-          }}
-          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-200
-            ${isSelected ? "border-[#3e2f25] scale-110 shadow-md bg-[#fdf8f3]" : "border-gray-300 bg-white"}
-            hover:scale-110 hover:shadow-md cursor-pointer
-          `}
-        >
-          {size}
-        </button>
-      );
-    })}
-  </div>
-
-  {/* Hidden field for form validation */}
-  <input
-    type="text"
-    name="sizes"
-    value={sizes}
-    required
-    readOnly
-    hidden
-  />
-</div>
-
-<div className="flex gap-4">
-  <button
-    type="submit"
-    disabled={loading}
-    className="px-4 py-3 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition flex-1"
-  >
-    {loading ? "Saving..." : "Update Product"}
-  </button>
-  <button
-    type="button"
-    onClick={() => setModal({ type: "delete", open: true })}
-    className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex-1"
-  >
-    Delete
-  </button>
-</div>
-        </form>
+        {modal.open && modal.type === "delete" && (
+          <ConfirmModal
+            message="Are you sure you want to delete this product? This action cannot be undone."
+            onConfirm={deleteProduct}
+            onCancel={() => setModal({ ...modal, open: false })}
+          />
+        )}
       </div>
+    </Layout>
+  </>
+);
 
-
-
-{modal.open && modal.type === "update" && (
-  <ConfirmModal
-    message="Are you sure you want to update this product?"
-    onConfirm={() => handleSubmit()}  // ✅ wrapper, no event
-    onCancel={() => setModal({ ...modal, open: false })}
-  />
-)}
-
-{modal.open && modal.type === "delete" && (
-  <ConfirmModal
-    message="Are you sure you want to delete this product?"
-    onConfirm={deleteProduct}
-    onCancel={() => setModal({ ...modal, open: false })}
-  />
-)}
-
-      <style jsx>{`
-        .input { padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #ccc; width: 100%; background-color: #fff; color: #000; }
-      `}</style>
-    </div>
-</Layout>
-</>
-  )
 }
