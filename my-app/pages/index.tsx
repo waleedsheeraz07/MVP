@@ -48,13 +48,6 @@ export default function Home({ products, categories, user }: Props) {
      
       <main className="min-h-screen bg-[#fefaf5] text-[#3e2f25] font-sans overflow-hidden">
 
-        {/* Desktop CTA */}
-              <div className="hidden md:flex items-center space-x-4">
-                <button className="bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#6b3410] transition-colors">
-                  Join Community
-                </button>
-          </div>
-
         {/* Enhanced Hero Section - Mobile Optimized */}
         <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fdf8f3] to-[#e6d9c6] overflow-hidden pt-16">
           {/* Background decorative elements - Hidden on mobile for performance */}
