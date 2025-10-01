@@ -12,8 +12,23 @@ interface Product {
   images: string[]
 }
 
+interface Category {
+  id: string;
+  title: string;
+  order: number;
+  parentId?: string | null;
+}
+
+interface User {
+  id: string;
+  name?: string | null;
+  role: string;
+}
+  
 interface Props {
-  products: Product[]
+  products: Product[];
+  categories: Category[];
+  user: User;
 }
 
 export default function Home({ products }: Props) {
