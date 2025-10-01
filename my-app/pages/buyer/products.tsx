@@ -734,11 +734,7 @@ return (
                       <span className="text-2xl font-bold text-[#8b4513]">
                         KWD {product.price.toFixed(2)}
                       </span>
-                      <div className="flex items-center space-x-1 text-yellow-400">
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} className="text-sm">★</span>
-                        ))}
-                      </div>
+                     
                     </div>
                   </div>
                 </Link>
