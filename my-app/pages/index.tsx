@@ -3,7 +3,9 @@ import Link from 'next/link'
 import { prisma } from '../lib/prisma'
 import { useState } from 'react';
 import Layout from "../components/header";
-    
+import { GetServerSidePropsContext } from "next";
+import { getServerSession } from "next-auth/next";
+
 interface Product {
   id: string
   title: string
