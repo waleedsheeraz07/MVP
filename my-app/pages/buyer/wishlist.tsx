@@ -175,7 +175,7 @@ return (
                       <div>
                         <h2 
                           onClick={() => router.push(`/products/${item.product.id}`)}
-                          className="text-xl font-bold text-[#3e2f25] mb-2 line-clamp-2 cursor-pointer hover:text-[#8b4513] transition-colors duration-300"
+                          className="text-xl font-bold text-[#3e2f25] mb-3 line-clamp-2 cursor-pointer hover:text-[#8b4513] transition-colors duration-300"
                         >
                           {item.product.title}
                         </h2>
@@ -201,7 +201,6 @@ return (
                             )}
                           </div>
                         )}
-
                       </div>
 
                       {/* Price and Actions */}
