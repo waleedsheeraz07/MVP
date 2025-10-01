@@ -57,48 +57,6 @@ export default function Home({ products, categories, user }: Props) {
             </div>
           </div>
 
-          {/* Mobile Menu - Collapsible */}
-          <div className={`md:hidden bg-white border-t border-[#e6d9c6] transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          } overflow-hidden`}>
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <a 
-                href="#featured" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[#5a4436] hover:text-[#8b4513] hover:bg-[#fdf8f3] rounded-md transition-colors"
-              >
-                Shop
-              </a>
-              <a 
-                href="#categories" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[#5a4436] hover:text-[#8b4513] hover:bg-[#fdf8f3] rounded-md transition-colors"
-              >
-                Categories
-              </a>
-              <a 
-                href="#about" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[#5a4436] hover:text-[#8b4513] hover:bg-[#fdf8f3] rounded-md transition-colors"
-              >
-                About
-              </a>
-              <a 
-                href="#sell" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[#5a4436] hover:text-[#8b4513] hover:bg-[#fdf8f3] rounded-md transition-colors"
-              >
-                Sell
-              </a>
-              <div className="px-3 py-2">
-                <button className="w-full bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#6b3410] transition-colors">
-                  Join Community
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-
         {/* Enhanced Hero Section - Mobile Optimized */}
         <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fdf8f3] to-[#e6d9c6] overflow-hidden pt-16">
           {/* Background decorative elements - Hidden on mobile for performance */}
