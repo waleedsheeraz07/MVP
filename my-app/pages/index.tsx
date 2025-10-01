@@ -110,19 +110,17 @@ export default function Home({ products, categories, user }: Props) {
             </p>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-              {['Fashion', 'Furniture', 'Jewelry', 'Art & Decor', 'Records', 'Cameras', 'Books', 'Collectibles'].map((category, index) => (
-                <div key={category} className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#fdf8f3] to-[#e6d9c6] h-32 sm:h-40 lg:h-48 cursor-pointer transform transition-all duration-500 hover:scale-105 hover:shadow-xl">
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
-                  <div className="absolute inset-0 flex items-center justify-center p-2">
-                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#3e2f25] z-10 transform transition-transform duration-500 group-hover:scale-110 text-center">
-                      {category}
-                    </h3>
-                  </div>
-                  <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-[#8b4513] font-medium text-xs sm:text-sm">
-                    {Math.floor(Math.random() * 100) + 50} items
-                  </div>
-                </div>
-              ))}
+             {/* In your categories section */}
+{categories.slice(0, 8).map((category) => (
+  <div key={category.id} className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#fdf8f3] to-[#e6d9c6] h-32 sm:h-40 lg:h-48 cursor-pointer transform transition-all duration-500 hover:scale-105 hover:shadow-xl">
+    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
+    <div className="absolute inset-0 flex items-center justify-center p-2">
+      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#3e2f25] z-10 transform transition-transform duration-500 group-hover:scale-110 text-center">
+        {category.title}
+      </h3>
+    </div>
+  </div>
+))}
             </div>
           </div>
         </section>
