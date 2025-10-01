@@ -3,6 +3,8 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { prisma } from '../lib/prisma'
 import { useState } from 'react';
+import Layout from "../components/header";
+    
 interface Product {
   id: string
   title: string
@@ -29,41 +31,9 @@ export default function Home({ products }: Props) {
       </Head>
 
       <main className="min-h-screen bg-[#fefaf5] text-[#3e2f25] font-sans overflow-hidden">
-        
-        {/* Navigation - Mobile Responsive */}
-        <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-[#e6d9c6]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <span className="text-xl sm:text-2xl font-bold text-[#8b4513]">VintageCurated</span>
-              </div>
-              
-              {/* Desktop Menu */}
-              <div className="hidden md:flex space-x-8">
-                <a href="#featured" className="text-[#5a4436] hover:text-[#8b4513] transition-colors font-medium">Shop</a>
-                <a href="#categories" className="text-[#5a4436] hover:text-[#8b4513] transition-colors font-medium">Categories</a>
-                <a href="#about" className="text-[#5a4436] hover:text-[#8b4513] transition-colors font-medium">About</a>
-                <a href="#sell" className="text-[#5a4436] hover:text-[#8b4513] transition-colors font-medium">Sell</a>
-              </div>
 
-              {/* Mobile Menu Button */}
-              <div className="md:hidden">
-                <button 
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="p-2 rounded-md text-[#5a4436] hover:text-[#8b4513] hover:bg-[#fdf8f3] transition-colors"
-                >
-                  {isMobileMenuOpen ? (
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  ) : (
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-
+<Layout categories={categories} user={user}>
+     
               {/* Desktop CTA */}
               <div className="hidden md:flex items-center space-x-4">
                 <button className="bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#6b3410] transition-colors">
