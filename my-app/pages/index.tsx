@@ -30,8 +30,8 @@ interface Props {
   categories: Category[];
   user: User;
 }
-
-export default function Home({ products }: Props) {
+ProfilePage({ userProfile, categories, user }: ProfilePageProps) 
+export default function Home({ products, categories, user }: Props) {
   const featuredProducts = products.slice(0, 4) // only 1-2 items
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
