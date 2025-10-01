@@ -460,7 +460,7 @@ export default function Home({ products, categories, user }: Props) {
           </div>
         </footer>
       </main>
-
+</Layout>
       <style jsx>{`
         @media (max-width: 480px) {
           .text-4xl {
@@ -480,7 +480,7 @@ export default function Home({ products, categories, user }: Props) {
           }
         }
       `}</style>
-</Layout>
+
     </>
   );
 }
