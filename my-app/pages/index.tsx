@@ -44,11 +44,11 @@ export default function Home({ products }: Props) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <main className="min-h-screen bg-[#fefaf5] text-[#3e2f25] font-sans overflow-hidden">
-
 <Layout categories={categories} user={user}>
      
-              {/* Desktop CTA */}
+      <main className="min-h-screen bg-[#fefaf5] text-[#3e2f25] font-sans overflow-hidden">
+
+        {/* Desktop CTA */}
               <div className="hidden md:flex items-center space-x-4">
                 <button className="bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#6b3410] transition-colors">
                   Join Community
@@ -480,6 +480,7 @@ export default function Home({ products }: Props) {
           }
         }
       `}</style>
+</Layout>
     </>
   );
 }
