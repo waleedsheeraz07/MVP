@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Layout from "../components/header";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]";
 
 interface Product {
   id: string
