@@ -435,8 +435,8 @@ export default function Home({ products, categories, user }: Props) {
 }
 
 // ---------------- Server Side ----------------
-export async function getServerSideProps() {
-  const session = await getServerSession(context.req, context.res, authOptions);
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+ const session = await getServerSession(context.req, context.res, authOptions);
 
   // Fetch categories
   const categories = await prisma.category.findMany({
