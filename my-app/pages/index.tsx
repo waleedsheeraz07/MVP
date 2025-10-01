@@ -434,10 +434,6 @@ export default function Home({ products, categories, user }: Props) {
   );
 }
 
-
-
-}
-
 // ---------------- Server Side ----------------
 export async function getServerSideProps() {
   const session = await getServerSession(context.req, context.res, authOptions);
