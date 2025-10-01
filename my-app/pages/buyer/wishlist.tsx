@@ -86,89 +86,199 @@ export default function WishlistPage({ wishlistItems: initialItems, categories, 
     }
   };
 
-  return (
-<>
-<Head>
-  <title>Wishlist | Vintage Marketplace</title>
-  <meta name="description" content="Save your favorite vintage items to your wishlist and revisit them anytime." />
-</Head>
+return (
+  <>
+    <Head>
+      <title>Your Vintage Wishlist | Vintage Marketplace</title>
+      <meta name="description" content="Save your favorite vintage treasures and revisit them anytime. Curate your personal collection of timeless pieces." />
+    </Head>
+    
     <Layout categories={categories} user={user}>
- <div className="max-w-4xl mx-auto p-4 min-h-screen bg-[#fdf8f3]">
-  <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-[#3e2f25] text-center sm:text-left">
-    Your Wishlist
-  </h1>
-
-  {wishlist.length === 0 ? (
-    <p className="text-center text-gray-700">
-      Your wishlist is empty.{" "}
-      <Link
-        href="/buyer/products"
-        className="text-[#5a4436] hover:underline font-semibold"
-      >
-        Browse products
-      </Link>.
-    </p>
-  ) : (
-    <div className="space-y-3">
-      {wishlist.map((item) => (
-        <div
-          key={item.id}
-          className="relative flex flex-row items-center bg-[#fffdfb] rounded-2xl shadow-sm p-3 gap-3 hover:shadow-md transition-all w-full"
-        >
-          {/* Remove button */}
-          <button
-            onClick={() => handleRemoveItem(item.id)}
-            disabled={loadingIds.includes(item.id)}
-            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors p-1 z-10"
-            title="Remove item"
-          >
-            ✕
-          </button>
-
-          {/* Product Image clickable */}
-          <div
-            onClick={() => router.push(`/products/${item.product.id}`)}
-            className="cursor-pointer flex-shrink-0 transform transition-transform duration-150 active:scale-105 active:shadow-lg"
-          >
-            <img
-              src={item.product.images[0]}
-              alt={item.product.title}
-              className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg"
-            />
+      <div className="min-h-screen bg-[#fefaf5] py-8 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#3e2f25] mb-4">
+              Your Vintage Wishlist
+            </h1>
+            <p className="text-lg text-[#5a4436] max-w-2xl mx-auto">
+              Curate your collection of timeless treasures. Save pieces that speak to you.
+            </p>
           </div>
 
-          {/* Info */}
-          <div className="flex-1 flex flex-col justify-between min-w-0 ml-2">
-            <h2 className="font-semibold text-sm sm:text-base text-[#3e2f25] truncate">
-              {item.product.title}
-            </h2>
-            <div className="flex flex-wrap gap-1 text-xs sm:text-sm text-gray-600 mt-0.5">
-              {item.color && <span>Color: {item.color}</span>}
-              {item.size && <span>Size: {item.size}</span>}
+          {/* Empty State */}
+          {wishlist.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 mx-auto mb-6 bg-[#e6d9c6] rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-[#8b4513]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-[#3e2f25] mb-2">Your wishlist is empty</h3>
+              <p className="text-[#5a4436] mb-6">Start building your collection of vintage treasures</p>
+              <Link href="/buyer/products">
+                <a className="inline-flex items-center space-x-2 px-8 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <span>Explore Vintage Treasures</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </a>
+              </Link>
             </div>
-          </div>
+          ) : (
+            /* Wishlist Items */
+            <div className="space-y-6">
+              {wishlist.map((item) => (
+                <div
+                  key={item.id}
+                  className="group relative bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-500 hover:scale-105"
+                >
+                  {/* Remove Button */}
+                  <button
+                    onClick={() => handleRemoveItem(item.id)}
+                    disabled={loadingIds.includes(item.id)}
+                    className="absolute top-4 right-4 bg-white/80 hover:bg-red-50 text-gray-400 hover:text-red-500 p-2 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Remove from wishlist"
+                  >
+                    {loadingIds.includes(item.id) ? (
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                  </button>
 
-          {/* Price & Move to Cart */}
-          <div className="flex flex-col items-end ml-2 gap-1">
-            <div className="text-sm sm:text-base font-semibold text-[#3e2f25]">
-              KWD {item.product.price.toFixed(2)}
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    {/* Product Image */}
+                    <div
+                      onClick={() => router.push(`/products/${item.product.id}`)}
+                      className="flex-shrink-0 cursor-pointer transform transition-transform duration-300 hover:scale-105"
+                    >
+                      <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-xl overflow-hidden shadow-lg">
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        {/* Quick View Overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <span className="bg-white/90 text-[#8b4513] px-3 py-1 rounded-full text-sm font-semibold">
+                            View Details
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="flex-1 flex flex-col justify-between min-w-0">
+                      <div>
+                        <h2 
+                          onClick={() => router.push(`/products/${item.product.id}`)}
+                          className="text-xl font-bold text-[#3e2f25] mb-2 line-clamp-2 cursor-pointer hover:text-[#8b4513] transition-colors duration-300"
+                        >
+                          {item.product.title}
+                        </h2>
+                        
+                        {/* Color and Size */}
+                        {(item.color || item.size) && (
+                          <div className="flex flex-wrap gap-3 mb-4">
+                            {item.color && (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-[#5a4436] font-medium">Color:</span>
+                                <span className="px-3 py-1 bg-[#fdf8f3] text-[#3e2f25] rounded-full text-sm border border-[#e6d9c6]">
+                                  {item.color}
+                                </span>
+                              </div>
+                            )}
+                            {item.size && (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-[#5a4436] font-medium">Size:</span>
+                                <span className="px-3 py-1 bg-[#fdf8f3] text-[#3e2f25] rounded-full text-sm border border-[#e6d9c6]">
+                                  {item.size}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Description Preview */}
+                        {item.product.description && (
+                          <p className="text-[#5a4436] text-sm leading-relaxed line-clamp-2 mb-4">
+                            {item.product.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Price and Actions */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#e6d9c6]">
+                        <div className="flex items-center space-x-4">
+                          <span className="text-2xl font-bold text-[#8b4513]">
+                            KWD {item.product.price.toFixed(2)}
+                          </span>
+                          {item.product.quantity === 0 && (
+                            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                              Sold Out
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleMoveToCart(item)}
+                            disabled={loadingIds.includes(item.id) || item.product.quantity === 0}
+                            className="flex items-center space-x-2 px-6 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                          >
+                            {loadingIds.includes(item.id) ? (
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Moving...</span>
+                              </div>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span>Add to Cart</span>
+                              </>
+                            )}
+                          </button>
+                          
+                          <button
+                            onClick={() => router.push(`/products/${item.product.id}`)}
+                            className="flex items-center space-x-2 px-6 py-3 bg-transparent border-2 border-[#8b4513] text-[#8b4513] rounded-xl font-semibold hover:bg-[#8b4513] hover:text-white transform hover:scale-105 transition-all duration-300"
+                          >
+                            <span>View Details</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <button
-              onClick={() => handleMoveToCart(item)}
-              disabled={loadingIds.includes(item.id)}
-              className="px-3 py-1 bg-[#5a4436] text-[#fdf8f3] rounded-xl text-xs sm:text-sm hover:bg-[#3e2f25] transition-all duration-150 active:scale-95"
-            >
-              Move to Cart
-            </button>
-          </div>
+          )}
+
+          {/* Wishlist Summary */}
+          {wishlist.length > 0 && (
+            <div className="mt-12 text-center">
+              <div className="bg-white rounded-2xl shadow-lg p-6 inline-block">
+                <p className="text-lg text-[#3e2f25]">
+                  You have <span className="font-bold text-[#8b4513]">{wishlist.length}</span> 
+                  {wishlist.length === 1 ? ' vintage treasure' : ' vintage treasures'} saved
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      ))}
-    </div>
-  )}
-</div>
+      </div>
     </Layout>
-</>
-  );
+  </>
+);
+
 }
 
 // Server-side fetch
