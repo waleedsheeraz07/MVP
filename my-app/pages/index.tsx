@@ -53,8 +53,6 @@ export default function Home({ products, categories, user }: Props) {
                 <button className="bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#6b3410] transition-colors">
                   Join Community
                 </button>
-              </div>
-            </div>
           </div>
 
         {/* Enhanced Hero Section - Mobile Optimized */}
