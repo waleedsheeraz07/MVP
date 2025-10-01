@@ -60,7 +60,7 @@ export default function Home({ products, categories, user }: Props) {
             <div className="absolute bottom-20 left-1/3 w-48 h-48 sm:w-72 sm:h-72 bg-[#5a4436] rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
           </div>
           
-          <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="relative z-5 text-center max-w-4xl mx-auto px-4 sm:px-6">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
               Discover <span className="text-[#8b4513] block sm:inline">Timeless</span> Treasures
             </h1>
