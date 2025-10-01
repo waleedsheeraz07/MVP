@@ -348,7 +348,7 @@ return (
                       step="0.01"
                       className="w-full pl-12 pr-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
                     />
-                    <span className="absolute pr-2 left-4 top-1/2 transform -translate-y-1/2 text-[#8b4513] font-medium">
+                    <span className="absolute mr-4 left-4 top-1/2 transform -translate-y-1/2 text-[#8b4513] font-medium">
                       KWD
                     </span>
                   </div>
