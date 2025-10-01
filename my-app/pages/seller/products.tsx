@@ -622,12 +622,7 @@ return (
                           Sold Out
                         </div>
                       )}
-                      {/* Draft Badge */}
-                      {product.status === 'draft' && (
-                        <div className="bg-[#d4b996] text-[#3e2f25] px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                          Draft
-                        </div>
-                      )}
+            
                     </div>
 
                     {/* Quick View Overlay */}
