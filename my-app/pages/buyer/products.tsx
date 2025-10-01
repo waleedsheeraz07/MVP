@@ -720,21 +720,15 @@ return (
                     </div>
                   </div>
 
-                  {/* Product Info */}
+                  {/* Product Info - Clean & Minimal */}
                   <div className="p-4 sm:p-6">
-                    <h3 className="text-lg font-bold text-[#3e2f25] mb-2 line-clamp-2 group-hover:text-[#8b4513] transition-colors duration-300">
+                    <h3 className="text-lg font-bold text-[#3e2f25] mb-3 line-clamp-2 group-hover:text-[#8b4513] transition-colors duration-300">
                       {product.title}
                     </h3>
-                    {product.description && (
-                      <p className="text-[#5a4436] text-sm mb-3 line-clamp-2">
-                        {product.description}
-                      </p>
-                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-[#8b4513]">
                         KWD {product.price.toFixed(2)}
                       </span>
-                     
                     </div>
                   </div>
                 </Link>
