@@ -248,7 +248,7 @@ export default function Home({ products, categories, user }: Props) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-3 sm:mb-4">Why Collectors Trust Us</h2>
             <p className="text-base sm:text-lg text-[#5a4436] text-center mb-8 sm:mb-12 lg:mb-16 max-w-2xl mx-auto px-4">
-              We're passionate about preserving history and connecting people with meaningful pieces
+              We&apos;re passionate about preserving history and connecting people with meaningful pieces
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
