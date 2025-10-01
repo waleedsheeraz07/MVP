@@ -1,4 +1,3 @@
-
 import Head from 'next/head'
 import Link from 'next/link'
 import { prisma } from '../lib/prisma'
@@ -476,7 +475,15 @@ export default function Home({ products }: Props) {
 
 // ---------------- Server Side ----------------
 export async function getServerSideProps() {
-  const products = await prisma.product.findMany({
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  // Fetch categories
+  const categories = await prisma.category.findMany({
+    select: { id: true, title: true, order: true, parentId: true },
+    orderBy: { order: "asc" },
+  });
+     
+const products = await prisma.product.findMany({
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -488,6 +495,13 @@ export async function getServerSideProps() {
   })
 
   return {
-    props: { products },
+    props: { products,
+ categories,
+      user: {
+        id: session.user.id,
+        name: session.user.name || user?.firstName || "Guest",
+        role: session.user.role,
+      },
+},
   }
 }
