@@ -202,12 +202,6 @@ return (
                           </div>
                         )}
 
-                        {/* Description Preview */}
-                        {item.product.description && (
-                          <p className="text-[#5a4436] text-sm leading-relaxed line-clamp-2 mb-4">
-                            {item.product.description}
-                          </p>
-                        )}
                       </div>
 
                       {/* Price and Actions */}
