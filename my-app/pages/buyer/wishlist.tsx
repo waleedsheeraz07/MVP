@@ -238,7 +238,7 @@ return (
                           </button>
                           
                           <button
-                            onClick={() => router.push(`/products/${item.product.id}`)}
+                            onClick={() => router.push(`/buyer/products/${item.product.id}`)}
                             className="flex items-center space-x-2 px-6 py-3 bg-transparent border-2 border-[#8b4513] text-[#8b4513] rounded-xl font-semibold hover:bg-[#8b4513] hover:text-white transform hover:scale-105 transition-all duration-300"
                           >
                             <span>View Details</span>
