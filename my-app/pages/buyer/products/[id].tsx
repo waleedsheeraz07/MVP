@@ -204,7 +204,7 @@ return (
                   <div {...carouselHandlers} className="relative">
                     {/* Sold Out Badge */}
                     {product.quantity === 0 && (
-                      <div className="absolute top-4 left-4 bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-bold transform -rotate-12 shadow-lg z-10">
+                      <div className="absolute top-4 left-4 bg-[#8b4513] text-white px-4 py-2 rounded-full text-sm font-bold transform -rotate-12 shadow-lg z-5">
                         Sold Out
                       </div>
                     )}
