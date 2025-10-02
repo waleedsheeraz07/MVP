@@ -163,60 +163,65 @@ return (
                     </div>
                   </div>
 
-                  {/* Order Items */}
+                  {/* Order Items - Updated to match seller page style */}
                   <div className="space-y-4 mb-6">
                     <h3 className="text-lg font-semibold text-[#3e2f25] mb-3">Order Items</h3>
                     {order.items.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-center bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 hover:shadow-md transition-all duration-300 group/item"
+                        className="flex flex-col sm:flex-row items-start sm:items-center bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 hover:shadow-md transition-all duration-300 group/item"
                       >
-                        {/* Product Image */}
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer transform transition-transform duration-300 hover:scale-105">
-                          <img
-                            src={item.product.images?.[0]}
-                            alt={item.product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="flex-1 ml-4 min-w-0">
-                          <h4 className="font-semibold text-[#3e2f25] truncate hover:text-[#8b4513] transition-colors duration-300 cursor-pointer">
-                            {item.product.title}
-                          </h4>
-                          
-                          {/* Item Attributes - Improved spacing */}
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {item.size && (
-                              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
-                                Size: {item.size}
-                              </span>
-                            )}
-                            {item.color && (
-                              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
-                                Color: {item.color}
-                              </span>
-                            )}
-                            <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
-                              Qty: {item.quantity}
-                            </span>
+                        {/* Product Image & Details */}
+                        <div className="flex-1 flex items-start sm:items-center gap-4 mb-4 sm:mb-0">
+                          {/* Product Image */}
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer transform transition-transform duration-300 hover:scale-105">
+                            <img
+                              src={item.product.images?.[0]}
+                              alt={item.product.title}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
 
-                          {/* Item Status */}
-                          <div className="mt-2">
-                            <StatusBadge status={item.status} />
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-[#3e2f25] truncate hover:text-[#8b4513] transition-colors duration-300 cursor-pointer">
+                              {item.product.title}
+                            </h4>
+                            
+                            {/* Item Attributes */}
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {item.size && (
+                                <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
+                                  Size: {item.size}
+                                </span>
+                              )}
+                              {item.color && (
+                                <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
+                                  Color: {item.color}
+                                </span>
+                              )}
+                              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
+                                Qty: {item.quantity}
+                              </span>
+                            </div>
+
+                            {/* Item Status */}
+                            <div className="mt-2">
+                              <StatusBadge status={item.status} />
+                            </div>
                           </div>
                         </div>
 
-                        {/* Item Price */}
-                        <div className="text-right ml-4 flex-shrink-0">
-                          <p className="text-lg font-bold text-[#8b4513]">
-                            KWD {(item.price * item.quantity).toFixed(2)}
-                          </p>
-                          <p className="text-sm text-[#5a4436] mt-1">
-                            KWD {item.price.toFixed(2)} each
-                          </p>
+                        {/* Price */}
+                        <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
+                          <div className="text-right sm:text-left">
+                            <p className="text-lg font-bold text-[#8b4513]">
+                              KWD {(item.price * item.quantity).toFixed(2)}
+                            </p>
+                            <p className="text-sm text-[#5a4436] mt-1">
+                              KWD {item.price.toFixed(2)} each
+                            </p>
+                          </div>
                         </div>
                       </div>
                     ))}
