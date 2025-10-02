@@ -147,7 +147,7 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
             {/* Sign Up Link */}
             <div className="text-center mt-6 pt-6 border-t border-[#e6d9c6]">
               <p className="text-[#5a4436]">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link 
                   href="/signup" 
                   className="text-[#8b4513] font-semibold hover:text-[#6b3410] underline transition-colors duration-300"
