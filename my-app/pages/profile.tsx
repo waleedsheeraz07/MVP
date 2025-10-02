@@ -288,7 +288,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
     <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
       Date of Birth
     </label>
-    <div className="max-w-[200px]">
+    <div className="max-w-[100px]">
       <input
         type="date"
         name="dob"
