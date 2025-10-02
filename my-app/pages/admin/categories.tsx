@@ -114,29 +114,30 @@ const SortableItem: React.FC<SortableItemProps> = ({
   return (
     <div
       ref={setNodeRef}
-      className={`group flex items-center justify-between p-4 mb-2 rounded-xl border-2 transition-all duration-300 ${
+      className={`group flex items-center justify-between p-3 sm:p-4 mb-2 rounded-xl border-2 transition-all duration-300 ${
         selected 
           ? 'border-[#8b4513] bg-[#fdf8f3] shadow-lg scale-105' 
           : 'border-[#e6d9c6] bg-white hover:border-[#d4b996] hover:shadow-md'
       }`}
       style={style}
     >
-      <div className="flex items-center space-x-3" style={{ marginLeft: level * 24 }}>
+      <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0" style={{ marginLeft: level * 16 }}>
         {hasChildren && (
           <button 
             type="button" 
             onClick={e => { e.stopPropagation(); toggleExpand() }} 
-            className="w-6 h-6 flex items-center justify-center text-[#8b4513] hover:bg-[#e6d9c6] rounded-lg transition-colors duration-200"
+            className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 flex items-center justify-center text-[#8b4513] hover:bg-[#e6d9c6] rounded-lg transition-colors duration-200 text-xs sm:text-sm"
           >
             {isExpanded ? '▼' : '►'}
           </button>
         )}
-        {!hasChildren && <div className="w-6 h-6" />}
+        {!hasChildren && <div className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />}
         <span 
           onClick={onSelect} 
-          className={`text-lg font-medium cursor-pointer transition-colors duration-200 ${
+          className={`text-sm sm:text-lg font-medium cursor-pointer transition-colors duration-200 truncate flex-1 min-w-0 ${
             selected ? 'text-[#8b4513]' : 'text-[#3e2f25] hover:text-[#8b4513]'
           }`}
+          title={title}
         >
           {title}
         </span>
@@ -144,7 +145,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
       <div 
         {...attributes} 
         {...listeners} 
-        className="text-[#8b4513] opacity-0 group-hover:opacity-100 cursor-grab px-3 py-1 rounded-lg hover:bg-[#f8efe4] transition-all duration-300"
+        className="text-[#8b4513] opacity-0 group-hover:opacity-100 cursor-grab px-2 sm:px-3 py-1 rounded-lg hover:bg-[#f8efe4] transition-all duration-300 flex-shrink-0 text-sm sm:text-base"
         style={{ touchAction: 'none' }}
       >
         ⋮⋮
@@ -183,7 +184,7 @@ const renderTree = (
                 toggleExpand={() => toggleExpand(node.id)}
               />
               {hasChildren && isExpanded && (
-                <div className="ml-8 border-l-2 border-[#e6d9c6] pl-4">
+                <div className="ml-4 sm:ml-8 border-l-2 border-[#e6d9c6] pl-2 sm:pl-4">
                   {renderTree(node.children!, selectedId, onSelect, expanded, toggleExpand, level + 1)}
                 </div>
               )}
@@ -464,31 +465,31 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
       />
       
       <Layout categories={categories} user={user}>
-        <div className="min-h-screen bg-[#fefaf5] py-8 px-4 sm:px-6">
+        <div className="min-h-screen bg-[#fefaf5] py-4 sm:py-8 px-3 sm:px-6">
           <div className="max-w-4xl mx-auto">
             {/* Header Section */}
-            <div className="text-center mb-8 sm:mb-12">
-              <h1 className="text-3xl sm:text-4xl font-bold text-[#3e2f25] mb-4">
+            <div className="text-center mb-6 sm:mb-12">
+              <h1 className="text-2xl sm:text-4xl font-bold text-[#3e2f25] mb-3 sm:mb-4">
                 Manage Categories
               </h1>
-              <p className="text-lg text-[#5a4436] max-w-2xl mx-auto">
+              <p className="text-sm sm:text-lg text-[#5a4436] max-w-2xl mx-auto px-2">
                 Organize your product categories for better navigation and user experience
               </p>
             </div>
 
             {/* Main Content Container */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6" ref={containerRef}>
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6" ref={containerRef}>
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 text-center">
+                <div className="bg-red-50 border border-red-200 text-red-700 p-3 sm:p-4 rounded-lg sm:rounded-xl mb-4 sm:mb-6 text-center text-sm sm:text-base">
                   {error}
                 </div>
               )}
 
               {/* Controls Section */}
-              <div className="mb-8" ref={controlsRef}>
-                <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
+              <div className="mb-6 sm:mb-8" ref={controlsRef}>
+                <div className="flex flex-col gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                    <label className="block text-sm font-semibold text-[#3e2f25] mb-2 sm:mb-3">
                       {selectedId ? 'Edit Category or Add Subcategory' : 'Add New Top-Level Category'}
                     </label>
                     <input
@@ -496,19 +497,19 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
                       placeholder={selectedId ? 'Enter new category name...' : 'Enter top-level category name...'}
                       value={inputTitle}
                       onChange={e => setInputTitle(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-lg sm:rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button 
                       onClick={handleCreate} 
                       disabled={isProcessing || !inputTitle.trim()}
-                      className="px-6 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-[#8b4513] text-white rounded-lg sm:rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                     >
                       {isProcessing ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           <span>Adding...</span>
                         </div>
                       ) : (
@@ -519,7 +520,7 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
                     <button 
                       onClick={handleUpdate} 
                       disabled={isProcessing || !selectedId || !inputTitle.trim()}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg sm:rounded-xl font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                     >
                       Update
                     </button>
@@ -527,7 +528,7 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
                     <button 
                       onClick={handleDelete} 
                       disabled={isProcessing || !selectedId}
-                      className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white rounded-lg sm:rounded-xl font-semibold hover:bg-red-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                     >
                       Delete
                     </button>
@@ -535,11 +536,11 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
                 </div>
 
                 {selectedCategory && (
-                  <div className="mt-4 p-4 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl">
-                    <p className="text-sm text-[#5a4436]">
+                  <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-[#fdf8f3] border border-[#e6d9c6] rounded-lg sm:rounded-xl">
+                    <p className="text-xs sm:text-sm text-[#5a4436]">
                       <span className="font-semibold">Selected:</span> {selectedCategory.title}
                       {selectedCategory.parentId && (
-                        <span className="text-[#8b4513] ml-2">
+                        <span className="text-[#8b4513] ml-1 sm:ml-2">
                           (Subcategory)
                         </span>
                       )}
@@ -550,10 +551,10 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
 
               {/* Categories Tree */}
               <div>
-                <h3 className="text-lg font-semibold text-[#3e2f25] mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-[#3e2f25] mb-3 sm:mb-4">
                   Category Structure
                 </h3>
-                <div className="bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-6 min-h-[400px]" ref={treeRef}>
+                <div className="bg-[#fdf8f3] border border-[#e6d9c6] rounded-lg sm:rounded-xl p-4 sm:p-6 min-h-[300px] sm:min-h-[400px]" ref={treeRef}>
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -563,14 +564,14 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
                     {tree.length > 0 ? (
                       renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)
                     ) : (
-                      <div className="text-center py-16">
-                        <div className="w-24 h-24 mx-auto mb-6 bg-[#e6d9c6] rounded-full flex items-center justify-center">
-                          <svg className="w-12 h-12 text-[#8b4513]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="text-center py-8 sm:py-16">
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-[#e6d9c6] rounded-full flex items-center justify-center">
+                          <svg className="w-8 h-8 sm:w-12 sm:h-12 text-[#8b4513]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
                         </div>
-                        <h3 className="text-2xl font-bold text-[#3e2f25] mb-2">No categories yet</h3>
-                        <p className="text-[#5a4436]">Start by adding your first category above</p>
+                        <h3 className="text-xl sm:text-2xl font-bold text-[#3e2f25] mb-2">No categories yet</h3>
+                        <p className="text-[#5a4436] text-sm sm:text-base">Start by adding your first category above</p>
                       </div>
                     )}
                   </DndContext>
@@ -578,9 +579,9 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
               </div>
 
               {/* Instructions */}
-              <div className="mt-6 p-4 bg-[#f8efe4] border border-[#e6d9c6] rounded-xl">
-                <h4 className="font-semibold text-[#3e2f25] mb-2">How to manage categories:</h4>
-                <ul className="text-sm text-[#5a4436] space-y-1">
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-[#f8efe4] border border-[#e6d9c6] rounded-lg sm:rounded-xl">
+                <h4 className="font-semibold text-[#3e2f25] mb-2 text-sm sm:text-base">How to manage categories:</h4>
+                <ul className="text-xs sm:text-sm text-[#5a4436] space-y-1">
                   <li>• Click on a category to select it</li>
                   <li>• Drag and drop categories to reorder them</li>
                   <li>• Use the toggle buttons (►/▼) to expand/collapse subcategories</li>
@@ -591,8 +592,8 @@ export default function CategoriesPage({ categories: initialCategories, user}: P
 
             {/* Summary */}
             <div className="text-center">
-              <div className="bg-white rounded-2xl shadow-lg p-6 inline-block">
-                <p className="text-lg text-[#3e2f25]">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 inline-block">
+                <p className="text-sm sm:text-lg text-[#3e2f25]">
                   Total Categories: <span className="font-bold text-[#8b4513]">{categories.length}</span>
                 </p>
               </div>
