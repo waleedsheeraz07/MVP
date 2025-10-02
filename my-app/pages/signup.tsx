@@ -173,7 +173,7 @@ export default function SignupPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div classNe="max-w[200px]">
                 <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
                   Date of Birth
                 </label>
