@@ -313,55 +313,54 @@ return (
                 </div>
               </div>
 
-             {/* Order Items - Improved spacing */}
-<div className="mb-6">
-  <h3 className="text-lg font-semibold text-[#3e2f25] mb-4">Order Summary</h3>
-  <div className="space-y-4">
-    {cartItems.map((item) => (
-      <div
-        key={item.id}
-        className="flex items-center bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 hover:shadow-md transition-all duration-300"
-      >
-        <div 
-          onClick={() => router.push(`/buyer/products/${item.product.id}`)}
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105 flex-shrink-0"
-        >
-          <img
-            src={item.product.images[0]}
-            alt={item.product.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+              {/* Order Items */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#3e2f25] mb-4">Order Summary</h3>
+                <div className="space-y-4">
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 hover:shadow-md transition-all duration-300"
+                    >
+                      <div 
+                        onClick={() => router.push(`/buyer/products/${item.product.id}`)}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
+                      >
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
-        <div className="flex-1 ml-4 min-w-0">
-          <h4 className="font-semibold text-[#3e2f25] truncate">{item.product.title}</h4>
-          {/* Improved badge spacing */}
-          <div className="flex flex-wrap gap-2 mt-2"> {/* Added mt-2 for better spacing */}
-            {item.size && (
-              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
-                Size: {item.size}
-              </span>
-            )}
-            {item.color && (
-              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
-                Color: {item.color}
-              </span>
-            )}
-            <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
-              Qty: {item.quantity}
-            </span>
-          </div>
-        </div>
+                      <div className="flex-1 ml-4 min-w-0">
+                        <h4 className="font-semibold text-[#3e2f25] truncate">{item.product.title}</h4>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {item.size && (
+                            <span className="text-xs text-[#5a4436] bg-white px-2 py-1 rounded-full border">
+                              Size: {item.size}
+                            </span>
+                          )}
+                          {item.color && (
+                            <span className="text-xs text-[#5a4436] bg-white px-2 py-1 rounded-full border">
+                              Color: {item.color}
+                            </span>
+                          )}
+                          <span className="text-xs text-[#5a4436] bg-white px-2 py-1 rounded-full border">
+                            Qty: {item.quantity}
+                          </span>
+                        </div>
+                      </div>
 
-        <div className="text-right flex-shrink-0 ml-2">
-          <p className="text-lg font-bold text-[#8b4513]">
-            KWD {(item.product.price * item.quantity).toFixed(2)}
-          </p>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-[#8b4513]">
+                          KWD {(item.product.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Order Total */}
               <div className="bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-6 mb-6">
