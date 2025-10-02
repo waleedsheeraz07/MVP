@@ -444,29 +444,37 @@ export default function SignupPage() {
                 <div></div> // Empty div for spacing
               )}
 
-              {step < 2 ? (
-            // In the step 2 section, replace the button with this:
-
-<button
-  onClick={handleSubmit}
-  disabled={loading || (confirmPassword !== "" && confirmPassword !== password)}
-  className="px-6 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer flex items-center space-x-2 ml-auto"
->
-  {loading ? (
-    <>
-      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-      <span>Creating Account...</span>
-    </>
-  ) : (
-    <>
-      <span>Complete Sign Up</span>
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
-    </>
-  )}
-</button>
-              )}
+       {step < 2 ? (
+  <button
+    onClick={handleNext}
+    className="px-6 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 cursor-pointer flex items-center space-x-2 ml-auto"
+  >
+    <span>Next Step</span>
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
+) : (
+  <button
+    onClick={handleSubmit}
+    disabled={loading || (confirmPassword !== "" && confirmPassword !== password)}
+    className="px-6 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer flex items-center space-x-2 ml-auto"
+  >
+    {loading ? (
+      <>
+        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <span>Creating Account...</span>
+      </>
+    ) : (
+      <>
+        <span>Complete Sign Up</span>
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      </>
+    )}
+  </button>
+)}
             </div>
 
             {/* Login Link */}
