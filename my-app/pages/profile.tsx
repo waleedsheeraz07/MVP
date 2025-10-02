@@ -222,96 +222,100 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
                       <span>Personal Information</span>
                     </h2>
                   </div>
+// In the Personal Information section, replace the grid section with this:
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
-                        First Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={form.firstName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
-                        required
-                      />
-                    </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+  <div>
+    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+      First Name *
+    </label>
+    <input
+      type="text"
+      name="firstName"
+      value={form.firstName}
+      onChange={handleChange}
+      className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+      required
+    />
+  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={form.lastName || ""}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
-                      />
-                    </div>
+  <div>
+    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+      Last Name
+    </label>
+    <input
+      type="text"
+      name="lastName"
+      value={form.lastName || ""}
+      onChange={handleChange}
+      className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+    />
+  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-[#f5f0e8] border border-[#e6d9c6] rounded-xl text-[#7a6a5a] cursor-not-allowed"
-                        disabled
-                        tabIndex={-1}
-                        required
-                      />
-                      <p className="text-xs text-[#9ca3af] mt-2">Email cannot be changed</p>
-                    </div>
+  <div>
+    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+      Email Address
+    </label>
+    <input
+      type="email"
+      name="email"
+      value={form.email}
+      onChange={handleChange}
+      className="w-full px-4 py-3 bg-[#f5f0e8] border border-[#e6d9c6] rounded-xl text-[#7a6a5a] cursor-not-allowed"
+      disabled
+      tabIndex={-1}
+      required
+    />
+    <p className="text-xs text-[#9ca3af] mt-2">Email cannot be changed</p>
+  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
-                        Phone Number
-                      </label>
-                      <input
-                        type="text"
-                        name="phoneNumber"
-                        value={form.phoneNumber || ""}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
-                        placeholder="+965 XXX XXX"
-                      />
-                    </div>
+  <div>
+    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+      Phone Number
+    </label>
+    <input
+      type="text"
+      name="phoneNumber"
+      value={form.phoneNumber || ""}
+      onChange={handleChange}
+      className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+      placeholder="+965 XXX XXX"
+    />
+  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
-                        Date of Birth
-                      </label>
-                      <input
-                        type="date"
-                        name="dob"
-                        value={form.dob?.slice(0, 10) || ""}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
-                      />
-                    </div>
+  {/* Date of Birth with constrained width */}
+  <div className="sm:col-span-1">
+    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+      Date of Birth
+    </label>
+    <div className="max-w-[200px]">
+      <input
+        type="date"
+        name="dob"
+        value={form.dob?.slice(0, 10) || ""}
+        onChange={handleChange}
+        className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+      />
+    </div>
+  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
-                        Gender
-                      </label>
-                      <select
-                        name="gender"
-                        value={form.gender || ""}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
-                  </div>
+  <div className="sm:col-span-1">
+    <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+      Gender
+    </label>
+    <select
+      name="gender"
+      value={form.gender || ""}
+      onChange={handleChange}
+      className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+    >
+      <option value="">Select Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+</div>
                 </section>
 
                 {/* Address Information Section */}
