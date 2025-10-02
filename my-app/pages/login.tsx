@@ -42,88 +42,124 @@ export default function LoginPage({ csrfToken }: LoginPageProps) {
   };
 
   return (
-<>
-<Head>
-  <title>Login | Vintage Marketplace</title>
-  <meta name="description" content="Access your Vintage Marketplace account and continue shopping." />
-</Head>
-<div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
+    <>
+      <Head>
+        <title>Login | Vintage Marketplace</title>
+        <meta name="description" content="Access your Vintage Marketplace account and continue shopping." />
+      </Head>
+      
+      <div className="min-h-screen bg-[#fefaf5] py-8 px-4 sm:px-6 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <div className="bg-[#8b4513] rounded-2xl p-3 shadow-lg">
+                <img 
+                  src="/logo.png"
+                  alt="Vintage Marketplace" 
+                  className="h-16 w-16 object-contain"
+                />
+              </div>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#3e2f25] mb-4">
+              Welcome Back
+            </h1>
+            <p className="text-lg text-[#5a4436] max-w-md mx-auto">
+              Sign in to your account to continue your vintage journey
+            </p>
+          </div>
 
-  {/* Company Logo - outside the form container */}
-  <div className="flex justify-center mb-6">
-    <img
-      src="/logo.png"         // Replace with your logo path
-      alt="Company Logo"
-      className="h-34 w-auto" // Increased size
-    />
-  </div>
+          {/* Login Form Card */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+            {errorMessage && (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 text-center flex items-center justify-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
-  <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-    <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Login</h1>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <input type="hidden" name="csrfToken" defaultValue={csrfToken} />
 
-    {errorMessage && (
-      <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{errorMessage}</p>
-    )}
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  placeholder="your.email@example.com"
+                  required
+                  className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
+                />
+              </div>
 
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <input type="hidden" name="csrfToken" defaultValue={csrfToken} />
+              {/* Password Field */}
+              <div>
+                <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    required
+                    className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(prev => !prev)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b4513] hover:text-[#6b3410] transition-colors duration-300 font-medium text-sm"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
 
-      <input
-        type="email"
-        name="email"
-        autoComplete="email"
-        placeholder="Email Address"
-        required
-        className="input"
-      />
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-[#8b4513] text-white rounded-xl font-bold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer flex items-center justify-center space-x-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Sign In</span>
+                  </>
+                )}
+              </button>
+            </form>
 
-      <div className="relative">
-        <input
-          type={showPassword ? "text" : "password"}
-          name="password"
-          autoComplete="current-password"
-          placeholder="Password"
-          required
-          className="input pr-12"
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(prev => !prev)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
-        >
-          {showPassword ? "Hide" : "Show"}
-        </button>
+            {/* Sign Up Link */}
+            <div className="text-center mt-6 pt-6 border-t border-[#e6d9c6]">
+              <p className="text-[#5a4436]">
+                Don't have an account?{" "}
+                <Link 
+                  href="/signup" 
+                  className="text-[#8b4513] font-semibold hover:text-[#6b3410] underline transition-colors duration-300"
+                >
+                  Create Account
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition cursor-pointer"
-      >
-        {loading ? "Logging In..." : "Login"}
-      </button>
-    </form>
-
-    <p className="text-center text-sm mt-4">
-      Don’t have an account?{" "}
-      <Link href="/signup" className="text-[#3e2f25] font-semibold underline">
-        Signup
-      </Link>
-    </p>
-  </div>
-
-  <style jsx>{`
-    .input {
-      padding: 0.75rem;
-      border-radius: 0.75rem;
-      border: 1px solid #ccc;
-      width: 100%;
-      background-color: #fff;
-      color: #000;
-    }
-  `}</style>
-</div>
-</>
+    </>
   );
 }
 
