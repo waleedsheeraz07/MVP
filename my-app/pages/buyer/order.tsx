@@ -70,99 +70,192 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function OrdersPage({ orders, categories, user }: OrdersPageProps) {
-  return (
-<>
-<Head>
-  <title>My Orders | Vintage Marketplace</title>
-  <meta name="description" content="Track and manage your orders for vintage items." />
-</Head>
-    <Layout categories={categories} user={user}>
-      <div className="min-h-screen bg-[#fdf8f3] p-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-[#3e2f25] text-center sm:text-left">
-            My Orders
-          </h1>
 
-          {orders.length === 0 ? (
-            <p className="text-center text-gray-600">
-              You have not placed any orders yet.{" "}
-              <Link href="/buyer/products" className="text-[#5a4436] font-semibold hover:underline">
-                Browse products
-              </Link>
+return (
+  <>
+    <Head>
+      <title>Your Vintage Orders | Vintage Marketplace</title>
+      <meta name="description" content="Track and manage your orders for authentic vintage treasures." />
+    </Head>
+    
+    <Layout categories={categories} user={user}>
+      <div className="min-h-screen bg-[#fefaf5] py-8 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#3e2f25] mb-4">
+              Your Vintage Orders
+            </h1>
+            <p className="text-lg text-[#5a4436] max-w-2xl mx-auto">
+              Track your collection of timeless treasures and their journey to you
             </p>
+          </div>
+
+          {/* Empty State */}
+          {orders.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 mx-auto mb-6 bg-[#e6d9c6] rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-[#8b4513]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-[#3e2f25] mb-2">No orders yet</h3>
+              <p className="text-[#5a4436] mb-6">Start your collection of vintage treasures</p>
+              <Link href="/buyer/products">
+                <a className="inline-flex items-center space-x-2 px-8 py-3 bg-[#8b4513] text-white rounded-xl font-semibold hover:bg-[#6b3410] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <span>Explore Vintage Treasures</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </a>
+              </Link>
+            </div>
           ) : (
+            /* Orders List */
             <div className="space-y-6">
               {orders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-[#fffdfb] border rounded-2xl shadow-sm p-4 space-y-4 hover:shadow-md transition-all"
+                  className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-500 hover:scale-105"
                 >
-                  <div className="flex justify-between items-center">
-                    <h2 className="font-semibold text-[#3e2f25]">
-                      Order #{order.id.slice(0, 8).toUpperCase()}
-                    </h2>
-                    <span className="text-sm text-gray-600">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <div className="text-sm space-y-1">
-                    <p>
-                      <strong>Order Status:</strong>{" "}
+                  {/* Order Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-[#e6d9c6]">
+                    <div>
+                      <h2 className="text-xl font-bold text-[#3e2f25] mb-2">
+                        Order #{order.id.slice(0, 8).toUpperCase()}
+                      </h2>
+                      <div className="flex items-center space-x-4 text-sm text-[#5a4436]">
+                        <div className="flex items-center space-x-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>{new Date(order.createdAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          <span>{order.payment}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 sm:mt-0">
                       <StatusBadge status={order.status} />
-                    </p>
-                    <p>
-                      <strong>Payment:</strong> {order.payment}
-                    </p>
-                    <p>
-                      <strong>Shipping Address:</strong> {order.address}
-                    </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
+                  {/* Shipping Address */}
+                  <div className="bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 mb-6">
+                    <div className="flex items-start space-x-2">
+                      <svg className="w-5 h-5 text-[#8b4513] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <div>
+                        <p className="font-semibold text-[#3e2f25] text-sm mb-1">Shipping Address</p>
+                        <p className="text-[#5a4436] text-sm">{order.address}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div className="space-y-4 mb-6">
+                    <h3 className="text-lg font-semibold text-[#3e2f25] mb-3">Order Items</h3>
                     {order.items.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-center justify-between border p-2 rounded-lg hover:bg-[#f9f4ec] transition-all"
+                        className="flex items-center bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl p-4 hover:shadow-md transition-all duration-300 group/item"
                       >
-                        <div className="flex items-center gap-3">
-                          {item.product.images?.[0] && (
-                            <img
-                              src={item.product.images[0]}
-                              alt={item.product.title}
-                              className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
-                            />
-                          )}
-                          <div>
-                            <p className="font-medium text-[#3e2f25]">{item.product.title}</p>
-                            <p className="text-sm text-gray-600">
-                              Size: {item.size || "N/A"} | Color: {item.color || "N/A"}
-                            </p>
-                            <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                            <div className="mt-1">
-                              <StatusBadge status={item.status} />
-                            </div>
+                        {/* Product Image */}
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer transform transition-transform duration-300 hover:scale-105">
+                          <img
+                            src={item.product.images?.[0]}
+                            alt={item.product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 ml-4 min-w-0">
+                          <h4 className="font-semibold text-[#3e2f25] truncate hover:text-[#8b4513] transition-colors duration-300 cursor-pointer">
+                            {item.product.title}
+                          </h4>
+                          
+                          {/* Item Attributes - Improved spacing */}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {item.size && (
+                              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
+                                Size: {item.size}
+                              </span>
+                            )}
+                            {item.color && (
+                              <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
+                                Color: {item.color}
+                              </span>
+                            )}
+                            <span className="text-xs text-[#5a4436] bg-white px-3 py-1 rounded-full border border-[#e6d9c6]">
+                              Qty: {item.quantity}
+                            </span>
+                          </div>
+
+                          {/* Item Status */}
+                          <div className="mt-2">
+                            <StatusBadge status={item.status} />
                           </div>
                         </div>
-                        <p className="font-semibold text-[#3e2f25]">
-                          KWD {(item.price * item.quantity).toFixed(2)}
-                        </p>
+
+                        {/* Item Price */}
+                        <div className="text-right ml-4 flex-shrink-0">
+                          <p className="text-lg font-bold text-[#8b4513]">
+                            KWD {(item.price * item.quantity).toFixed(2)}
+                          </p>
+                          <p className="text-sm text-[#5a4436] mt-1">
+                            KWD {item.price.toFixed(2)} each
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex justify-end font-bold text-[#3e2f25] text-lg">
-                    Total: KWD {order.total.toFixed(2)}
+                  {/* Order Total */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-[#e6d9c6]">
+                    <div className="text-[#5a4436] text-sm mb-2 sm:mb-0">
+                      {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-[#8b4513]">
+                        KWD {order.total.toFixed(2)}
+                      </p>
+                      <p className="text-sm text-[#5a4436] mt-1">Total Amount</p>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
+
+          {/* Orders Summary */}
+          {orders.length > 0 && (
+            <div className="mt-12 text-center">
+              <div className="bg-white rounded-2xl shadow-lg p-6 inline-block">
+                <p className="text-lg text-[#3e2f25]">
+                  You have <span className="font-bold text-[#8b4513]">{orders.length}</span> 
+                  {orders.length === 1 ? ' vintage order' : ' vintage orders'} in total
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
-</>
-  );
+  </>
+);
+
 }
 
 // ✅ Server-side fetch with categories and user
