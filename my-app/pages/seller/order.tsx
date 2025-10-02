@@ -1,5 +1,6 @@
 // pages/seller/orders.tsx:
 import Head from 'next/head'
+import Link from "next/link";
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]";
