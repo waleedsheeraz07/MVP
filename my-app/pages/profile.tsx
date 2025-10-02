@@ -222,7 +222,6 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
                       <span>Personal Information</span>
                     </h2>
                   </div>
-// In the Personal Information section, replace the grid section with this:
 
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
   <div>
@@ -288,7 +287,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
     <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
       Date of Birth
     </label>
-    <div className="max-w-[100px]">
+    <div className="max-w-[200px]">
       <input
         type="date"
         name="dob"
