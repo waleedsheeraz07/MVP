@@ -278,7 +278,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
       value={form.phoneNumber || ""}
       onChange={handleChange}
       className="w-full px-4 py-3 bg-[#fdf8f3] border border-[#e6d9c6] rounded-xl text-[#3e2f25] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent transition-all duration-300"
-      placeholder="+965 XXX XXX"
+      placeholder="+965 XXXX XXX"
     />
   </div>
 
@@ -287,7 +287,7 @@ export default function ProfilePage({ userProfile, categories, user }: ProfilePa
     <label className="block text-sm font-semibold text-[#3e2f25] mb-3">
       Date of Birth
     </label>
-    <div className="max-w-[200px]">
+    <div className="max-w-[205px]">
       <input
         type="date"
         name="dob"
